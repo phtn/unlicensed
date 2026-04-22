@@ -5,10 +5,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {canAccessAdminPanel} from '@/lib/staff-access'
-import {
-  DIVISION_OPTIONS,
-  getPositionsForDivision,
-} from '@/lib/staff-roles'
+import {DIVISION_OPTIONS, getPositionsForDivision} from '@/lib/staff-roles'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
@@ -381,7 +378,8 @@ export const StaffForm = ({
               activeSection === 'basic-info'
                 ? 'dark:bg-zinc-700 dark:text-pink-300 bg-dark-gray/5 text-pink-500'
                 : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-pink-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
-            )}>
+            )}
+          >
             <Icon name='file' className='size-4' />
             <span>Basic Info</span>
           </Button>
@@ -394,7 +392,8 @@ export const StaffForm = ({
             fullWidth
             className='w-full rounded-xl font-medium tracking-tight bg-pink-500 text-white'
             isDisabled={isSubmitting || (!isEditMode && !isAuthorizedToCreate)}
-            onPress={form.handleSubmit}>
+            onPress={form.handleSubmit}
+          >
             {isSubmitting
               ? isEditMode
                 ? 'Updating...'
@@ -429,7 +428,8 @@ export const StaffForm = ({
                 variant='outline'
                 className='w-full rounded-xl font-medium tracking-tight'
                 isDisabled={syncClaimsStatus === 'loading'}
-                onPress={() => void handleSyncClaims()}>
+                onPress={() => void handleSyncClaims()}
+              >
                 {syncClaimsStatus === 'loading'
                   ? 'Syncing…'
                   : 'Sync Firebase Claims'}
@@ -452,14 +452,16 @@ export const StaffForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative pt-2'>
+        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative pt-2'
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className='space-y-0 pt-2'>
+          className='space-y-0 pt-2'
+        >
           <div id='basic-info' className='scroll-mt-4 space-y-6'>
             <div>
               <h2 className='text-xl font-medium mb-4 opacity-80'>
@@ -500,7 +502,7 @@ export const StaffForm = ({
                   }}
                 </form.AppField>
 
-                <div className='w-full flex items-center space-x-4'>
+                <div className='flex w-full flex-col gap-4 sm:flex-row sm:items-center'>
                   {/* Division */}
                   <form.AppField name='division'>
                     {(field) => (
@@ -566,7 +568,8 @@ export const StaffForm = ({
               className='w-full font-semibold'
               isDisabled={
                 isSubmitting || (!isEditMode && !isAuthorizedToCreate)
-              }>
+              }
+            >
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

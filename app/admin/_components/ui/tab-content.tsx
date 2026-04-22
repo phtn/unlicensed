@@ -21,21 +21,24 @@ export const TabContentContainer = ({
   return (
     <div
       className={cn(
-        'w-full bg-linear-to-br from-sidebar to-slate-200/10 dark:from-slate-400/10 dark:to-slate-600/5 p-4 rounded-md',
+        'w-full min-w-0 bg-linear-to-br from-sidebar to-slate-200/10 dark:from-slate-400/10 dark:to-slate-600/5 p-3 md:p-4 rounded-md',
         className,
-      )}>
+      )}
+    >
       {/* Header */}
-      <header className='flex items-start justify-between'>
-        <div className='space-y-1'>
-          <div className=' text-lg tracking-tight font-polysans md:font-medium w-full'>
+      <header className='flex min-w-0 flex-col gap-3 md:flex-row md:items-start md:justify-between'>
+        <div className='min-w-0 space-y-1'>
+          <div className='w-full break-words text-lg tracking-tight font-polysans md:font-medium'>
             {title}
           </div>
 
           {description && (
-            <p className='max-w-xl text-sm text-default-500'>{description}</p>
+            <p className='max-w-xl break-words text-sm text-default-500'>
+              {description}
+            </p>
           )}
         </div>
-        <div>{extraHeader}</div>
+        <div className='min-w-0'>{extraHeader}</div>
       </header>
       <ScrollArea>{children}</ScrollArea>
     </div>

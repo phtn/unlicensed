@@ -19,17 +19,22 @@ export const SectionHeader = ({
       className={cn(
         'flex flex-col items-start justify-center w-full',
         className,
-      )}>
+      )}
+    >
       {title && (
         <div
-          className={cn('flex items-center justify-between w-full', {
-            ' space-x-4': children,
-          })}>
-          <div className='text-lg md:tracking-normal font-clash md:font-medium w-full capitalize'>
+          className={cn(
+            'flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between',
+            {
+              'md:space-x-4': children,
+            },
+          )}
+        >
+          <div className='w-full min-w-0 break-words text-lg md:tracking-normal font-clash md:font-medium capitalize'>
             {title}
           </div>
           <ViewTransition>
-            {children && <div className='flex-1'>{children}</div>}
+            {children && <div className='min-w-0 flex-1'>{children}</div>}
           </ViewTransition>
         </div>
       )}

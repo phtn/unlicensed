@@ -260,7 +260,8 @@ export function ProductCsvUpload() {
             </div>
           </div>
         ) : null
-      }>
+      }
+    >
       <div className='flex min-w-0 max-w-full flex-col gap-6'>
         {/* Drop zone / file picker */}
         {fileName ? null : (
@@ -270,12 +271,14 @@ export function ProductCsvUpload() {
               isDragging
                 ? 'border-primary bg-primary/0 dark:bg-white dark:text-dark-table'
                 : 'border-default-200 hover:border-default-300 dark:border-default-100 dark:hover:border-default-200',
-            )}>
+            )}
+          >
             <label
               className='flex min-h-[141.1px] cursor-pointer flex-col items-center justify-center gap-3 p-6'
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
-              onDrop={handleDrop}>
+              onDrop={handleDrop}
+            >
               <input
                 ref={fileInputRef}
                 type='file'
@@ -318,7 +321,7 @@ export function ProductCsvUpload() {
         {displayRows.length > 0 && (
           <Card className='min-w-0 p-0 bg-transparent'>
             <div className='grid min-w-0 grid-cols-1 gap-0 md:grid-cols-4'>
-              <div className='col-span-3'>
+              <div className='md:col-span-3'>
                 <Input
                   label='Upload title'
                   placeholder='e.g. 2026-03-03T12-34-56'
@@ -336,7 +339,8 @@ export function ProductCsvUpload() {
             className={cn(
               'flex min-w-0 shrink-0 max-w-[calc(92lvw)] flex-col gap-4 overflow-hidden font-clash',
               {' max-w-[calc(80lvw)]': sidebarOpen},
-            )}>
+            )}
+          >
             <div className='flex flex-wrap items-center justify-between gap-3'>
               <div className='flex flex-wrap items-center gap-2'>
                 <Chip size='sm' variant='tertiary'>
@@ -347,7 +351,8 @@ export function ProductCsvUpload() {
                   <Chip
                     size='sm'
                     variant='primary'
-                    className='rounded-sm text-white'>
+                    className='rounded-sm text-white'
+                  >
                     <span className='pe-1.5'>{errorCount}</span>
                     <span>Error{errorCount !== 1 ? 's' : ''}</span>
                   </Chip>
@@ -356,7 +361,8 @@ export function ProductCsvUpload() {
                   <Chip
                     size='sm'
                     variant='primary'
-                    className='rounded-sm bg-orange-400'>
+                    className='rounded-sm bg-orange-400'
+                  >
                     <span className='pe-1.5'>{conflictCount}</span>
                     <span>Conflict{conflictCount !== 1 ? 's' : ''}</span>
                   </Chip>
@@ -365,7 +371,8 @@ export function ProductCsvUpload() {
                   <Chip
                     size='sm'
                     variant='primary'
-                    className='rounded-sm text-white dark:bg-emerald-500/80 tracking-wide'>
+                    className='rounded-sm text-white dark:bg-emerald-500/80 tracking-wide'
+                  >
                     <span className='pe-1.5'>{validRows.length}</span>
                     <span className=''>
                       {validRows.length !== 1 ? 'Products' : 'Product'} ready to
@@ -379,7 +386,8 @@ export function ProductCsvUpload() {
                 variant='primary'
                 isDisabled={!canImport}
                 onPress={handleImport}
-                className='bg-foreground text-background/80 rounded-md min-w-[181.1px] text-sm font-medium'>
+                className='bg-foreground text-background/80 rounded-md min-w-[181.1px] text-sm font-medium'
+              >
                 {isImporting ? (
                   'Importing…'
                 ) : (
@@ -403,15 +411,18 @@ export function ProductCsvUpload() {
                 <ul className='mt-2 space-y-1 text-sm text-warning-700 dark:text-warning-300'>
                   {previewIssues.map((issue) => (
                     <li
-                      key={`${issue.rowIndex}-${issue.column}-${issue.slug ?? issue.message}`}>
+                      key={`${issue.rowIndex}-${issue.column}-${issue.slug ?? issue.message}`}
+                    >
                       <Chip
                         size='sm'
-                        className='rounded-sm bg-orange-400 dark:bg-orange-500/75 text-white'>
+                        className='rounded-sm bg-orange-400 dark:bg-orange-500/75 text-white'
+                      >
                         Row {issue.rowIndex}
                       </Chip>
                       <Chip
                         size='sm'
-                        className='ms-2 rounded-sm bg-cyan-500/85 text-white dark:bg-cyan-500'>
+                        className='ms-2 rounded-sm bg-cyan-500/85 text-white dark:bg-cyan-500'
+                      >
                         {issue.column}
                       </Chip>
                       <span className='ms-2'>{issue.label}</span>
@@ -433,7 +444,8 @@ export function ProductCsvUpload() {
                       {previewColumns.map((col) => (
                         <th
                           key={col}
-                          className='max-w-36 truncate whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-widest text-cyan-600 dark:text-cyan-300 bg-background'>
+                          className='max-w-36 truncate whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-widest text-cyan-600 dark:text-cyan-300 bg-background'
+                        >
                           {col}
                         </th>
                       ))}
@@ -462,14 +474,16 @@ export function ProductCsvUpload() {
               importError
                 ? 'border-danger-200 bg-danger-50/50 dark:border-danger-900/50 dark:bg-danger-950/20'
                 : 'border-success-200 bg-success-50/50 dark:bg-success-500/10',
-            )}>
+            )}
+          >
             <p
               className={cn(
                 'text-sm font-medium',
                 importError
                   ? 'text-danger-700 dark:text-danger-300'
                   : 'text-success-700 dark:text-success-300',
-              )}>
+              )}
+            >
               {importError ?? importSuccess}
             </p>
             {importRowErrors.length > 0 && (
@@ -504,13 +518,15 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
         hasError
           ? 'bg-danger-50/40 dark:bg-danger-950/30 hover:bg-danger-50/60 dark:hover:bg-danger-950/40'
           : 'hover:bg-default-50/80 dark:hover:bg-default-100/10',
-      )}>
+      )}
+    >
       {columns.map((col) => {
         if (col === '#') {
           return (
             <td
               key={col}
-              className='sticky left-0 z-1 whitespace-nowrap bg-inherit px-4 py-2.5 font-ios text-sm text-orange-500 dark:text-orange-300'>
+              className='sticky left-0 z-1 whitespace-nowrap bg-inherit px-4 py-2.5 font-ios text-sm text-orange-500 dark:text-orange-300'
+            >
               {row.rowIndex}
             </td>
           )
@@ -519,13 +535,15 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
           return (
             <td
               key={col}
-              className='sticky right-0 z-1 min-w-[140.1px] bg-inherit px-4 py-2.5'>
+              className='sticky right-0 z-1 min-w-[140.1px] bg-inherit px-4 py-2.5'
+            >
               <div className='flex flex-wrap items-center gap-1.5'>
                 {statusIssue && (
                   <Chip
                     size='sm'
                     variant='primary'
-                    className='font-medium text-white'>
+                    className='font-medium text-white'
+                  >
                     {statusIssue.label}
                   </Chip>
                 )}
@@ -538,7 +556,8 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                       {
                         'bg-indigo-400 text-white': rowMode === 'Update',
                       },
-                    )}>
+                    )}
+                  >
                     {rowMode}
                   </Chip>
                 )}
@@ -561,7 +580,8 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
               'truncate whitespace-nowrap': !issue,
               'bg-danger-50/80 dark:bg-danger-950/20': issue,
             })}
-            title={issue?.message ?? display}>
+            title={issue?.message ?? display}
+          >
             {issue ? (
               <div className='flex min-w-0 flex-col gap-1'>
                 <span className='wrap-break-word whitespace-normal'>
@@ -578,7 +598,8 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                         issue.label === 'VALUE TYPE',
                       'bg-orange-500': issue.label === 'CONFLICT',
                     },
-                  )}>
+                  )}
+                >
                   {issue.label}
                 </span>
               </div>

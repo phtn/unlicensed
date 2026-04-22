@@ -222,7 +222,7 @@ export const PaymentsSettings = () => {
     <div className='flex w-full flex-col gap-4 px-4 md:px-0'>
       <ContentHeader title='Payment Methods' />
 
-      <section className='grid gap-6 md:grid-cols-3 portrait:-mt-10 md:mt-0'>
+      <section className='grid gap-6 md:grid-cols-3'>
         <div className='space-y-3 min-w-0 md:col-span-2'>
           <ul className='flex flex-col gap-3' role='list'>
             {hasMethods ? (
@@ -233,11 +233,13 @@ export const PaymentsSettings = () => {
                     'rounded-lg border border-sidebar bg-default-100/50 px-4 py-4 transition-colors dark:bg-default-100/30',
                     'hover:border-border/80 dark:hover:border-border/60',
                   )}
-                  role='listitem'>
-                  <div className='flex items-start gap-4'>
+                  role='listitem'
+                >
+                  <div className='flex flex-col gap-4 sm:flex-row sm:items-start'>
                     <div
                       className='flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground/10 dark:bg-foreground/15'
-                      aria-hidden>
+                      aria-hidden
+                    >
                       <Icon
                         name={method.icon}
                         className='size-5 text-foreground/80'
@@ -260,7 +262,8 @@ export const PaymentsSettings = () => {
                             method.status === 'active'
                               ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
                               : 'bg-foreground/5 text-foreground/50',
-                          )}>
+                          )}
+                        >
                           {method.status === 'active' ? 'Active' : 'Inactive'}
                         </span>
                       </div>
@@ -276,7 +279,8 @@ export const PaymentsSettings = () => {
                         size='sm'
                         variant='secondary'
                         onPress={() => openEditor(method.id)}
-                        className='bg-brand text-white px-4 h-7 rounded-md'>
+                        className='bg-brand text-white px-4 h-7 rounded-md'
+                      >
                         Edit
                       </Button>
                     </div>
@@ -296,7 +300,8 @@ export const PaymentsSettings = () => {
         isOpen={editingMethodId !== null}
         onOpenChange={(open) => {
           if (!open) closeEditor()
-        }}>
+        }}
+      >
         <Modal.Backdrop variant='blur'>
           <Modal.Container placement='center'>
             <Modal.Dialog className='rounded-2xl border border-sidebar bg-background/95 shadow-2xl'>
@@ -305,7 +310,8 @@ export const PaymentsSettings = () => {
                   <div className='flex items-center gap-3'>
                     <div
                       className='flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 dark:bg-foreground/15'
-                      aria-hidden>
+                      aria-hidden
+                    >
                       <Icon
                         name={editingMethod.icon}
                         className='size-5 text-foreground/80'
@@ -389,7 +395,7 @@ export const PaymentsSettings = () => {
                   </div>
                 </div>
 
-                <div className='flex items-center justify-between gap-4 rounded-2xl border border-sidebar bg-default-100/60 px-4 py-3 dark:bg-default-100/30'>
+                <div className='flex flex-col gap-4 rounded-2xl border border-sidebar bg-default-100/60 px-4 py-3 dark:bg-default-100/30 sm:flex-row sm:items-center sm:justify-between'>
                   <div className='min-w-0'>
                     <div className='font-medium text-foreground'>Active</div>
                     <div className='text-sm text-foreground/55'>
@@ -426,14 +432,16 @@ export const PaymentsSettings = () => {
                 <Button
                   variant='tertiary'
                   onPress={closeEditor}
-                  isDisabled={isSaving}>
+                  isDisabled={isSaving}
+                >
                   Cancel
                 </Button>
                 <Button
                   variant='primary'
                   onPress={handleSaveMethod}
                   isDisabled={isSaving}
-                  className='bg-brand'>
+                  className='bg-brand'
+                >
                   {isSaving ? 'Saving…' : 'Save changes'}
                 </Button>
               </Modal.Footer>

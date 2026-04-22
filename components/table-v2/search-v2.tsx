@@ -57,12 +57,12 @@ export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
     }, [])
 
     return (
-      <div className='relative'>
+      <div className='relative w-full min-w-0 md:w-auto'>
         <Input
           id={`input-${id}`}
           ref={ref}
           className={cn(
-            'peer h-8 dark:bg-background/40 w-48 md:min-w-60 bg-sidebar ps-3 rounded-sm outline-0 border-none placeholder:text-foreground/60 placeholder:font-brk font-brk text-sm',
+            'peer h-8 dark:bg-background/40 w-full min-w-0 md:w-48 md:min-w-60 bg-sidebar ps-3 rounded-sm outline-0 border-none placeholder:text-foreground/60 placeholder:font-brk font-brk text-sm',
             hasValue && 'pe-10',
           )}
           value={value}
@@ -85,7 +85,8 @@ export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
               if (ref && 'current' in ref && ref.current) {
                 ref.current.focus()
               }
-            }}>
+            }}
+          >
             <Icon name='x' size={16} aria-hidden='true' />
           </button>
         )}

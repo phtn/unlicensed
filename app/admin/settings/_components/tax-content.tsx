@@ -21,7 +21,7 @@ export const TaxContent = () => {
       : 'loading'
 
   return (
-    <div className='flex w-full flex-col gap-4 ml-4 md:ml-0'>
+    <div className='flex w-full flex-col gap-4'>
       <ContentHeader title='Tax Configuration' />
       <TaxFormInner
         key={configKey}
@@ -79,14 +79,15 @@ function TaxFormInner({
   }, [taxRatePercent, active, updateAdmin, userUid])
 
   return (
-    <section className='flex w-md portrait:-mt-10 md:mt-0 flex-col gap-4'>
+    <section className='flex w-full flex-col gap-4 md:w-md'>
       <div className='flex flex-col gap-4'>
         <Switch
           id='tax-active-switch'
           isSelected={active}
           onChange={setActive}
           isDisabled={config === undefined}
-          size='sm'>
+          size='sm'
+        >
           <Switch.Control>
             <Switch.Thumb />
           </Switch.Control>
@@ -94,7 +95,7 @@ function TaxFormInner({
             <span>Tax active</span>
           </Switch.Content>
         </Switch>
-        <div className='flex max-w-44 flex-col gap-2'>
+        <div className='flex w-full max-w-44 flex-col gap-2'>
           <Input
             label='Tax rate (%)'
             type='number'
@@ -102,7 +103,7 @@ function TaxFormInner({
             max={100}
             step={0.01}
             value={taxRatePercent}
-            onChange={() => setTaxRatePercent}
+            onChange={(e) => setTaxRatePercent(e.target.value)}
             disabled={config === undefined || !active || isSaving}
           />
         </div>
@@ -114,7 +115,8 @@ function TaxFormInner({
             onPress={handleSave}
             isDisabled={isSaving || config === undefined || !userUid}
             className='rounded-sm'
-            isPending={isSaving}>
+            isPending={isSaving}
+          >
             {isSaving ? 'Saving…' : 'Save'}
           </Button>
           {saveMessage === 'saved' && (

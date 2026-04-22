@@ -32,7 +32,7 @@ export const Packaging = ({form}: PackagingProps) => {
         <form.AppField name='packagingMode'>
           {(field) => {
             return (
-              <div className='space-y-2 col-span-2'>
+              <div className='space-y-2 md:col-span-2'>
                 <field.SelectField
                   name='packagingMode'
                   type='select'

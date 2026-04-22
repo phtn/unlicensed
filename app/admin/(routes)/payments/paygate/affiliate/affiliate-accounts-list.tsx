@@ -23,14 +23,12 @@ interface AffiliateAccountsListProps {
   onEdit?: (id: AffiliateAccount['_id']) => void
 }
 
-export const AffiliateAccountsList = ({
-  onEdit,
-}: AffiliateAccountsListProps) => {
+export const AffiliateAccountsList = ({onEdit}: AffiliateAccountsListProps) => {
   const affiliates = useQuery(api.affiliateAccounts.q.listAffiliates)
   const deleteAffiliate = useMutation(api.affiliateAccounts.m.deleteAffiliate)
-  const [deletingId, setDeletingId] = useState<
-    AffiliateAccount['_id'] | null
-  >(null)
+  const [deletingId, setDeletingId] = useState<AffiliateAccount['_id'] | null>(
+    null,
+  )
 
   const handleDelete = async (id: AffiliateAccount['_id']) => {
     if (!confirm('Are you sure you want to delete this affiliate account?'))
@@ -73,8 +71,8 @@ export const AffiliateAccountsList = ({
   }
 
   return (
-    <Card className='md:rounded-lg w-full'>
-      <Card.Content className='space-y-4'>
+    <Card className='w-full md:rounded-lg'>
+      <Card.Content className='space-y-4 overflow-hidden'>
         <div>
           <h3 className='text-lg font-semibold'>Affiliate Accounts</h3>
           <p className='text-sm text-foreground/60'>
@@ -82,83 +80,93 @@ export const AffiliateAccountsList = ({
           </p>
         </div>
 
-        <Table aria-label='Affiliate accounts table'>
-          <TableHeader>
-            <TableColumn>LABEL</TableColumn>
-            <TableColumn>WALLET ADDRESS</TableColumn>
-            <TableColumn>COMMISSION RATE</TableColumn>
-            <TableColumn>STATUS</TableColumn>
-            <TableColumn>STATISTICS</TableColumn>
-            <TableColumn>ACTIONS</TableColumn>
-          </TableHeader>
-          <TableBody>
-            {affiliates.map((affiliate) => (
-              <TableRow key={affiliate._id}>
-                <TableCell>
-                  <span className='font-medium'>
-                    {affiliate.label || 'Unnamed Affiliate'}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <code className='text-xs font-mono bg-default-100 px-2 py-1 rounded'>
-                    {affiliate.walletAddress}
-                  </code>
-                </TableCell>
-                <TableCell>
-                  {affiliate.commissionRate !== undefined ? (
+        <div className='w-full overflow-x-auto'>
+          <Table
+            aria-label='Affiliate accounts table'
+            className='min-w-[52rem]'
+          >
+            <TableHeader>
+              <TableColumn>LABEL</TableColumn>
+              <TableColumn>WALLET ADDRESS</TableColumn>
+              <TableColumn>COMMISSION RATE</TableColumn>
+              <TableColumn>STATUS</TableColumn>
+              <TableColumn>STATISTICS</TableColumn>
+              <TableColumn>ACTIONS</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {affiliates.map((affiliate) => (
+                <TableRow key={affiliate._id}>
+                  <TableCell>
                     <span className='font-medium'>
-                      {(affiliate.commissionRate * 100).toFixed(2)}%
+                      {affiliate.label || 'Unnamed Affiliate'}
                     </span>
-                  ) : (
-                    <span className='text-foreground/40 text-sm'>—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    size='sm'
-                    color={affiliate.enabled ? 'success' : 'default'}
-                    variant='tertiary'>
-                    {affiliate.enabled ? 'Enabled' : 'Disabled'}
-                  </Chip>
-                </TableCell>
-                <TableCell>
-                  <div className='flex flex-col gap-1 text-xs text-foreground/60'>
-                    {affiliate.totalTransactions !== undefined && (
-                      <span>
-                        Transactions: {affiliate.totalTransactions.toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <code className='rounded bg-default-100 px-2 py-1 font-mono text-xs'>
+                      {affiliate.walletAddress}
+                    </code>
+                  </TableCell>
+                  <TableCell>
+                    {affiliate.commissionRate !== undefined ? (
+                      <span className='font-medium'>
+                        {(affiliate.commissionRate * 100).toFixed(2)}%
                       </span>
+                    ) : (
+                      <span className='text-sm text-foreground/40'>—</span>
                     )}
-                    {affiliate.totalCommissions !== undefined && (
-                      <span>
-                        Commissions: ${affiliate.totalCommissions.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className='flex items-center gap-2'>
-                    {onEdit && (
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      size='sm'
+                      color={affiliate.enabled ? 'success' : 'default'}
+                      variant='tertiary'
+                    >
+                      {affiliate.enabled ? 'Enabled' : 'Disabled'}
+                    </Chip>
+                  </TableCell>
+                  <TableCell>
+                    <div className='flex flex-col gap-1 text-xs text-foreground/60'>
+                      {affiliate.totalTransactions !== undefined && (
+                        <span>
+                          Transactions:{' '}
+                          {affiliate.totalTransactions.toLocaleString()}
+                        </span>
+                      )}
+                      {affiliate.totalCommissions !== undefined && (
+                        <span>
+                          Commissions: $
+                          {affiliate.totalCommissions.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='flex items-center gap-2'>
+                      {onEdit && (
+                        <Button
+                          size='sm'
+                          variant='tertiary'
+                          onPress={() => onEdit(affiliate._id)}
+                        >
+                          Edit
+                        </Button>
+                      )}
                       <Button
                         size='sm'
-                        variant='tertiary'
-                        onPress={() => onEdit(affiliate._id)}>
-                        Edit
+                        variant='danger'
+                        isDisabled={deletingId === affiliate._id}
+                        onPress={() => handleDelete(affiliate._id)}
+                      >
+                        {deletingId === affiliate._id ? 'Deleting' : 'Delete'}
                       </Button>
-                    )}
-                    <Button
-                      size='sm'
-                      variant='danger'
-                      onPress={() => handleDelete(affiliate._id)}>
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </Card.Content>
     </Card>
   )
 }
-

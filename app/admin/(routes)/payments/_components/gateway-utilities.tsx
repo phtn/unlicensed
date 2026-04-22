@@ -18,7 +18,7 @@ export const GatewayUtilitiesContent = ({
         <div className='w-full min-w-0 '>
           <Converters />
         </div>
-        <div className='w-full min-w-0 col-span-2'>
+        <div className='w-full min-w-0 md:col-span-2'>
           <ProvidersList gateway={gateway} />
         </div>
       </div>

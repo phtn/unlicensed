@@ -196,7 +196,7 @@ export const CategoryForm = ({
   )
 
   return (
-    <div className='grid grid-cols-1 items-start gap-8 h-[calc(100lvh-6rem)] md:h-[calc(100vh-6rem)] md:p-4 lg:grid-cols-12 lg:p-0'>
+    <div className='grid h-[calc(100lvh-6rem)] grid-cols-1 items-start gap-8 px-1 md:h-[calc(100vh-6rem)] md:p-4 lg:grid-cols-12 lg:p-0'>
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto space-y-6'>
         <nav className='flex flex-col pl-2 gap-1'>
@@ -219,7 +219,8 @@ export const CategoryForm = ({
                 activeSection === section.id
                   ? 'dark:bg-zinc-700 dark:text-emerald-300 bg-dark-gray/5 text-emerald-600'
                   : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-emerald-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
-              )}>
+              )}
+            >
               <Icon name={section.icon} className='size-4' />
               <span>{section.label}</span>
             </Button>
@@ -253,7 +254,8 @@ export const CategoryForm = ({
             isPending={isSubmitting}
             onPress={() => {
               void form.handleSubmit()
-            }}>
+            }}
+          >
             {isSubmitting
               ? isEditMode
                 ? 'Updating...'
@@ -280,14 +282,16 @@ export const CategoryForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='relative col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth px-1 pb-28 md:pt-2 lg:col-span-8 lg:pb-0 xl:col-span-9 2xl:col-span-10'>
+        className='relative col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth px-1 pb-28 md:pt-2 lg:col-span-8 lg:pb-0 xl:col-span-9 2xl:col-span-10'
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className='space-y-0 pt-2 relative'>
+          className='space-y-0 pt-2 relative'
+        >
           <div className='mb-4 rounded-2xl border border-dark-gray/10 bg-slate-500/5 p-4 dark:border-zinc-700/50 dark:bg-zinc-800/40 lg:hidden'>
             <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
               <div className='min-w-0 space-y-1'>
@@ -341,12 +345,13 @@ export const CategoryForm = ({
           </div>
 
           {/* Mobile Actions */}
-          <div className='fixed w-[calc(94.5lvw)] bottom-0 z-20 mt-4 border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl backdrop-blur-md lg:hidden rounded-t-xl'>
+          <div className='sticky bottom-0 z-20 mt-4 w-full rounded-t-xl border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl backdrop-blur-md lg:hidden'>
             <Button
               type='submit'
               variant='primary'
               className='w-full rounded-sm font-semibold bg-emerald-500 text-white'
-              isPending={isSubmitting}>
+              isPending={isSubmitting}
+            >
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

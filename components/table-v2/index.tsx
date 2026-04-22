@@ -552,14 +552,15 @@ function DataTableContent<T>({
   const {open: sidebarOpen} = useSidebar()
 
   return (
-    <div className={cn('text-foreground overflow-hidden')}>
+    <div className={cn('text-foreground max-w-full overflow-hidden')}>
       <div
         className={cn(
-          'relative inset-0 dark:inset-0 md:pb-8 md:max-w-[84lvw] md:w-full overflow-hidden mb-0',
+          'relative inset-0 dark:inset-0 md:pb-8 md:max-w-[84lvw] md:w-full max-w-full overflow-hidden mb-0',
           {'md:max-w-[96.25lvw]': !sidebarOpen},
-        )}>
-        <div className='portrait:sticky left-0 flex h-auto shrink items-center justify-between gap-1 md:h-10.5 md:flex-nowrap md:gap-0 md:w-full w-[96lvw] overflow-hidden'>
-          <div className='flex items-center space-x-3'>
+        )}
+      >
+        <div className='portrait:sticky left-0 flex h-auto w-full max-w-full shrink flex-wrap items-center justify-between gap-2 overflow-visible md:h-10.5 md:flex-nowrap md:gap-0 md:overflow-hidden'>
+          <div className='flex min-w-0 flex-wrap items-center gap-2 md:flex-nowrap md:gap-3'>
             <LeftTableToolbar
               select={
                 <SelectToggle
@@ -613,16 +614,18 @@ function DataTableContent<T>({
           />
         </div>
         {/* Table */}
-        <HyperWrap className='pb-2 md:pb-12 h-[92lvh] md:h-[93lvh] w-[96lvw] md:w-full overflow-scroll'>
+        <HyperWrap className='h-[calc(100svh-7rem)] w-full max-w-full overflow-scroll pb-2 md:h-[93lvh] md:w-full md:pb-12'>
           <TableContainer>
             <Table
               className='w-fit min-w-4xl table-fixed'
-              style={{width: `${table.getTotalSize()}px`}}>
+              style={{width: `${table.getTotalSize()}px`}}
+            >
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
-                    className='bg-dark-table dark:bg-dark-table/0 md:h-8 h-7'>
+                    className='bg-dark-table dark:bg-dark-table/0 md:h-8 h-7'
+                  >
                     {headerGroup.headers
                       .filter((header) => header.column.getIsVisible())
                       .map((header) => {
@@ -639,7 +642,8 @@ function DataTableContent<T>({
                               'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-7 uppercase overflow-hidden',
                               'font-clash font-medium tracking-tight text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
                               'dark:text-zinc-300 dark:bg-dark-table ps-2',
-                            )}>
+                            )}
+                          >
                             <ColumnSort
                               flexRender={flexRender}
                               header={header}
@@ -696,13 +700,14 @@ function DataTableContent<T>({
         description={`Review and confirm changed values before they are applied.`}
         className={cn(
           'h-auto max-h-none translate-x-0 rounded-xl border-dark-table/20',
-          'w-[min(calc(100vw-4rem),31rem)] md:w-[min(calc(100vw-3rem),31rem)]',
+          'w-[calc(100vw-1.5rem)] max-w-[31rem] md:w-[min(calc(100vw-3rem),31rem)]',
           {
             'w-[min(calc(100vw-16rem),32rem)] md:w-[min(calc(100vw-20rem),16rem)]':
               multiRowCompact,
           },
           'md:right-6 md:top-24 md:bottom-6 left-auto right-3 top-30 bottom-16 ',
-        )}>
+        )}
+      >
         <MultiSelect
           key={selectedRowSignature}
           selectedRows={selectedRowData}
@@ -730,7 +735,8 @@ export const DataTable = <T,>(props: TableProps<T>) => {
   return (
     <ColumnVisibilityProvider
       valueFromUrl={columnVisibilityParam ?? {}}
-      onVisibilityChange={setColumnVisibilityParam}>
+      onVisibilityChange={setColumnVisibilityParam}
+    >
       <DataTableContent<T> {...props} />
     </ColumnVisibilityProvider>
   )

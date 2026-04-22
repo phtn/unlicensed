@@ -651,7 +651,7 @@ export const EmailTemplateEditor = ({
                           helperText='Comma-separated emails (or {{placeholders}})'
                           error={error}
                         />
-                        <div className='absolute top-1.5 right-1.5 flex items-center justify-between gap-3 rounded-md px-0 py-1'>
+                        <div className='mt-2 flex items-center justify-between gap-3 rounded-md px-0 py-1 sm:absolute sm:right-1.5 sm:top-1.5 sm:mt-0'>
                           <p className='text-xs font-medium'>
                             Dynamic recipient
                           </p>

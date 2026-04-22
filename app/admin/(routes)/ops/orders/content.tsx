@@ -18,7 +18,7 @@ export const Content = () => {
     <main className='min-h-screen md:px-4 pb-16'>
       <div className='space-y-6'>
         <Activity mode={showDescription ? 'visible' : 'hidden'}>
-          <header className='hidden rounded-lg bg-blue-100/20 p-2 _flex items-center justify-between transition-all duration-300 ease-in-out md:w-full w-screen'>
+          <header className='hidden w-full rounded-lg bg-blue-100/20 p-2 _flex items-center justify-between transition-all duration-300 ease-in-out'>
             <div className='flex items-center space-x-3'>
               <Icon
                 name={isPending ? 'spinners-ring' : 'info'}

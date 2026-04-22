@@ -237,9 +237,10 @@ function CryptoWalletFormInner({
         {NETWORKS.map((network) => (
           <div
             key={network.key}
-            className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4 space-y-2'>
-            <div className='flex items-start justify-between gap-4'>
-              <div className='w-fit space-y-2'>
+            className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4 space-y-2'
+          >
+            <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+              <div className='min-w-0 space-y-2 sm:w-fit'>
                 <div className='text-sm font-clash font-semibold tracking-wider text-foreground space-y-2'>
                   {network.label}{' '}
                   {(network.label === 'Sepolia' ||

@@ -65,7 +65,8 @@ export const GatewayAccountsList = ({
           </p>
           <Link
             href={`${basePath}?tabId=new`}
-            className='text-sm text-white mt-2 mx-auto space-x-1 flex items-center bg-blue-500 ps-2.5 px-1 py-1 rounded-md'>
+            className='text-sm text-white mt-2 mx-auto space-x-1 flex items-center bg-blue-500 ps-2.5 px-1 py-1 rounded-md'
+          >
             <span>Create account</span>
             <Icon name='chevron-right' className='size-3' />
           </Link>
@@ -79,7 +80,7 @@ export const GatewayAccountsList = ({
       <Card.Header>
         <SectionHeader title={`${gateway} Accounts`} />
       </Card.Header>
-      <Card.Content className='space-y-4 h-screen overflow-y-scroll md:h-full '>
+      <Card.Content className='h-[calc(100svh-8rem)] space-y-4 overflow-y-scroll md:h-full'>
         <HyperList
           data={accounts
             .filter((a) => !!a.enabled && !!a.isDefault)

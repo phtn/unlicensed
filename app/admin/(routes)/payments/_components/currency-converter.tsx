@@ -61,7 +61,8 @@ function ConverterField({
             'size-14.5 aspect-square rounded-full bg-indigo-500 hover:bg-indigo-600 transition-all duration-600 cursor-pointer',
             {'rotate-180': swap},
           )}
-          aria-label='swap-currencies'>
+          aria-label='swap-currencies'
+        >
           <Icon name='swap-round' className='text-white -rotate-25 size-9' />
         </button>
       )}
@@ -72,19 +73,21 @@ function ConverterField({
             ? 'mask-[radial-gradient(ellipse_26px_24px_at_50%_0%,transparent_0,transparent_24px,black_25px)]'
             : 'mask-[radial-gradient(ellipse_26px_24px_at_50%_100%,transparent_0,transparent_24px,black_25px)]',
           className,
-        )}>
+        )}
+      >
         {isLast && (
           <div
             className='absolute -top-px left-1/2 -translate-x-1/2 w-12.5 h-6.25 rounded-b-full border-b border-x border-white/15'
-            aria-hidden='true'></div>
+            aria-hidden='true'
+          ></div>
         )}
-        <div className='grow flex items-center justify-between w-full gap-12'>
+        <div className='flex w-full grow items-center justify-between gap-3 md:gap-12'>
           {!isLast ? (
             <input
               value={value ?? ''}
               onChange={onValueChange}
               className={cn(
-                'w-full max-w-40 text-xl font-semibold bg-transparent focus-visible:outline-none py-0.5 px-1 -ml-1 mb-0.5 rounded-lg appearance-none font-okxs',
+                'w-full min-w-0 max-w-40 bg-transparent px-1 py-0.5 -ml-1 mb-0.5 rounded-lg text-xl font-semibold appearance-none font-okxs focus-visible:outline-none',
                 {'w-32': !isLast},
               )}
               type='number'
@@ -102,7 +105,7 @@ function ConverterField({
               )}
             </div>
           )}
-          <div className='w-28'>
+          <div className='w-24 shrink-0 md:w-28'>
             <Select
               label={isLast ? 'To' : 'From'}
               isDisabled={disableCurrencySelect}
@@ -164,7 +167,8 @@ export const Converters = () => {
                 'relative z-10 flex h-9 shrink-0 items-center justify-center rounded-xs border-0 px-3',
                 'whitespace-nowrap text-xs font-medium uppercase tracking-[0.24em] text-default-600',
                 'outline-none select-none data-active:text-white transition-colors duration-150',
-              )}>
+              )}
+            >
               Fiat
             </Tabs.Tab>
             <Tabs.Tab
@@ -173,7 +177,8 @@ export const Converters = () => {
                 'relative z-10 flex h-9 shrink-0 items-center justify-center rounded-xs border-0 px-3',
                 'whitespace-nowrap text-xs font-medium uppercase tracking-[0.24em] text-default-600',
                 'outline-none select-none data-active:text-white transition-colors duration-150',
-              )}>
+              )}
+            >
               Crypto
             </Tabs.Tab>
             <Tabs.Indicator className='absolute inset-y-1 left-0 z-0 h-auto w-(--active-tab-width) translate-x-(--active-tab-left) rounded-xs bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin transition-all duration-300 ease-in-out dark:via-dark-table dark:to-dark-table' />
@@ -427,7 +432,8 @@ function FiatConverter({currencies}: ConverterContentProps) {
       </div>
       <Card
         id='summary'
-        className='p-4 gap-0 rounded-2xl dark:bg-sidebar bg-sidebar/25'>
+        className='p-4 gap-0 rounded-2xl dark:bg-sidebar bg-sidebar/25'
+      >
         <ul className='text-sm'>
           <li className='flex items-center font-medium justify-between pb-3 mb-3'>
             <span className='tracking-tight font-brk'>Exchange rate</span>

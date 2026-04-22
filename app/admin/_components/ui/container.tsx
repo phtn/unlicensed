@@ -50,7 +50,7 @@ export const WrappedContent = ({
 
   return (
     <Wrapper ref={swipeAreaRef} isPanelExpanded={isExpanded}>
-      <div className='md:px-0 space-x-2 md:space-x-4 flex items-center justify-between min-w-0'>
+      <div className='flex min-w-0 flex-wrap items-center justify-between gap-2 md:flex-nowrap md:gap-4 md:px-0'>
         <SidebarTrigger />
         {toolbar}
         {withPanel && (
@@ -77,11 +77,12 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
         className={cn(
           'flex flex-1 min-h-0 min-w-0 w-full flex-col border border-dark-gray/40 dark:border-dark-table/40 bg-white dark:bg-origin',
           'drop-shadow-md',
-          'md:rounded-xl whitespace-nowrap',
-          'px-4 -ml-1.5 md:ml-0 overflow-hidden',
+          'md:rounded-xl whitespace-normal md:whitespace-nowrap',
+          'px-2 md:px-4 -ml-1.5 md:ml-0 overflow-x-hidden overflow-y-auto md:overflow-hidden',
           {'': isPanelExpanded},
         )}
-        ref={ref}>
+        ref={ref}
+      >
         {children}
       </div>
     )
@@ -91,7 +92,7 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
 Wrapper.displayName = 'Wrapper'
 
 export const Container = ({children}: {children: ReactNode}) => (
-  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-screen overflow-clip'>
+  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-[100svh] md:h-screen overflow-hidden'>
     {children}
   </div>
 )
@@ -110,7 +111,8 @@ const SettingsPanelTrigger = ({state, toggleFn}: SettingsPanelTriggerProps) => {
         {'rotate-180': isExpanded},
       )}
       onClick={toggleFn}
-      aria-label={isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}>
+      aria-label={isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}
+    >
       <Icon
         name='sidebar'
         className={cn(

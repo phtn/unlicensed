@@ -103,7 +103,7 @@ export function PayGateSettings() {
   }, [])
 
   return (
-    <Card className='md:rounded-lg md:w-full w-screen overflow-auto md:p-6 space-y-6'>
+    <Card className='w-full max-w-full space-y-6 overflow-auto md:w-full md:rounded-lg md:p-6'>
       <Card.Content className='p-6 space-y-6'>
         <div>
           <h2 className='text-xl font-semibold mb-2'>
@@ -196,7 +196,8 @@ export function PayGateSettings() {
             isDisabled={
               (enabled && (!usdcWallet || usdcWallet.trim() === '')) ||
               (!enabled && !usdcWallet)
-            }>
+            }
+          >
             Save Settings
           </Button>
         </div>

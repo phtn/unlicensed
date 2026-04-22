@@ -186,7 +186,7 @@ export const CourierForm = ({
   )
 
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 lg:p-0 items-start h-[calc(100lvh-6rem)]'>
+    <div className='grid h-[calc(100lvh-6rem)] grid-cols-1 items-start gap-8 px-1 lg:grid-cols-12 lg:p-0'>
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
@@ -209,7 +209,8 @@ export const CourierForm = ({
                 activeSection === section.id
                   ? 'dark:bg-zinc-700 dark:text-yellow-300 bg-dark-gray/5 text-yellow-500'
                   : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-yellow-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
-              )}>
+              )}
+            >
               <Icon name={section.icon} className='size-4' />
               <span>{section.label}</span>
             </Button>
@@ -223,7 +224,8 @@ export const CourierForm = ({
             fullWidth
             className='w-full rounded-xl font-medium tracking-tight bg-yellow-500 text-white'
             isDisabled={isSubmitting}
-            onPress={form.handleSubmit}>
+            onPress={form.handleSubmit}
+          >
             {isSubmitting
               ? isEditMode
                 ? 'Updating...'
@@ -250,14 +252,15 @@ export const CourierForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative pt-0'>
+        className='relative col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth px-1 pb-24 pt-0 lg:col-span-8 xl:col-span-9 2xl:col-span-10'
+      >
         {/* Active Switch - Top Right */}
-        <div className='absolute top-4 right-2 z-30 flex justify-end pr-4 pt-2 pb-2'>
+        <div className='sticky top-2 z-30 ml-auto flex justify-end pb-2 pr-2 pt-2 lg:absolute lg:right-2 lg:top-4 lg:pr-4'>
           <form.Field name='active'>
             {(field) => {
               const active = (field.state.value as boolean) ?? false
               return (
-                <div className='flex items-center gap-3 px-4 py-1 rounded-lg bg-slate-500/20 dark:bg-black/60 backdrop-blur-sm border border-light-gray/10 dark:border-black/20 shadow-sm'>
+                <div className='flex items-center gap-3 rounded-lg border border-light-gray/10 bg-slate-500/20 px-3 py-1 shadow-sm backdrop-blur-sm dark:border-black/20 dark:bg-black/60 md:px-4'>
                   <div className='flex flex-col gap-0.5'>
                     <span className='text-sm font-semibold text-dark-gray dark:text-foreground'>
                       Active
@@ -269,7 +272,8 @@ export const CourierForm = ({
                   <Switch
                     isSelected={active}
                     onChange={(isSelected) => field.handleChange(isSelected)}
-                    onBlur={field.handleBlur}>
+                    onBlur={field.handleBlur}
+                  >
                     <Switch.Control className='group-data-[selected=true]:bg-yellow-500'>
                       <Switch.Thumb />
                     </Switch.Control>
@@ -286,7 +290,8 @@ export const CourierForm = ({
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className='space-y-0 pt-2 relative'>
+          className='space-y-0 pt-2 relative'
+        >
           <div id='basic-info' className=''>
             <FormSection id='basic-info' position='top'>
               <Icon
@@ -344,7 +349,8 @@ export const CourierForm = ({
                           type='button'
                           variant='tertiary'
                           className='bg-yellow-500 text-white font-medium'
-                          onPress={handleAddAccount}>
+                          onPress={handleAddAccount}
+                        >
                           <span className='inline-flex items-center gap-2'>
                             <Icon name='plus' className='size-4' />
                             Add Account
@@ -361,7 +367,8 @@ export const CourierForm = ({
                           {accounts.map((account, index) => (
                             <div
                               key={account.id ?? `account-${index}`}
-                              className='rounded-xl border border-light-gray/40 dark:border-black/30 p-3 lg:p-4 bg-light-gray/5 dark:bg-black/20'>
+                              className='rounded-xl border border-light-gray/40 dark:border-black/30 p-3 lg:p-4 bg-light-gray/5 dark:bg-black/20'
+                            >
                               <div className='grid gap-3 lg:grid-cols-[1fr_1fr_auto] items-end'>
                                 <Input
                                   label='Account Label'
@@ -392,7 +399,8 @@ export const CourierForm = ({
                                   type='button'
                                   variant='tertiary'
                                   className='text-rose-500 bg-rose-500/10'
-                                  onPress={handleRemoveAccount(index)}>
+                                  onPress={handleRemoveAccount(index)}
+                                >
                                   Remove
                                 </Button>
                               </div>
@@ -424,12 +432,13 @@ export const CourierForm = ({
           </div>
 
           {/* Mobile Actions */}
-          <div className='lg:hidden sticky bottom-4 z-20 p-4 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-xl shadow-2xl'>
+          <div className='sticky bottom-0 z-20 rounded-t-xl border border-neutral-800 bg-neutral-900/80 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl backdrop-blur-md lg:hidden'>
             <Button
               type='submit'
               variant='primary'
               className='w-full font-semibold bg-success text-white'
-              isDisabled={isSubmitting}>
+              isDisabled={isSubmitting}
+            >
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

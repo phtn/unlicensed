@@ -291,20 +291,23 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
   return (
     <Card
       className={cn(
-        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll',
+        'w-full max-w-full overflow-hidden bg-light-table/0 dark:bg-dark-table/40 md:w-full md:rounded-t-2xl',
         'transition-transform duration-300',
         {'md:-translate-y-46 -translate-y-42 h-full': fullTable},
-      )}>
+      )}
+    >
       <div
         className={cn(
-          'h-lvh md:h-[calc(100lvh-64px)] overflow-scroll transition-transform duration-300',
-        )}>
-        <Table aria-label='Visit logs table'>
+          'h-lvh overflow-auto transition-transform duration-300 md:h-[calc(100lvh-64px)]',
+        )}
+      >
+        <Table aria-label='Visit logs table' className='min-w-[58rem]'>
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
                 key={column.uid}
-                className='tracking-wider text-xs font-medium sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table'>
+                className='tracking-wider text-xs font-medium sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table'
+              >
                 <div className='drop-shadow-xs'>{column.name}</div>
               </TableColumn>
             )}
@@ -313,7 +316,8 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
             {(log) => (
               <TableRow
                 key={log._id as string}
-                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
+                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'
+              >
                 {(columnKey) => (
                   <TableCell>
                     {

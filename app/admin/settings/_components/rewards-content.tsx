@@ -131,7 +131,8 @@ function BundleAndThresholdsSection({
       <Checkbox
         isSelected={bundleForm.enabled}
         className='font-clash font-normal'
-        onChange={(v) => setBundleForm((f) => ({...f, enabled: v}))}>
+        onChange={(v) => setBundleForm((f) => ({...f, enabled: v}))}
+      >
         <Checkbox.Control>
           <Checkbox.Indicator />
         </Checkbox.Control>
@@ -210,7 +211,8 @@ function BundleAndThresholdsSection({
             variant='primary'
             onPress={handleSaveGlobal}
             isDisabled={!hasGlobalChange || !isGlobalFormValid || isSaving}
-            className='bg-dark-table dark:bg-white dark:text-dark-table h-7 rounded-md'>
+            className='bg-dark-table dark:bg-white dark:text-dark-table h-7 rounded-md'
+          >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
           {saveMessage === 'saved' && (
@@ -376,7 +378,8 @@ export const RewardsContent = () => {
     <div className='flex h-[90lvh] min-w-0 w-full max-w-full flex-col space-y-2 overflow-y-auto pb-24'>
       <ContentHeader
         title='Rewards Manager'
-        description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
+        description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'
+      >
         <PrimaryButton onPress={openAddTier} icon='plus' label='Add Tier' />
       </ContentHeader>
 
@@ -388,15 +391,19 @@ export const RewardsContent = () => {
           {sortedTiers.map(({index, tier}) => (
             <Card
               key={`${tier.label}-${tier.minSubtotal}-${tier.maxSubtotal ?? 'max'}`}
-              className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-alum/20 dark:bg-dark-table/40'>
+              className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-alum/20 dark:bg-dark-table/40'
+            >
               <Card.Content className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
-                <div>
-                  <div className='flex items-center gap-2'>
-                    <span className='font-medium'>{tier.label}</span>
+                <div className='min-w-0'>
+                  <div className='flex min-w-0 flex-wrap items-center gap-2'>
+                    <span className='min-w-0 break-words font-medium'>
+                      {tier.label}
+                    </span>
                     <Chip
                       size='sm'
                       variant='tertiary'
-                      className='bg-sidebar/80 dark:bg-white/5'>
+                      className='bg-sidebar/80 dark:bg-white/5'
+                    >
                       ${tier.minSubtotal}
                       {tier.maxSubtotal !== null
                         ? ` – $${tier.maxSubtotal}`
@@ -417,7 +424,8 @@ export const RewardsContent = () => {
                     size='sm'
                     variant='tertiary'
                     className='rounded-sm'
-                    onPress={() => openEditTier(index)}>
+                    onPress={() => openEditTier(index)}
+                  >
                     Edit
                   </Button>
                   <Button
@@ -425,7 +433,8 @@ export const RewardsContent = () => {
                     variant='tertiary'
                     onPress={() => setDeleteTierIndex(index)}
                     className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
-                    isDisabled={config.tiers.length <= 1}>
+                    isDisabled={config.tiers.length <= 1}
+                  >
                     Delete
                   </Button>
                 </div>
@@ -443,7 +452,8 @@ export const RewardsContent = () => {
           if (!isOpen) {
             closeTierModal()
           }
-        }}>
+        }}
+      >
         <Modal.Backdrop>
           <Modal.Container scroll='inside' size='lg'>
             <Modal.Dialog className='rounded-md'>
@@ -463,7 +473,7 @@ export const RewardsContent = () => {
                   }
                   required
                 />
-                <div className='grid grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
                   <Input
                     id='min-subtotal'
                     label='Min subtotal ($)'
@@ -523,14 +533,16 @@ export const RewardsContent = () => {
                 <Button
                   variant='ghost'
                   onPress={closeTierModal}
-                  className='h-7'>
+                  className='h-7'
+                >
                   Cancel
                 </Button>
                 <Button
                   variant='primary'
                   onPress={handleSaveTier}
                   isDisabled={!formToTier(tierForm) || isTierSaving}
-                  className='font-clash font-medium bg-dark-table dark:bg-white dark:text-dark-table rounded-md h-7'>
+                  className='font-clash font-medium bg-dark-table dark:bg-white dark:text-dark-table rounded-md h-7'
+                >
                   {isTierSaving
                     ? 'Saving...'
                     : editingTierIndex !== null
@@ -550,7 +562,8 @@ export const RewardsContent = () => {
             setDeleteTierIndex(null)
             setDeleteMessage(null)
           }
-        }}>
+        }}
+      >
         <Modal.Backdrop>
           <Modal.Container size='sm'>
             <Modal.Dialog className='rounded-md'>
@@ -571,13 +584,15 @@ export const RewardsContent = () => {
                   onPress={() => {
                     setDeleteTierIndex(null)
                     setDeleteMessage(null)
-                  }}>
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button
                   variant='danger'
                   onPress={handleDeleteTier}
-                  isDisabled={isDeleting}>
+                  isDisabled={isDeleting}
+                >
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </Button>
               </Modal.Footer>

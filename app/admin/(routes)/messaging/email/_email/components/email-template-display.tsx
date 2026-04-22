@@ -9,7 +9,7 @@ import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {parseAsString, useQueryState} from 'nuqs'
-import {type KeyboardEvent, useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import z from 'zod'
 
@@ -86,16 +86,6 @@ export const EmailTemplateDisplay = ({
       setSendTestLoading(false)
     }
   }, [testEmail, previewHtml, previewSubject])
-
-  const handleTestEmailKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLInputElement>) => {
-      if (event.key !== 'Enter') return
-      event.preventDefault()
-      if (!trimmedTestEmail || sendTestLoading || previewLoading) return
-      void sendTestEmail()
-    },
-    [previewLoading, sendTestEmail, sendTestLoading, trimmedTestEmail],
-  )
 
   useEffect(() => {
     if (!previewId) {
@@ -198,8 +188,9 @@ export const EmailTemplateDisplay = ({
               initial={{opacity: 0}}
               animate={{opacity: 1}}
               exit={{opacity: 0}}
-              className='space-y-4'>
-              <div className='flex items-center justify-between w-full'>
+              className='space-y-4'
+            >
+              <div className='flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between'>
                 <Button
                   variant='tertiary'
                   size='sm'
@@ -207,15 +198,16 @@ export const EmailTemplateDisplay = ({
                   onPress={() => {
                     clearPreview()
                     router.push('/admin/messaging/email?tabId=templates')
-                  }}>
+                  }}
+                >
                   <Icon name='chevron-left' className='size-4' />
                   Back to Templates
                 </Button>
-                <div>
+                <div className='min-w-0'>
                   <SectionHeader
                     title={
-                      <div className='flex items-center space-x-2'>
-                        <span>
+                      <div className='flex min-w-0 items-center gap-2'>
+                        <span className='min-w-0 break-words'>
                           {(previewOption?.label ?? previewId) + ' Template'}
                         </span>{' '}
                         <Icon
@@ -227,30 +219,32 @@ export const EmailTemplateDisplay = ({
                     }
                   />
                 </div>
-                <div className='flex items-center gap-2'>
-                  <Input
-                    id='test-email'
-                    type='email'
-                    placeholder='Send test to…'
-                    value={testEmail}
-                    onChange={(e) => setTestEmail(e.target.value)}
-                    disabled={previewLoading}
-                    // isInvalid={showTestEmailError}
-                    // errorMessage={
-                    //   showTestEmailError
-                    //     ? 'Enter a valid email address'
-                    //     : undefined
-                    // }
-                    autoComplete='email'
-                    spellCheck='false'
-                  />
+                <div className='flex w-full items-start gap-2 md:w-auto'>
+                  <div className='min-w-0 flex-1'>
+                    <Input
+                      id='test-email'
+                      type='email'
+                      placeholder='Send test to...'
+                      value={testEmail}
+                      onChange={(e) => setTestEmail(e.target.value)}
+                      disabled={previewLoading}
+                      autoComplete='email'
+                      spellCheck='false'
+                    />
+                    {showTestEmailError && (
+                      <p className='mt-1 px-1 text-xs text-red-500'>
+                        Enter a valid email address
+                      </p>
+                    )}
+                  </div>
                   <Button
                     size='sm'
                     isIconOnly
                     variant='primary'
                     aria-label='Send test email'
                     onPress={sendTestEmail}
-                    isDisabled={!canSendTestEmail}>
+                    isDisabled={!canSendTestEmail}
+                  >
                     {sendTestLoading ? (
                       <Icon name='spinners-ring' className='size-4' />
                     ) : (
@@ -289,7 +283,8 @@ export const EmailTemplateDisplay = ({
               initial={{opacity: 0}}
               animate={{opacity: 1}}
               exit={{opacity: 0}}
-              className='space-y-4 overflow-scroll'>
+              className='space-y-4 overflow-scroll'
+            >
               <SectionHeader
                 title='Preview templates'
                 description={`${EMAIL_TEMPLATE_OPTIONS.length} templates`}
@@ -300,12 +295,14 @@ export const EmailTemplateDisplay = ({
                   <Link
                     key={opt.id}
                     href={`/admin/messaging/email?tabId=templates&preview=${opt.id}`}
-                    prefetch>
+                    prefetch
+                  >
                     <motion.div
                       initial={{opacity: 0, y: 16}}
                       animate={{opacity: 1, y: 0}}
                       transition={{delay: index * 0.03}}
-                      className='group relative cursor-pointer'>
+                      className='group relative cursor-pointer'
+                    >
                       <div className='absolute inset-0 bg-linear-to-r from-cyan-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
                       <div className='relative dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 rounded-2xl p-4 hover:border-zinc-700/50 transition-all duration-300'>
                         <div className='flex items-start gap-3'>

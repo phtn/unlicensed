@@ -111,7 +111,8 @@ export const RepContent = () => {
     <div className='flex min-w-0 w-full max-w-full flex-col space-y-2'>
       <ContentHeader
         title='Customer Sales Representatives (CSR)'
-        description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
+        description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'
+      >
         <PrimaryButton
           onPress={handleSave}
           label='Save Changes'
@@ -134,7 +135,8 @@ export const RepContent = () => {
             placeholder='Select a rep'
             value={displayValue || null}
             onChange={handleSelectionChange}
-            aria-label='Default Sales Rep'></Select>
+            aria-label='Default Sales Rep'
+          ></Select>
 
           <TextArea
             label='Initial message seed for Cash App payments'
@@ -187,13 +189,13 @@ export const RepContent = () => {
 function RepUserItem({member}: {member: Doc<'staff'>}) {
   const name = member.name || member.email || 'Unnamed Rep'
   return (
-    <li className='flex items-center justify-between rounded-lg border border-default-200/50 bg-default-50/30 p-3 dark:bg-default-100/10'>
-      <div className='flex items-center space-x-2'>
+    <li className='flex items-center justify-between gap-3 rounded-lg border border-default-200/50 bg-default-50/30 p-3 dark:bg-default-100/10'>
+      <div className='flex min-w-0 items-center gap-2'>
         <Avatar>
           <HeroAvatarImage alt={name} src={member.avatarUrl} />
           <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
         </Avatar>
-        <p className='font-clash'>{name}</p>
+        <p className='min-w-0 break-words font-clash'>{name}</p>
       </div>
       <Link href={`/admin/ops/staff?tabId=edit&id=${member._id}`}>
         <Icon name='cf-pen-2' className='size-4' />

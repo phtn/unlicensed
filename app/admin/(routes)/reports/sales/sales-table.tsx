@@ -65,7 +65,8 @@ export const SalesTable = () => {
             className='capitalize'
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
-            variant='tertiary'>
+            variant='tertiary'
+          >
             {order.orderStatus
               .split('_')
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -93,7 +94,6 @@ export const SalesTable = () => {
     return sales.reduce((sum, order) => sum + order.totalCents, 0)
   }, [sales])
 
-
   if (!allOrders) {
     return (
       <Card className='p-4'>
@@ -103,9 +103,8 @@ export const SalesTable = () => {
   }
 
   return (
-    <Card
-      className='md:rounded-lg md:w-full w-screen overflow-auto p-4 dark:bg-dark-table/40'>
-      <div className='flex items-center justify-between mb-4'>
+    <Card className='w-full max-w-full overflow-hidden p-3 dark:bg-dark-table/40 md:w-full md:rounded-lg md:p-4'>
+      <div className='mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
         <div>
           <h2 className='text-xl font-semibold font-space'>
             {formatPrice(totalRevenue)}
@@ -113,25 +112,26 @@ export const SalesTable = () => {
         </div>
         <p className='text-sm text-gray-400'>{sales.length} transactions</p>
       </div>
-      <Table
-        aria-label='Sales table'>
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn key={column.uid}>
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody items={sales}>
-          {(order) => (
-            <TableRow key={order._id as string} className='h-16'>
-              {(columnKey) => (
-                <TableCell>{renderCell(order, columnKey as unknown as React.Key)}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <div className='w-full overflow-x-auto'>
+        <Table aria-label='Sales table' className='min-w-[46rem]'>
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn key={column.uid}>{column.name}</TableColumn>
+            )}
+          </TableHeader>
+          <TableBody items={sales}>
+            {(order) => (
+              <TableRow key={order._id as string} className='h-16'>
+                {(columnKey) => (
+                  <TableCell>
+                    {renderCell(order, columnKey as unknown as React.Key)}
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </Card>
   )
 }

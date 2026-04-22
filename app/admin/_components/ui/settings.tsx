@@ -5,7 +5,13 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
-import {Button, Drawer, DrawerContent, DrawerHeader, useOverlayState} from '@heroui/react'
+import {
+  Button,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  useOverlayState,
+} from '@heroui/react'
 import {usePathname} from 'next/navigation'
 import {
   type ComponentProps,
@@ -91,9 +97,15 @@ const SettingsPanelProvider = ({
   }, [])
 
   const openRef = useRef(open)
-  openRef.current = open
   const openMobileRef = useRef(openMobile)
-  openMobileRef.current = openMobile
+
+  useEffect(() => {
+    openRef.current = open
+  }, [open])
+
+  useEffect(() => {
+    openMobileRef.current = openMobile
+  }, [openMobile])
 
   const setOpen = useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
@@ -170,7 +182,8 @@ const SettingsPanelProvider = ({
           } as CSSProperties
         }
         className={cn('group/settings-wrapper flex w-full', className)}
-        {...props}>
+        {...props}
+      >
         {children}
       </div>
     </SettingsPanelContext.Provider>
@@ -192,7 +205,10 @@ const SettingsPanel = ({
     useSettingsPanel()
 
   const setOpenMobileRef = useRef(setOpenMobile)
-  setOpenMobileRef.current = setOpenMobile
+  useEffect(() => {
+    setOpenMobileRef.current = setOpenMobile
+  }, [setOpenMobile])
+
   const stableSetOpenMobile = useCallback(
     (v: boolean) => setOpenMobileRef.current(v),
     [],
@@ -210,7 +226,8 @@ const SettingsPanel = ({
           'flex h-full w-(--settings-width) flex-col bg-fade text-sidebar-foreground',
           className,
         )}
-        {...props}>
+        {...props}
+      >
         {children}
       </div>
     )
@@ -221,11 +238,13 @@ const SettingsPanel = ({
       <Drawer state={drawerState}>
         <DrawerContent
           placement='right'
-          className={cn('w-72 px-4 py-0 bg-fade [&>button]:hidden', {})}>
+          className={cn('w-72 px-4 py-0 bg-fade [&>button]:hidden', {})}
+        >
           <DrawerHeader className='hidden'>Settings</DrawerHeader>
           <div
             className='flex h-full w-full flex-col'
-            style={{'--settings-width': SETTINGS_WIDTH_MOBILE} as CSSProperties}>
+            style={{'--settings-width': SETTINGS_WIDTH_MOBILE} as CSSProperties}
+          >
             <SettingsPanelContent />
           </div>
         </DrawerContent>
@@ -236,7 +255,8 @@ const SettingsPanel = ({
   return (
     <ScrollArea
       className='scrollbar-hide hidden md:block h-svh shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out'
-      style={{width: open ? SETTINGS_WIDTH : SETTINGS_WIDTH_ICON}}>
+      style={{width: open ? SETTINGS_WIDTH : SETTINGS_WIDTH_ICON}}
+    >
       <div
         data-state={state}
         data-collapsible={state === 'collapsed' ? collapsible : ''}
@@ -244,7 +264,8 @@ const SettingsPanel = ({
         className={cn(
           'bg-linear-to-r from-transparent from-10% via-sidebar to-sidebar group peer relative text-sidebar-foreground h-svh',
           'border-b-4 border-teal-300',
-        )}>
+        )}
+      >
         <div
           className={cn(
             'ml-4 relative h-svh overflow-hidden bg-transparent transition-transform duration-400 ease-in-out',
@@ -252,7 +273,8 @@ const SettingsPanel = ({
             state === 'collapsed' &&
               (side === 'right' ? 'translate-x-full' : '-translate-x-full'),
           )}
-          style={{width: SETTINGS_WIDTH}}>
+          style={{width: SETTINGS_WIDTH}}
+        >
           <SettingsPanelContent />
         </div>
       </div>
@@ -324,7 +346,8 @@ const Panel = ({title, subtext, children}: PanelProps) => {
             '--settings-width': SETTINGS_WIDTH,
             '--settings-width-icon': SETTINGS_WIDTH_ICON,
           } as CSSProperties
-        }>
+        }
+      >
         <PanelHeader title={title} subtext={subtext} />
       </div>
       <div className='px-0'>{children}</div>
@@ -339,13 +362,13 @@ interface PanelHeaderProps {
 
 const PanelHeader = ({title, subtext}: PanelHeaderProps) => {
   return (
-    <div className='w-full h-10 flex items-center justify-between'>
+    <div className='flex h-10 w-full min-w-0 items-center justify-between gap-2'>
       <input
-        className='text-xl font-medium w-full bg-transparent border-none shadow-none outline-none focus-within:ring-0 focus-visible:ring-0'
+        className='min-w-0 w-full truncate bg-transparent text-xl font-medium border-none shadow-none outline-none focus-within:ring-0 focus-visible:ring-0'
         defaultValue={title}
       />
       {subtext && (
-        <span className='flex-1 font-space text-sm opacity-70 whitespace-nowrap'>
+        <span className='shrink-0 font-space text-sm opacity-70 whitespace-nowrap'>
           {subtext}
         </span>
       )}
@@ -365,7 +388,8 @@ const SettingsPanelTrigger = () => {
       variant='ghost'
       data-sidebar='trigger'
       className={cn('text-foreground/80 hover:text-foreground')}
-      onPress={togglePanel}>
+      onPress={togglePanel}
+    >
       <Icon name='sidebar' className={cn('h-4', openMobile && 'rotate-180')} />
       <span className='sr-only'>Toggle Settings Panel</span>
     </Button>

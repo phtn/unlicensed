@@ -138,9 +138,9 @@ export const BlogForm = ({blogId, initialValues, onSaved}: BlogFormProps) => {
   }
 
   return (
-    <div className='max-w-7xl mx-auto p-4 pb-32'>
-      <div className='flex items-center justify-between mb-8'>
-        <h1 className='text-3xl font-bold tracking-tight'>
+    <div className='mx-auto max-w-7xl p-3 pb-32 md:p-4'>
+      <div className='mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+        <h1 className='break-words text-2xl font-bold tracking-tight md:text-3xl'>
           {isEditMode ? 'Edit Post' : 'Create Post'}
         </h1>
         <Button variant='primary' isDisabled={isSaving} onPress={handleSubmit}>
@@ -213,7 +213,8 @@ export const BlogForm = ({blogId, initialValues, onSaved}: BlogFormProps) => {
                 if (typeof value === 'string') {
                   setStatus(value as BlogPostStatus)
                 }
-              }}>
+              }}
+            >
               <ListBoxItem key='draft' textValue='Draft'>
                 Draft
               </ListBoxItem>
@@ -243,7 +244,8 @@ export const BlogForm = ({blogId, initialValues, onSaved}: BlogFormProps) => {
               <Button
                 variant='secondary'
                 isDisabled={isUploading}
-                className='w-full cursor-pointer'>
+                className='w-full cursor-pointer'
+              >
                 <Icon name='upload' className='w-4 h-4 mr-2' />
                 {isUploading
                   ? 'Uploading...'

@@ -131,18 +131,18 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
   return (
     <Card className='rounded-md border border-foreground/20 dark:border-foreground/10 p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20 bg-sidebar/20'>
       {/* Mobile: Label left, Value right */}
-      <div className='flex items-center justify-between md:hidden'>
-        <div className='flex items-center space-x-1.5 p-0.5 md:rounded-lg'>
+      <div className='flex min-w-0 items-center justify-between gap-2 md:hidden'>
+        <div className='flex min-w-0 items-center space-x-1.5 p-0.5 md:rounded-lg'>
           <div
             className='w-0.5 h-3 rounded-full'
             style={{backgroundColor: color}}
           />
-          <p className='text-xs font-medium opacity-80 font-polysans'>
+          <p className='min-w-0 truncate text-xs font-medium opacity-80 font-polysans'>
             {config.label}
           </p>
         </div>
-        <div className='flex items-baseline gap-1'>
-          <span className='text-base md:text-lg font-bold tracking-tight font-geist-sans'>
+        <div className='flex shrink-0 items-baseline gap-1'>
+          <span className='text-base font-bold tracking-tight font-geist-sans md:text-lg'>
             {statValue.value}
           </span>
           {!isMobile && statValue.subtitle && (
@@ -323,7 +323,8 @@ export const Stats = ({
         {
           'opacity-0': fullTable,
         },
-      )}>
+      )}
+    >
       <div className='grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 lg:gap-4 min-w-0'>
         {visibleStats.map((config: StatConfig) => {
           let chartData: Array<{value: number}> | undefined

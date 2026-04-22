@@ -85,7 +85,7 @@ export function AccountItemCard({
   }, [])
 
   const modalState = useOverlayState()
-  const {isOpen, open: onOpen, close: onClose} = modalState
+  const {open: onOpen, close: onClose} = modalState
 
   const handleCopyHex = () => copy('address', hexAddress)
   const handleDeleteClick = () => onOpen()
@@ -121,9 +121,9 @@ export function AccountItemCard({
 
       {/* Subtext */}
       <div className=' pb-2'>
-        <div className='px-4 flex items-center gap-2'>
-          <Icon name='wallet' className='size-5 opacity-80' />
-          <h3 className='text-xs font-mono font-light tracking-widest lowercase leading-none max-w-[32ch] truncate'>
+        <div className='flex min-w-0 items-center gap-2 px-4'>
+          <Icon name='wallet' className='size-5 shrink-0 opacity-80' />
+          <h3 className='min-w-0 max-w-[32ch] truncate font-mono text-xs font-light lowercase leading-none tracking-widest'>
             {hexAddress}
           </h3>
           <Icon
@@ -139,9 +139,10 @@ export function AccountItemCard({
             <Accordion.Item
               key={id}
               id={id}
-              className='bg-sidebar/0 dark:bg-sidebar px-2 whitespace-normal font-okxs text-xs'>
+              className='bg-sidebar/0 dark:bg-sidebar px-2 whitespace-normal font-okxs text-xs'
+            >
               <Accordion.Heading>
-                <Accordion.Trigger className='flex items-center space-x-4'>
+                <Accordion.Trigger className='flex items-center gap-4'>
                   <span>{label}</span>
                   {copiedDetailId === id && (
                     <div className='flex items-center'>
@@ -154,7 +155,8 @@ export function AccountItemCard({
               <Accordion.Panel>
                 <Accordion.Body
                   onClick={handleCopyDetail(id as keyof WalletDetail)}
-                  className='cursor-poiter font-mono text-sm'>
+                  className='cursor-pointer break-all font-mono text-sm whitespace-normal'
+                >
                   {value}
                 </Accordion.Body>
               </Accordion.Panel>
@@ -188,12 +190,15 @@ export function AccountItemCard({
                 Delete account?
               </ModalHeader>
               <ModalBody>
-                <p className='text-muted-foreground text-sm'>
+                <p className='text-sm text-muted-foreground'>
                   Are you sure you want to delete{' '}
                   <span className='font-semibold'>
                     {label ?? 'this account'} ?
                   </span>
-                  <span className='font-mono text-brand'>{hexAddress}</span> <br />
+                  <span className='break-all font-mono text-brand'>
+                    {hexAddress}
+                  </span>{' '}
+                  <br />
                   <span className='font-brk'>(!)</span> This cannot be undone.
                 </p>
               </ModalBody>
@@ -220,7 +225,8 @@ const DefaultState = ({isDefault}: DefaultStateProps) => (
     className={cn(
       'flex items-center uppercase justify-center w-full h-10 font-mono shadow-none bg-gray-600/20 dark:bg-gray-400/45 text-white',
       {'bg-indigo-500 dark:bg-blue-400/45': isDefault},
-    )}>
+    )}
+  >
     <p className='text-xs tracking-wider font-normal whitespace-nowrap drop-shadow-xs'>
       {isDefault ? 'Default' : ''}
     </p>
@@ -239,7 +245,8 @@ function ActionItem({value, sub, icon, onClick}: ActionItemProps) {
       className={cn(
         'h-10 flex items-center justify-center border-r border-sidebar last:border-r-0 gap-1.5',
         onClick && 'cursor-pointer hover:bg-sidebar/40',
-      )}>
+      )}
+    >
       {icon && <span className='opacity-60'>{icon}</span>}
       <span className='text-xs font-medium'>{value}</span>
       {sub && <span className='text-[10px] opacity-40'>{sub}</span>}

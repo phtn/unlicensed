@@ -286,7 +286,7 @@ export const Inventory = ({
       <Header label='Inventory' />
       <div className='w-full space-y-8'>
         <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-4 gap-y-6 w-full'>
-          <div className='w-full col-span-6 md:col-span-3'>
+          <div className='w-full md:col-span-3'>
             <form.AppField name='inventoryMode'>
               {(field) => (
                 <div className='space-y-2'>
@@ -311,7 +311,7 @@ export const Inventory = ({
             </form.AppField>
           </div>
 
-          <div className='w-full col-span-6 md:col-span-3'>
+          <div className='w-full md:col-span-3'>
             <form.AppField name='lowStockThreshold'>
               {(field) => {
                 const value = (field.state.value as string) ?? ''
@@ -348,7 +348,8 @@ export const Inventory = ({
                           <Chip
                             size='sm'
                             variant='tertiary'
-                            className='bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-100'>
+                            className='bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-100'
+                          >
                             Alert active
                           </Chip>
                           {product.lowStockAlertLastSentAt ? (
@@ -379,7 +380,7 @@ export const Inventory = ({
               }}
             </form.AppField>
           </div>
-          <div className=' grid md:grid-cols-2 gap-4 col-span-6'>
+          <div className='grid gap-4 md:col-span-6 md:grid-cols-2'>
             <div className='col-span-1'>
               <form.AppField name='availableDenominationsRaw'>
                 {(field) => {
@@ -418,7 +419,8 @@ export const Inventory = ({
                         options={variantOptions.map((option) => ({
                           value: option.key,
                           label: option.displayLabel,
-                        }))}>
+                        }))}
+                      >
                         {/*{variantOptions.map((option) => {
                           const priceDisplay = option.price
                             ? formatPrice(Math.round(option.price * 100))
@@ -496,7 +498,8 @@ export const Inventory = ({
                         options={variantOptions.map((option) => ({
                           value: option.key,
                           label: option.displayLabel,
-                        }))}></field.SelectField>
+                        }))}
+                      ></field.SelectField>
                     </div>
                   )
                 }}
@@ -505,8 +508,8 @@ export const Inventory = ({
           </div>
 
           {!isEditMode && inventoryMode === 'shared' ? (
-            <div className='w-full grid grid-cols-8'>
-              <div className='w-full col-span-1'>
+            <div className='grid w-full grid-cols-1 gap-4 md:grid-cols-8'>
+              <div className='w-full md:col-span-1'>
                 <form.AppField name='masterStockQuantity'>
                   {(field) => (
                     <field.NumberField
@@ -519,7 +522,7 @@ export const Inventory = ({
                 </form.AppField>
               </div>
 
-              <div className='w-full'>
+              <div className='w-full md:col-span-1'>
                 <form.AppField name='masterStockUnit'>
                   {(field) => (
                     <field.SelectField
@@ -536,7 +539,7 @@ export const Inventory = ({
                 </form.AppField>
               </div>
 
-              <div className='col-span-6 rounded-xl border border-black/5 bg-black/2 p-4 text-sm text-color-muted dark:border-white/10 dark:bg-white/3 overflow-scroll'>
+              <div className='rounded-xl border border-black/5 bg-black/2 p-4 text-sm text-color-muted dark:border-white/10 dark:bg-white/3 md:col-span-6 overflow-auto'>
                 Orders will deduct from this master pool using the product unit
                 in Pricing. Example: `10 lb` with product denominations in `oz`
                 will drop to `9.5 lb` after one `0.5 oz` order.
@@ -546,7 +549,7 @@ export const Inventory = ({
           ) : null}
 
           {!isEditMode && inventoryMode === 'by_denomination' ? (
-            <div className='w-full col-span-6'>
+            <div className='w-full md:col-span-6'>
               <form.AppField name='stockByDenomination'>
                 {(field) => {
                   const stockByDenomination =
@@ -604,7 +607,7 @@ export const Inventory = ({
           {!isEditMode &&
           inventoryMode === 'by_denomination' &&
           variantOptions.length === 0 ? (
-            <div className='w-full col-span-6 md:col-span-2'>
+            <div className='w-full md:col-span-2'>
               <form.AppField name='stock'>
                 {(field) => (
                   <field.NumberField
@@ -618,7 +621,7 @@ export const Inventory = ({
           ) : null}
 
           {isEditMode && product ? (
-            <div className='col-span-12 space-y-4'>
+            <div className='col-span-full space-y-4'>
               <div className='rounded-lg border-2 border-light-brand dark:border-brand bg-light-brand/5 p-4 dark:bg-brand/5'>
                 <p className='text-lg font-clash font-medium'>
                   Official inventory Controls{' '}
@@ -648,20 +651,22 @@ export const Inventory = ({
                 <Button
                   variant='primary'
                   onPress={() => setIsRestockOpen(true)}
-                  className='dark:bg-white bg-dark-table text-white dark:text-dark-table rounded-md'>
+                  className='dark:bg-white bg-dark-table text-white dark:text-dark-table rounded-md'
+                >
                   Restock Inventory
                 </Button>
                 <Button
                   variant='outline'
                   onPress={() => setIsManualOverrideOpen(true)}
-                  className='rounded-md'>
+                  className='rounded-md'
+                >
                   Manual Override
                 </Button>
               </div>
 
               <div className='space-y-3 rounded-md border border-light-gray/40 bg-background/60 p-4 dark:border-white/10'>
-                <div className='flex items-center justify-between gap-3'>
-                  <div>
+                <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+                  <div className='min-w-0'>
                     <p className='text-sm font-medium'>Recent Activity</p>
                     <p className='text-xs opacity-70'>
                       Restocks, overrides, corrections, and paid-order
@@ -683,12 +688,14 @@ export const Inventory = ({
                     {inventoryMovements.map((movement) => (
                       <div
                         key={movement._id}
-                        className='rounded-none border border-b-0 last:border-b border-light-gray/50 bg-default-100/80 p-3 dark:border-white/10 dark:bg-white/3'>
+                        className='rounded-none border border-b-0 last:border-b border-light-gray/50 bg-default-100/80 p-3 dark:border-white/10 dark:bg-white/3'
+                      >
                         <div className='flex flex-wrap items-center justify-between gap-3'>
                           <div className='flex flex-wrap items-center gap-4'>
                             <Chip
                               variant='tertiary'
-                              className={`border text-sm font-clash font-semibold tracking-wide ${movementTypeStyles[movement.type]}`}>
+                              className={`border text-sm font-clash font-semibold tracking-wide ${movementTypeStyles[movement.type]}`}
+                            >
                               {movementTypeLabels[movement.type]}
                             </Chip>
                             <div className='flex items-center gap-1'>
@@ -714,7 +721,8 @@ export const Inventory = ({
                             {movement.lines.map((line, index) => (
                               <div
                                 key={`${movement._id}-${index}`}
-                                className='rounded-md border border-black/5 bg-background/70 px-3 py-2.5 dark:border-white/10 dark:bg-black/10'>
+                                className='rounded-md border border-black/5 bg-background/70 px-3 py-2.5 dark:border-white/10 dark:bg-black/10'
+                              >
                                 <p className='text-xs font-ios uppercase tracking-[0.12em] opacity-60'>
                                   {getMovementLineLabel(
                                     product,
@@ -746,7 +754,8 @@ export const Inventory = ({
                                         : line.quantityDelta < 0
                                           ? 'text-rose-700 dark:text-rose-300'
                                           : 'text-color-muted'
-                                    }`}>
+                                    }`}
+                                  >
                                     {getMovementDeltaLabel(
                                       line.quantityDelta,
                                       line.unit,
@@ -801,7 +810,7 @@ export const Inventory = ({
               />
             </div>
           ) : null}
-          <div className='col-span-12'>
+          <div className='col-span-full'>
             <div className='flex items-center pt-8 space-x-2'>
               <span className='font-polysans font-medium'>Status</span>
             </div>
@@ -901,7 +910,8 @@ export const Inventory = ({
                         title='On Sale'
                         description='Product is on-sale.'
                         checked={isOnSale}
-                        onUpdate={handleSaleToggle}>
+                        onUpdate={handleSaleToggle}
+                      >
                         {isOnSale ? (
                           <Button
                             size='sm'
@@ -910,7 +920,8 @@ export const Inventory = ({
                             onPress={() => {
                               setShouldResetOnSaleOnClose(false)
                               setIsSalePriceModalOpen(true)
-                            }}>
+                            }}
+                          >
                             <span>Prices</span>
                             <Icon name='cf-pen-2' className='size-3' />
                           </Button>

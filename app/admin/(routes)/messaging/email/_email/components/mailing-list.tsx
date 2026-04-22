@@ -69,11 +69,12 @@ const MailingListCard = ({
       initial={{opacity: 0, y: 20}}
       animate={{opacity: 1, y: 0}}
       transition={{delay: index * 0.04}}
-      className='group relative h-full overflow-hidden rounded-md border border-light-gray bg-sidebar/70 p-5 backdrop-blur-xl transition-all duration-300 hover:border-dark-table/20 hover:bg-sidebar dark:border-dark-table'>
+      className='group relative h-full overflow-hidden rounded-md border border-light-gray bg-sidebar/70 p-5 backdrop-blur-xl transition-all duration-300 hover:border-dark-table/20 hover:bg-sidebar dark:border-dark-table'
+    >
       <div className='pointer-events-none absolute inset-0 bg-linear-to-br from-cyan-500/8 via-transparent to-brand/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
       <div className='relative flex h-full flex-col gap-5'>
         <div className='flex items-start justify-between gap-4'>
-          <div className='flex items-start gap-2'>
+          <div className='flex min-w-0 items-start gap-2'>
             <div className='flex size-8 shrink-0 items-center justify-center text-cyan-500'>
               <Icon name='mail-send-fill' className='size-4' />
             </div>
@@ -112,7 +113,7 @@ const MailingListCard = ({
           </div>
         </div>
 
-        <div className='mt-auto flex items-center justify-between gap-3 text-sm text-foreground/55'>
+        <div className='mt-auto flex flex-col gap-3 text-sm text-foreground/55 sm:flex-row sm:items-center sm:justify-between'>
           <Button
             type='button'
             size='sm'
@@ -120,14 +121,16 @@ const MailingListCard = ({
             isDisabled={isDeleteDisabled}
             aria-label={`Delete ${list.name || 'untitled mailing list'}`}
             onPress={() => onDeleteRequest(list)}
-            className='min-w-0 rounded-md border border-rose-500/15 bg-background/65 px-3 text-rose-600 transition-colors data-[hover=true]:bg-rose-500/12 data-[hover=true]:text-rose-700 dark:text-rose-300 dark:data-[hover=true]:text-rose-200'>
+            className='min-w-0 rounded-md border border-rose-500/15 bg-background/65 px-3 text-rose-600 transition-colors data-[hover=true]:bg-rose-500/12 data-[hover=true]:text-rose-700 dark:text-rose-300 dark:data-[hover=true]:text-rose-200'
+          >
             <Icon name='trash-fill' className='size-4' />
             <span>Delete</span>
           </Button>
           <Link
             href={`/admin/messaging/email/mailing-list/${list._id}`}
             prefetch
-            className='flex items-center gap-2 font-medium text-cyan-600 transition-transform duration-300 group-hover:translate-x-1 dark:text-cyan-400'>
+            className='flex items-center gap-2 font-medium text-cyan-600 transition-transform duration-300 group-hover:translate-x-1 dark:text-cyan-400'
+          >
             <span>Open list</span>
             <Icon name='chevron-right' className='size-4' />
           </Link>
@@ -214,7 +217,8 @@ export const MailingListContent = () => {
         <motion.div
           initial={{opacity: 0}}
           animate={{opacity: 1}}
-          className='flex items-center gap-3 text-foreground/55'>
+          className='flex items-center gap-3 text-foreground/55'
+        >
           <Icon name='spinners-ring' className='size-5' />
           Loading mailing lists...
         </motion.div>
@@ -238,7 +242,7 @@ export const MailingListContent = () => {
         <section className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_480px]'>
           <Card className='border border-greyed/15 rounded-md bg-sidebar/70 shadow-none backdrop-blur-xl'>
             <CardContent className='gap-3 p-6'>
-              <div className='flex space-x-4'>
+              <div className='flex flex-col gap-4 sm:flex-row'>
                 <Button
                   size='lg'
                   isIconOnly
@@ -246,11 +250,12 @@ export const MailingListContent = () => {
                   onPress={() => {
                     router.push('/admin/messaging/email')
                   }}
-                  className='rounded-lg'>
+                  className='rounded-lg'
+                >
                   <Icon name='chevron-left' className='size-4' />
                 </Button>
 
-                <div className='space-y-2'>
+                <div className='min-w-0 space-y-2'>
                   <SectionHeader
                     title='Mailing Lists'
                     description='Browse saved recipient groups, scan a few contacts, and open any list for the full roster.'
@@ -284,7 +289,8 @@ export const MailingListContent = () => {
                 size='lg'
                 onPress={() => setShowCreateForm((current) => !current)}
                 variant={showCreateForm ? 'secondary' : 'primary'}
-                className='bg-brand font-clash text-white data-[hover=true]:bg-brand/90 rounded-md'>
+                className='bg-brand font-clash text-white data-[hover=true]:bg-brand/90 rounded-md'
+              >
                 <span>
                   {showCreateForm ? 'Close Creator' : 'Create Mailing List'}
                 </span>
@@ -316,11 +322,12 @@ export const MailingListContent = () => {
                   description='Create one here, or save a recipient group from an email template viewer and it will appear in this gallery.'
                   className='items-center text-center'
                 />
-                <div className='flex justify-center gap-3'>
+                <div className='flex flex-col justify-center gap-3 sm:flex-row'>
                   <Button
                     onPress={() => setShowCreateForm(true)}
                     variant='primary'
-                    className='rounded-xl bg-dark-gray dark:bg-white dark:text-dark-table'>
+                    className='rounded-xl bg-dark-gray dark:bg-white dark:text-dark-table'
+                  >
                     Create Mailing List
                   </Button>
                   <Button
@@ -328,7 +335,8 @@ export const MailingListContent = () => {
                     onPress={() => {
                       router.push('/admin/messaging/email')
                     }}
-                    className='rounded-xl border border-greyed/15 bg-background/45'>
+                    className='rounded-xl border border-greyed/15 bg-background/45'
+                  >
                     Open Email Templates
                   </Button>
                 </div>
@@ -340,7 +348,8 @@ export const MailingListContent = () => {
         {mailingLists.length > 0 ? (
           <section
             className='grid gap-4 md:grid-cols-2 2xl:grid-cols-3'
-            style={{contentVisibility: 'auto'}}>
+            style={{contentVisibility: 'auto'}}
+          >
             {mailingLists.map((list, index) => (
               <MailingListCard
                 key={list._id}
@@ -359,7 +368,8 @@ export const MailingListContent = () => {
             if (!open && !isDeleting) {
               setPendingDeleteList(null)
             }
-          }}>
+          }}
+        >
           <ModalContent className='border border-border/60 bg-background/95 shadow-2xl rounded-lg'>
             <ModalHeader className='flex flex-col gap-1 pb-2'>
               <span className='font-clash font-medium text-lg tracking-wider uppercase'>
@@ -402,14 +412,16 @@ export const MailingListContent = () => {
                 type='button'
                 onClick={() => setPendingDeleteList(null)}
                 disabled={isDeleting}
-                className='rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'>
+                className='rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'
+              >
                 Cancel
               </button>
               <button
                 type='button'
                 onClick={handleDeleteMailingList}
                 disabled={isDeleting || pendingDeleteList === null}
-                className='rounded-md border border-rose-500/10 bg-rose-500 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-rose-500/90 disabled:cursor-not-allowed disabled:opacity-50'>
+                className='rounded-md border border-rose-500/10 bg-rose-500 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-rose-500/90 disabled:cursor-not-allowed disabled:opacity-50'
+              >
                 {isDeleting ? 'Deleting...' : 'Delete mailing list'}
               </button>
             </ModalFooter>

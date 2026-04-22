@@ -129,12 +129,14 @@ const ParticipantCard = ({
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-gray/60',
         'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:border-sidebar/70 disabled:hover:shadow-none',
         isSelected && 'border-dark-gray bg-alum/30 shadow-lg',
-      )}>
+      )}
+    >
       <div className='flex items-start justify-between gap-2'>
         <Badge
           variant='primary'
           placement='bottom-right'
-          color={isActive ? 'success' : 'warning'}>
+          color={isActive ? 'success' : 'warning'}
+        >
           <User
             avatar={avatarUrl ?? undefined}
             name={name}
@@ -270,14 +272,15 @@ export const Content = () => {
         value={activeTab}
         onValueChange={(value) => {
           void setSelectedTab(value)
-        }}>
+        }}
+      >
         <div className='space-y-4'>
-          <header className='flex items-center justify-between pt-1'>
+          <header className='flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between'>
             <p className='text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground'>
               Chat Console
             </p>
             <div className='flex flex-col gap-2 md:flex-row md:items-end md:justify-between'>
-              <div className='flex items-center gap-1 md:gap-2 text-xs text-muted-foreground'>
+              <div className='flex flex-wrap items-center gap-1 text-xs text-muted-foreground md:gap-2'>
                 <span className='rounded-full border border-sidebar px-1.5 md:px-3 py-0.5 md:py-1.5 capitalize font-ios'>
                   {authenticatedUsers.length} Users
                 </span>
@@ -301,7 +304,8 @@ export const Content = () => {
                   'font-okxs text-sm font-medium data-active:text-white',
                   'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-sm',
                   'transition-colors duration-100 delay-100',
-                )}>
+                )}
+              >
                 {tab.label}
               </Tabs.Tab>
             ))}
@@ -311,14 +315,15 @@ export const Content = () => {
 
         <Tabs.Panel
           value='authed'
-          className='relative flex min-h-32 flex-1 flex-col py-4'>
+          className='relative flex min-h-32 flex-1 flex-col py-4'
+        >
           <section className='space-y-4'>
             {authenticatedUsers.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
                 No authenticated users are available for chat.
               </div>
             ) : (
-              <div className='grid gap-1 md:gap-2 [content-visibility:auto] grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8'>
+              <div className='grid grid-cols-1 gap-2 [content-visibility:auto] sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8'>
                 {authenticatedUsers.map((participant) => {
                   const conversationFid = getUserConversationFid(participant)
 
@@ -357,7 +362,8 @@ export const Content = () => {
 
         <Tabs.Panel
           value='staff'
-          className='relative flex min-h-32 flex-1 flex-col py-4'>
+          className='relative flex min-h-32 flex-1 flex-col py-4'
+        >
           <section className='space-y-4'>
             {staffParticipants.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
@@ -414,7 +420,8 @@ export const Content = () => {
 
         <Tabs.Panel
           value='guests'
-          className='relative flex min-h-32 flex-1 flex-col py-4'>
+          className='relative flex min-h-32 flex-1 flex-col py-4'
+        >
           <section className='space-y-4'>
             {guestUsers.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>

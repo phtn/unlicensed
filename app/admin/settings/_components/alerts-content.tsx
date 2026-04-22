@@ -257,7 +257,7 @@ export const AlertsContent = () => {
     <div className='flex h-[92vh] min-w-0 w-full max-w-full flex-col gap-4 overflow-y-scroll pb-24'>
       <ContentHeader
         title={
-          <div className='flex items-center space-x-4'>
+          <div className='flex flex-wrap items-center gap-3'>
             <span>Admin Alerts</span>
             <Toggle
               title='Enable Audio'
@@ -266,7 +266,8 @@ export const AlertsContent = () => {
             />
           </div>
         }
-        description='Configure Tone.js audio alerts for new orders, completed payments, new user sign-ups, and new customer chat messages.'>
+        description='Configure Tone.js audio alerts for new orders, completed payments, new user sign-ups, and new customer chat messages.'
+      >
         <PrimaryButton
           onPress={handleSave}
           icon={isSaving ? 'spinners-ring' : 'save'}
@@ -282,9 +283,10 @@ export const AlertsContent = () => {
           return (
             <Card
               key={key}
-              className='rounded-lg border border-slate-500/60 bg-slate-300 dark:bg-dark-table'>
+              className='rounded-lg border border-slate-500/60 bg-slate-300 dark:bg-dark-table'
+            >
               <Card.Content className='flex flex-col gap-4 p-0'>
-                <div className='flex items-center justify-between gap-3'>
+                <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
                   <h3 className='text-base font-semibold'>
                     {ALERT_LABELS[key]}
                   </h3>
@@ -342,7 +344,7 @@ export const AlertsContent = () => {
                   />
                 )}
 
-                <div className='grid grid-cols-3 gap-3'>
+                <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
                   <Input
                     type='number'
                     label='Note ms'
@@ -374,7 +376,8 @@ export const AlertsContent = () => {
                   variant='tertiary'
                   onPress={() => void handleTest(key)}
                   isDisabled={!isEnabled || !draft.enabled}
-                  className='hover:bg-slate-400! dark:hover:bg-transparent! dark:hover:text-cyan-300 hover:text-orange-100 rounded-sm font-clash'>
+                  className='hover:bg-slate-400! dark:hover:bg-transparent! dark:hover:text-cyan-300 hover:text-orange-100 rounded-sm font-clash'
+                >
                   <span className='flex items-center gap-2'>
                     <Icon
                       name={testingKey === key ? 'spinners-ring' : 'play-solid'}

@@ -45,8 +45,9 @@ export const SettingsTabs = () => {
       onValueChange={(nextTab) => {
         void setTabParam(nextTab)
       }}
-      className='flex min-w-0 md:w-full max-w-full flex-col gap-2'>
-      <div className='w-[96lvw] md:w-full overflow-x-scroll px-0 lg:px-1 sm:mx-0 pr-3'>
+      className='flex min-w-0 max-w-full flex-col gap-2 md:w-full'
+    >
+      <div className='w-full max-w-full overflow-x-auto px-0 pr-3 sm:mx-0 lg:px-1'>
         <Tabs.List className='relative z-0 flex w-max min-w-full flex-nowrap gap-1 overflow-visible px-0 md:px-0'>
           {tabs.map((tab) => (
             <Tabs.Tab
@@ -57,7 +58,8 @@ export const SettingsTabs = () => {
                 'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-md',
                 'transition-colors duration-100 delay-100',
               )}
-              value={tab.id}>
+              value={tab.id}
+            >
               {tab.label}
             </Tabs.Tab>
           ))}
@@ -68,8 +70,9 @@ export const SettingsTabs = () => {
       {tabs.map((tab) => (
         <Tabs.Panel
           key={tab.id}
-          className='relative flex w-full md:max-w-full flex-col overflow-y-auto px-0! sm:py-4'
-          value={tab.id}>
+          className='relative flex w-full min-w-0 flex-col overflow-y-auto px-0! sm:py-4 md:max-w-full'
+          value={tab.id}
+        >
           {tab.panel}
         </Tabs.Panel>
       ))}

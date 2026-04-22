@@ -86,9 +86,9 @@ function ShippingFormInner({
   }, [shippingFeeDollars, minimumOrderDollars, updateAdmin, userUid])
 
   return (
-    <section className='flex md:w-md flex-col gap-4'>
-      <div className='flex space-x-3'>
-        <div className='flex md:max-w-44 flex-col gap-2'>
+    <section className='flex w-full flex-col gap-4 md:w-md'>
+      <div className='flex flex-col gap-3 sm:flex-row'>
+        <div className='flex w-full flex-col gap-2 sm:max-w-44'>
           <Input
             label='Shipping fee ($)'
             id='shipping-fee'
@@ -100,7 +100,7 @@ function ShippingFormInner({
             disabled={config === undefined}
           />
         </div>
-        <div className='flex max-w-64 flex-col gap-2'>
+        <div className='flex w-full flex-col gap-2 sm:max-w-64'>
           <Input
             label='Minimum order amount ($)'
             id='minimum-order'
@@ -121,7 +121,8 @@ function ShippingFormInner({
             onPress={handleSave}
             isDisabled={isSaving || config === undefined || !userUid}
             className='rounded-sm px-8'
-            isPending={isSaving}>
+            isPending={isSaving}
+          >
             {isSaving ? 'Saving…' : 'Save'}
           </Button>
           {saveMessage === 'saved' && (

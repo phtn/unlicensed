@@ -17,7 +17,8 @@ export const MainTab = ({href, children}: MainTab) => {
     <Link
       href={href}
       prefetch={href !== 'auto'}
-      className='flex items-center space-x-2 md:space-x-4 group'>
+      className='group flex min-w-0 items-center gap-2 md:gap-4'
+    >
       {children}
     </Link>
   )
@@ -32,7 +33,7 @@ interface ToolbarButtonProps {
 
 export const ToolbarWrapper = ({children}: PropsWithChildren) => {
   return (
-    <div className='flex text-base items-center justify-between h-12 md:h-11 w-full'>
+    <div className='flex h-auto min-h-12 w-full min-w-0 items-center justify-between overflow-x-auto text-base md:h-11 md:min-h-0 md:overflow-visible'>
       {children}
     </div>
   )
@@ -48,17 +49,19 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       href={href}
       prefetch
       className={cn(
-        'text-sm flex items-center rounded-md py-1 md:px-2.5 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
+        'text-sm flex items-center rounded-md px-2 py-1 md:px-2.5 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
         {
           'text-indigo-500 dark:text-indigo-100 rounded-none bg-transparent dark:bg-transparent dark:hover:bg-transparent px-0':
             tabId === 'new',
         },
-      )}>
+      )}
+    >
       <span
         className={cn(
           'capitalize underline underline-offset-4 decoration-transparent flex',
           {'decoration-indigo-500': isActive},
-        )}>
+        )}
+      >
         {icon && (
           <Icon
             name={icon}
@@ -90,17 +93,19 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       href={href}
       prefetch
       className={cn(
-        'p-1 md:p-2 text-sm dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white bg-white dark:bg-transparent hover:bg-foreground/8 -space-x-1.5',
+        'shrink-0 p-1 md:p-2 text-sm dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white bg-white dark:bg-transparent hover:bg-foreground/8 -space-x-1.5',
         {
           'text-blue-500 dark:text-blue-100 rounded-none bg-transparent hover:bg-white dark:hover:bg-transparent -space-x-1.5':
             tabId === 'badges',
         },
-      )}>
+      )}
+    >
       <div
         className={cn(
           'capitalize flex items-center underline underline-offset-4 decoration-transparent',
           {'decoration-blue-500': isActive},
-        )}>
+        )}
+      >
         {icon && (
           <Icon name={icon} className='hidden md:flex size-5 mr-1 opacity-70' />
         )}
@@ -121,7 +126,7 @@ export const SecondaryTab = (props: ToolbarButtonProps) => {
 
 export const ToolbarButtonWrapper = ({children}: PropsWithChildren) => {
   return (
-    <div className='flex items-center space-x-0 md:space-x-4 text-base'>
+    <div className='flex min-w-0 items-center gap-1 overflow-x-auto text-base md:gap-4 md:overflow-visible'>
       {children}
     </div>
   )

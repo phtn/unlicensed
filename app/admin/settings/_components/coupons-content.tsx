@@ -255,7 +255,8 @@ function CouponTitleButton({
         isSelected
           ? 'border-foreground/40 bg-foreground text-background shadow-sm'
           : 'border-transparent bg-transparent hover:border-default-300 hover:bg-default-100/70',
-      )}>
+      )}
+    >
       <span className='flex min-w-0 items-start justify-between gap-3'>
         <span className='min-w-0'>
           <span className='block truncate text-sm font-semibold'>
@@ -265,7 +266,8 @@ function CouponTitleButton({
             className={cn(
               'mt-1 block truncate font-mono text-[11px] uppercase tracking-[0.14em]',
               isSelected ? 'text-background/70' : 'text-foreground/50',
-            )}>
+            )}
+          >
             {coupon.code}
           </span>
         </span>
@@ -273,7 +275,8 @@ function CouponTitleButton({
           size='sm'
           color={status.color}
           variant={isSelected ? 'secondary' : 'tertiary'}
-          className='shrink-0'>
+          className='shrink-0'
+        >
           {status.label}
         </Chip>
       </span>
@@ -281,7 +284,8 @@ function CouponTitleButton({
         className={cn(
           'text-xs',
           isSelected ? 'text-background/70' : 'text-foreground/55',
-        )}>
+        )}
+      >
         {getCouponDiscountLabel(coupon)}
       </span>
     </button>
@@ -345,7 +349,8 @@ function CouponDetailsPanel({
               variant='tertiary'
               className='rounded-sm'
               isDisabled={isBusy}
-              onPress={() => onEdit(coupon)}>
+              onPress={() => onEdit(coupon)}
+            >
               Edit
             </Button>
             <Button
@@ -353,7 +358,8 @@ function CouponDetailsPanel({
               variant={coupon.enabled ? 'tertiary' : 'ghost'}
               className='rounded-sm'
               isDisabled={isBusy}
-              onPress={() => onToggleEnabled(coupon)}>
+              onPress={() => onToggleEnabled(coupon)}
+            >
               {isBusy ? 'Working...' : coupon.enabled ? 'Disable' : 'Enable'}
             </Button>
             <Button
@@ -361,7 +367,8 @@ function CouponDetailsPanel({
               variant='danger'
               className='rounded-sm'
               isDisabled={isBusy}
-              onPress={() => onDelete(coupon)}>
+              onPress={() => onDelete(coupon)}
+            >
               {isBusy ? 'Working...' : 'Delete'}
             </Button>
           </div>
@@ -620,7 +627,8 @@ export const CouponsContent = () => {
     <div className='flex w-full flex-col gap-4'>
       <ContentHeader
         title='Coupon Code Manager'
-        description='Create and control promo codes, timing windows, and discount rules from one place.'>
+        description='Create and control promo codes, timing windows, and discount rules from one place.'
+      >
         <div className='flex items-center justify-end gap-2'>
           <PrimaryButton
             onPress={openCreateModal}
@@ -657,7 +665,8 @@ export const CouponsContent = () => {
               <Button
                 variant='secondary'
                 onPress={openCreateModal}
-                className='rounded-sm bg-black text-white dark:bg-white dark:text-dark-table'>
+                className='rounded-sm bg-black text-white dark:bg-white dark:text-dark-table'
+              >
                 Create first coupon
               </Button>
             </div>
@@ -678,7 +687,8 @@ export const CouponsContent = () => {
               <div
                 role='listbox'
                 aria-label='Coupon titles'
-                className='flex max-h-[min(68vh,44rem)] flex-col gap-2 overflow-y-auto p-2'>
+                className='flex max-h-[min(68vh,44rem)] flex-col gap-2 overflow-y-auto p-2'
+              >
                 {coupons.map((coupon) => (
                   <CouponTitleButton
                     key={coupon._id}
@@ -714,7 +724,8 @@ export const CouponsContent = () => {
           }
 
           closeModal()
-        }}>
+        }}
+      >
         <Modal.Backdrop>
           <Modal.Container size='lg' scroll='inside'>
             <Modal.Dialog className='max-w-4xl overflow-hidden rounded-2xl'>
@@ -846,8 +857,8 @@ export const CouponsContent = () => {
                   />
                 </div>
 
-                <div className='flex items-center justify-start space-x-4 py-4'>
-                  <div className='flex flex-col space-y-2 text-left'>
+                <div className='flex flex-col justify-start gap-4 py-4 md:flex-row md:items-center'>
+                  <div className='flex w-full flex-col space-y-2 text-left'>
                     <TextArea
                       id='description'
                       label='Description (optional)'
@@ -862,7 +873,7 @@ export const CouponsContent = () => {
                       placeholder='Description (optional)'
                     />
                   </div>
-                  <div className='flex flex-col space-y-2'>
+                  <div className='flex w-full flex-col space-y-2'>
                     <TextArea
                       id='notes'
                       label='Internal notes (optional)'
@@ -914,7 +925,8 @@ export const CouponsContent = () => {
                   variant='primary'
                   onPress={handleSave}
                   isDisabled={isSaving}
-                  className='bg-dark-table dark:bg-white text-background rounded-md'>
+                  className='bg-dark-table dark:bg-white text-background rounded-md'
+                >
                   {isSaving
                     ? 'Saving...'
                     : editingCouponId

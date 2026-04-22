@@ -251,20 +251,22 @@ const ProductStackView = ({
               return (
                 <Card
                   key={product._id}
-                  className='overflow-hidden border border-black/5 bg-white/80 dark:border-white/10 dark:bg-dark-table/45 rounded-xs p-0'>
+                  className='overflow-hidden border border-black/5 bg-white/80 dark:border-white/10 dark:bg-dark-table/45 rounded-xs p-0'
+                >
                   <div className='flex flex-col md:flex-row'>
                     <div
                       className={cn(
-                        'relative h-40 shrink-0 overflow-hidden bg-linear-to-br from-slate-200/60 to-transparent md:h-auto dark:from-white/6 flex space-x-4 md:space-x-0',
+                        'relative h-auto shrink-0 overflow-hidden bg-linear-to-br from-slate-200/60 to-transparent md:h-auto dark:from-white/6 flex flex-col sm:flex-row sm:gap-4 md:gap-0',
                         {'md:max-w-40': currentImageUrl},
-                      )}>
+                      )}
+                    >
                       {currentImageUrl ? (
                         <Image
                           removeWrapper
                           alt={product.name ?? 'Product image'}
                           src={currentImageUrl}
                           loading='eager'
-                          className='h-40 w-40 aspect-square'
+                          className='h-40 w-full object-cover sm:w-40 sm:object-contain'
                         />
                       ) : (
                         <div className='flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.18),transparent_55%),linear-gradient(135deg,rgba(15,23,42,0.08),transparent)] text-3xl font-semibold uppercase text-slate-600 dark:text-slate-300'>
@@ -272,9 +274,10 @@ const ProductStackView = ({
                         </div>
                       )}
                       <div
-                        className={cn('md:hidden gap-2', {
-                          'grid grid-cols-2 w-full': !!currentImageUrl,
-                        })}>
+                        className={cn('grid grid-cols-2 gap-2 p-2 md:hidden', {
+                          'w-full': !!currentImageUrl,
+                        })}
+                      >
                         <div className='bg-neutral-50/80 p-2 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Stock
@@ -312,9 +315,9 @@ const ProductStackView = ({
                       </div>
                     </div>
 
-                    <div className='flex flex-1 flex-col gap-4 p-4'>
+                    <div className='flex min-w-0 flex-1 flex-col gap-4 p-4'>
                       <div className='flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between'>
-                        <div className='space-y-3'>
+                        <div className='min-w-0 space-y-3'>
                           <div>
                             <div className='flex flex-wrap items-center gap-2'>
                               <h3 className='text-lg font-clash tracking-tight text-foreground'>
@@ -329,7 +332,8 @@ const ProductStackView = ({
                                     'bg-emerald-500 uppercase dark:bg-emerald-500/10 text-white dark:text-emerald-300 rounded-sm':
                                       product.available,
                                   },
-                                )}>
+                                )}
+                              >
                                 {product.available === false
                                   ? 'Unavailable'
                                   : 'Available'}
@@ -354,7 +358,8 @@ const ProductStackView = ({
                                     key={`${product._id}-${chip}`}
                                     size='sm'
                                     variant='tertiary'
-                                    className='bg-sky-500/10 text-sky-700 dark:text-sky-300 uppercase h-6 md:h-6 rounded-sm'>
+                                    className='bg-sky-500/10 text-sky-700 dark:text-sky-300 uppercase h-6 md:h-6 rounded-sm'
+                                  >
                                     {chip}
                                   </Chip>
                                 ))
@@ -362,7 +367,8 @@ const ProductStackView = ({
                                 <Chip
                                   size='sm'
                                   variant='tertiary'
-                                  className='bg-black/5 text-neutral-600 dark:bg-white/8 dark:text-neutral-300'>
+                                  className='bg-black/5 text-neutral-600 dark:bg-white/8 dark:text-neutral-300'
+                                >
                                   Missing taxonomy
                                 </Chip>
                               )}
@@ -372,7 +378,8 @@ const ProductStackView = ({
                                 <Chip
                                   size='sm'
                                   variant='tertiary'
-                                  className='bg-violet-500/10 text-violet-700 dark:text-violet-300'>
+                                  className='bg-violet-500/10 text-violet-700 dark:text-violet-300'
+                                >
                                   Featured
                                 </Chip>
                               ) : null}
@@ -380,7 +387,8 @@ const ProductStackView = ({
                                 <Chip
                                   size='sm'
                                   variant='tertiary'
-                                  className='bg-rose-500/10 text-rose-700 dark:text-rose-300'>
+                                  className='bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                                >
                                   On Sale
                                 </Chip>
                               ) : null}
@@ -388,7 +396,8 @@ const ProductStackView = ({
                                 <Chip
                                   size='sm'
                                   variant='tertiary'
-                                  className='bg-orange-500/10 text-orange-700 dark:text-orange-300'>
+                                  className='bg-orange-500/10 text-orange-700 dark:text-orange-300'
+                                >
                                   Limited
                                 </Chip>
                               ) : null}
@@ -479,7 +488,8 @@ const ProductStackView = ({
                                   void router.push(
                                     `/admin/inventory/product/${product._id}`,
                                   )
-                                }}>
+                                }}
+                              >
                                 Open
                               </Button>
                               <Button
@@ -490,7 +500,8 @@ const ProductStackView = ({
                                   void router.push(
                                     `/admin/inventory/product?tabId=edit&id=${product._id}`,
                                   )
-                                }}>
+                                }}
+                              >
                                 Edit
                               </Button>
                             </div>
@@ -569,7 +580,8 @@ const CategoryProductsContentInner = ({
             className='hover:text-foreground h-7 border-transparent rounded-sm'
             onPress={() => {
               void router.push('/admin/inventory/category')
-            }}>
+            }}
+          >
             <Icon name='chevron-left' className='size-4 m-auto' />
           </Button>
 
@@ -588,7 +600,8 @@ const CategoryProductsContentInner = ({
             isIconOnly={isMobile}
             variant='outline'
             onPress={handleEdit}
-            className='rounded-sm h-6 md:h-8 w-6 md:w-fit font-clash'>
+            className='rounded-sm h-6 md:h-8 w-6 md:w-fit font-clash'
+          >
             <Icon name='pen' className='size-3 m-auto' />
             <span className='text-sm font-clash hidden md:flex'>Edit</span>
           </Button>
@@ -601,7 +614,8 @@ const CategoryProductsContentInner = ({
               void router.push(
                 `/admin/inventory/product?tabId=new&category=${categorySlug}`,
               )
-            }}>
+            }}
+          >
             <Icon name='plus' className='size-4 m-auto' />
             <span className='text-sm font-clash hidden md:flex'>Add</span>
           </Button>
@@ -621,7 +635,8 @@ const CategoryProductsContentInner = ({
                     view === option.id
                       ? 'bg-neutral-900 text-white dark:bg-white/5 '
                       : 'bg-black/5 text-neutral-700 dark:bg-transparent dark:text-neutral-200',
-                  )}>
+                  )}
+                >
                   <Icon name={option.icon} className='size-4 m-auto' />
                 </Button>
               ))}
@@ -633,19 +648,22 @@ const CategoryProductsContentInner = ({
           <Chip
             size='sm'
             variant='tertiary'
-            className='bg-blue-500/10 rounded-sm h-6 md:h-7 text-blue-700 dark:text-blue-300 px-2'>
+            className='bg-blue-500/10 rounded-sm h-6 md:h-7 text-blue-700 dark:text-blue-300 px-2'
+          >
             <AnimatedNumber value={products?.length ?? 0} /> items
           </Chip>
           <Chip
             size='sm'
             variant='tertiary'
-            className='bg-emerald-500/10 rounded-sm h-6 md:h-8 text-emerald-700 dark:text-emerald-300 px-2'>
+            className='bg-emerald-500/10 rounded-sm h-6 md:h-8 text-emerald-700 dark:text-emerald-300 px-2'
+          >
             {availableCount} available
           </Chip>
           <Chip
             size='sm'
             variant='tertiary'
-            className='bg-violet-500/10 rounded-sm h-6 md:h-8 text-violet-700 dark:text-violet-300 px-2'>
+            className='bg-violet-500/10 rounded-sm h-6 md:h-8 text-violet-700 dark:text-violet-300 px-2'
+          >
             {featuredCount} featured
           </Chip>
         </div>

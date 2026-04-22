@@ -31,7 +31,8 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
         <motion.div
           initial={{opacity: 0}}
           animate={{opacity: 1}}
-          className='flex items-center gap-3 opacity-50'>
+          className='flex items-center gap-3 opacity-50'
+        >
           <Icon name='spinners-ring' className='size-5' />
           Loading email settings...
         </motion.div>
@@ -53,22 +54,25 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
               initial={{opacity: 0, y: 20}}
               animate={{opacity: 1, y: 0}}
               exit={{opacity: 0, y: -20}}
-              className='rounded-md h-[calc(100lvh-140px)] md:h-auto bg-slate-100 dark:bg-dark-table/40 border border-foreground/20 sm:px-8 sm:pt-8 p-4'>
+              className='rounded-md h-[calc(100lvh-140px)] md:h-auto bg-slate-100 dark:bg-dark-table/40 border border-foreground/20 sm:px-8 sm:pt-8 p-4'
+            >
               {/*<div className='w-12 h-12 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'></div>*/}
-              <div className='flex items-center space-x-4'>
+              <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
                 <Icon
                   name='email'
                   className='size-8 md:size-24 -rotate-6 opacity-60'
                 />
                 <SectionHeader
                   title='Email Templates'
-                  description='Manage your email templates here.'>
+                  description='Manage your email templates here.'
+                >
                   <Button
                     size='sm'
                     isIconOnly
-                                        variant='primary'
+                    variant='primary'
                     onPress={navigateToNew}
-                    className='bg-foreground dark:text-dark-gray border-0'>
+                    className='bg-foreground dark:text-dark-gray border-0'
+                  >
                     <Icon name='plus' className='size-5' />
                   </Button>
                 </SectionHeader>
@@ -79,21 +83,24 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
               initial={{opacity: 0}}
               animate={{opacity: 1}}
               exit={{opacity: 0}}
-              className='grid md:grid-cols-2'>
+              className='grid md:grid-cols-2'
+            >
               {templates.map((template, index) => (
                 <Link
                   key={template._id}
                   href={`/admin/messaging/email/${template._id}`}
-                  prefetch>
+                  prefetch
+                >
                   <motion.div
                     initial={{opacity: 0, y: 20}}
                     animate={{opacity: 1, y: 0}}
                     transition={{delay: index * 0.05}}
-                    className='group relative cursor-pointer'>
+                    className='group relative cursor-pointer'
+                  >
                     <div className='absolute inset-0 bg-linear-to-r from-cyan-500/5 to-purple-500/5 rounded-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
                     <div className='relative dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 p-5 hover:border-zinc-700/50 transition-all duration-300'>
                       <div className='flex items-start justify-between gap-4'>
-                        <div className='flex items-start gap-4 flex-1'>
+                        <div className='flex min-w-0 flex-1 items-start gap-4'>
                           <div className='w-8 h-8 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'>
                             <Icon
                               name='arrow-swap'
@@ -101,7 +108,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                             />
                           </div>
                           <div className='flex-1 min-w-0'>
-                            <div className='flex items-center gap-3 mb-1'>
+                            <div className='mb-1 flex flex-wrap items-center gap-2 md:gap-3'>
                               <h3 className='text-base font-clash font-semibold truncate'>
                                 {template.title || 'Untitled Template'}
                               </h3>
@@ -127,7 +134,8 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                                   template.template
                                     ? 'text-blue-500 capitalize'
                                     : 'opacity-50'
-                                }>
+                                }
+                              >
                                 {template.template?.split('-').join(' ') ||
                                   'N/A'}
                               </span>

@@ -362,7 +362,7 @@ export const AccessContent = () => {
 
       <div className='grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]'>
         <section className='flex flex-col gap-4'>
-          <div className='flex items-center space-x-32 px-2'>
+          <div className='flex flex-col items-start gap-3 px-2 sm:flex-row sm:items-center sm:justify-between'>
             <Toggle
               label='Require access code'
               title='Require access code'
@@ -374,7 +374,8 @@ export const AccessContent = () => {
                 size='sm'
                 variant='primary'
                 onPress={handleAddPass}
-                className='bg-light-brand h-7 rounded-md'>
+                className='bg-light-brand h-7 rounded-md'
+              >
                 <Icon name='plus' className='size-4 m-auto' />
                 Add
               </Button>
@@ -394,15 +395,16 @@ export const AccessContent = () => {
             </div>
           </div>
 
-          <ul className='flex flex-col gap-2 max-w-lg' role='list'>
+          <ul className='flex max-w-lg flex-col gap-2' role='list'>
             {passes.map((pass, index) => (
               <ViewTransition key={index}>
                 <li
                   className={cn(
-                    'flex items-center gap-2 rounded-2xl bg-default-100/50 transition-colors dark:bg-default-100/30',
+                    'flex min-w-0 items-center gap-2 rounded-2xl bg-default-100/50 transition-colors dark:bg-default-100/30',
                     'hover:border-border/80 dark:hover:border-border/60',
                   )}
-                  role='listitem'>
+                  role='listitem'
+                >
                   <Input
                     label={`Pass Code ${index + 1}`}
                     placeholder='PIN code'
@@ -414,7 +416,8 @@ export const AccessContent = () => {
                     autoComplete='false'
                     autoCorrect='false'
                     aria-label={`Pass ${index + 1}`}
-                    withAction>
+                    withAction
+                  >
                     <Icon
                       name='trash'
                       aria-label={`Delete pass ${index + 1}`}
@@ -454,7 +457,8 @@ export const AccessContent = () => {
                   return (
                     <div
                       key={row.id}
-                      className='grid gap-2 rounded-2xl border border-border/60 bg-background/70 p-3 md:grid-cols-[minmax(0,1fr)_8rem_auto]'>
+                      className='grid gap-2 rounded-2xl border border-border/60 bg-background/70 p-3 md:grid-cols-[minmax(0,1fr)_8rem_auto]'
+                    >
                       <div className='min-w-0'>
                         <label className='mb-1 block text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase'>
                           Email
@@ -481,7 +485,8 @@ export const AccessContent = () => {
                             handleMasterTypeChange(row.id, event.target.value)
                           }
                           disabled={!canRetagMasters || row.locked}
-                          className='h-10 w-full rounded-md border border-border/60 bg-background px-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-70'>
+                          className='h-10 w-full rounded-md border border-border/60 bg-background px-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-70'
+                        >
                           {MASTER_TYPES.map((type) => (
                             <option key={type} value={type}>
                               {type}
@@ -503,7 +508,8 @@ export const AccessContent = () => {
                             onPress={() => handleDeleteMaster(row.id)}
                             isDisabled={!canSaveMasterChanges}
                             className='mt-auto size-10 rounded-md'
-                            aria-label={`Disable ${row.email || 'master'}`}>
+                            aria-label={`Disable ${row.email || 'master'}`}
+                          >
                             <Icon
                               name='trash'
                               className='size-4 dark:text-white'
@@ -527,7 +533,8 @@ export const AccessContent = () => {
                 variant='primary'
                 onPress={handleAddMaster}
                 isDisabled={!canAddMasters}
-                className='bg-light-brand'>
+                className='bg-light-brand'
+              >
                 <Icon name='plus' className='size-4 m-auto' />
                 Add Master
               </Button>

@@ -137,18 +137,21 @@ export function OrderDetailsForm({
       : 'Processing Fee'
 
   return (
-    <div className='flex flex-col min-h-0'>
+    <div className='flex min-h-0 min-w-0 flex-col'>
       {/* Header */}
       {!hideHeader && (
-        <div className='flex items-center justify-between mb-4 pb-0 shrink-0'>
-          <div>
-            <h2 className='text-lg font-medium'>{order.orderNumber}</h2>
+        <div className='mb-4 flex shrink-0 flex-col gap-2 pb-0 sm:flex-row sm:items-center sm:justify-between'>
+          <div className='min-w-0'>
+            <h2 className='break-all text-lg font-medium'>
+              {order.orderNumber}
+            </h2>
           </div>
           <Chip
             className='capitalize'
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
-            variant='tertiary'>
+            variant='tertiary'
+          >
             {order.orderStatus
               .split('_')
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -158,7 +161,7 @@ export function OrderDetailsForm({
       )}
 
       {/* Order Info */}
-      <div className='space-y-4 mb-2 overflow-y-auto'>
+      <div className='mb-2 min-w-0 space-y-4 overflow-y-auto'>
         <div className='grid gap-4 md:grid-cols-2 md:gap-8'>
           {/* Customer Info */}
           <div className={panelClassName}>
@@ -167,18 +170,20 @@ export function OrderDetailsForm({
                 Customer
               </h3>
             </div>
-            <div className='flex items-center gap-3'>
+            <div className='flex min-w-0 items-center gap-3'>
               <Avatar
                 size='md'
-                className='shrink-0 border border-foreground/10 bg-background text-foreground dark:border-white/10 dark:bg-dark-table'>
+                className='shrink-0 border border-foreground/10 bg-background text-foreground dark:border-white/10 dark:bg-dark-table'
+              >
                 <HeroAvatarImage alt={customerName} src={customerAvatarUrl} />
                 <Avatar.Fallback>{getInitials(customerName)}</Avatar.Fallback>
               </Avatar>
-              <div className='min-w-0'>
+              <div className='min-w-0 flex-1'>
                 {customerProfileFid ? (
                   <Link
                     href={`/admin/ops/customers/${customerProfileFid}`}
-                    className='block truncate text-sm font-medium text-foreground underline-offset-4 hover:underline'>
+                    className='block truncate text-sm font-medium text-foreground underline-offset-4 hover:underline'
+                  >
                     {customerName}
                   </Link>
                 ) : (
@@ -186,7 +191,7 @@ export function OrderDetailsForm({
                     {customerName}
                   </p>
                 )}
-                <p className='truncate text-sm lowercase text-mac-blue dark:text-blue-400'>
+                <p className='break-all text-sm lowercase text-mac-blue dark:text-blue-400 sm:truncate'>
                   {customerEmail}
                 </p>
                 <p className='truncate text-xs text-muted-foreground'>
@@ -197,9 +202,9 @@ export function OrderDetailsForm({
           </div>
           {/* Shipping Address */}
           <div className={panelClassName}>
-            <div className='flex items-start justify-between'>
+            <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
               <h3 className='text-sm font-medium block'>Shipping Address</h3>
-              <div className='text-right text-sm text-muted-foreground min-h-16.5'>
+              <div className='min-h-16.5 break-words text-left text-sm text-muted-foreground sm:text-right'>
                 <p>{order.shippingAddress.addressLine1}</p>
                 <p>
                   {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
@@ -218,22 +223,23 @@ export function OrderDetailsForm({
               {order.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className='border-b-[0.5px] border-dotted border-neutral-500/60 flex justify-between items-start text-sm p-3 bg-fade'>
-                  <div className='flex-1 pr-4'>
-                    <div className='font-medium flex items-center justify-between'>
-                      <span>
+                  className='flex items-start justify-between gap-3 border-b-[0.5px] border-dotted border-neutral-500/60 bg-fade p-3 text-sm'
+                >
+                  <div className='min-w-0 flex-1'>
+                    <div className='flex min-w-0 flex-col gap-1 font-medium sm:flex-row sm:items-center sm:justify-between'>
+                      <span className='min-w-0 break-words'>
                         <span className='font-light font-okxs opacity-80 mr-2'>
                           {idx + 1}
                         </span>
                         {item.productName}
                       </span>
-                      <span className='font-light font-okxs text-sm text-muted-foreground'>
+                      <span className='shrink-0 font-light font-okxs text-sm text-muted-foreground'>
                         {item.denomination &&
                           `${mapNumericFractions[item.denomination]} × ${item.quantity}`}
                       </span>
                     </div>
                   </div>
-                  <p className='font-medium font-okxs'>
+                  <p className='shrink-0 font-medium font-okxs'>
                     <span className='font-light'>$</span>
                     {formatPrice(item.totalPriceCents)}
                   </p>
@@ -241,21 +247,21 @@ export function OrderDetailsForm({
               ))}
               <div className='px-3 pb-3'>
                 <div className='space-y-1 text-sm'>
-                  <div className='flex items-center justify-between border-b border-dotted border-sidebar h-10'>
+                  <div className='flex min-h-10 items-center justify-between gap-3 border-b border-dotted border-sidebar'>
                     <span className='font-medium'>Subtotal</span>
                     <span className='font-okxs font-medium'>
                       <span className='font-light'>$</span>
                       {formatPrice(order.subtotalCents, 2)}
                     </span>
                   </div>
-                  <div className='flex items-center justify-between border-b border-dotted border-sidebar h-8'>
+                  <div className='flex min-h-8 items-center justify-between gap-3 border-b border-dotted border-sidebar'>
                     <span className='font-medium'>Tax</span>
                     <span className='font-okxs font-medium'>
                       <span className='font-light'>$</span>
                       {formatPrice(order.taxCents)}
                     </span>
                   </div>
-                  <div className='flex items-center justify-between border-b border-dotted border-sidebar h-8'>
+                  <div className='flex min-h-8 items-center justify-between gap-3 border-b border-dotted border-sidebar'>
                     <span className='font-medium'>Shipping</span>
                     <span className='font-okxs font-medium'>
                       <span className='font-light'>$</span>
@@ -263,7 +269,7 @@ export function OrderDetailsForm({
                     </span>
                   </div>
                   {order.processingFeeCents && order.processingFeeCents > 0 && (
-                    <div className='flex items-center justify-between border-b border-dotted border-sidebar h-8'>
+                    <div className='flex min-h-8 items-center justify-between gap-3 border-b border-dotted border-sidebar'>
                       <span className='font-medium'>{processingFeeLabel}</span>
                       <span className='font-okxs font-medium'>
                         <span className='font-light'>$</span>
@@ -272,7 +278,7 @@ export function OrderDetailsForm({
                     </div>
                   )}
                   {order.discountCents && (
-                    <div className='flex items-center justify-between border-b border-dotted border-sidebar h-8'>
+                    <div className='flex min-h-8 items-center justify-between gap-3 border-b border-dotted border-sidebar'>
                       <span className='text-muted-foreground'>Discount</span>
                       <span>-${formatPrice(order.discountCents)}</span>
                     </div>
@@ -317,27 +323,32 @@ export function OrderDetailsForm({
                   Object.entries(order.payment).map(([k, v]) => (
                     <div
                       key={k}
-                      className='flex items-start text-sm border-b border-dashed border-sidebar min-h-9 pt-2'>
-                      <span className='min-w-32 capitalize font-medium'>
+                      className='flex min-h-9 flex-col border-b border-dashed border-sidebar pt-2 text-sm sm:flex-row sm:items-start'
+                    >
+                      <span className='capitalize font-medium sm:min-w-32'>
                         {k}:
                       </span>
-                      <span>
+                      <span className='min-w-0 break-words'>
                         {typeof v === 'object'
                           ? Object.entries(v).map(([j, l]) => (
                               <div
                                 key={j}
-                                className='flex items-start text-sm border-b border-dashed border-sidebar min-h-9 pt-2'>
-                                <div className='mr-3 font-medium'>{j}:</div>
-                                <div>
+                                className='flex min-h-9 flex-col border-b border-dashed border-sidebar pt-2 text-sm sm:flex-row sm:items-start'
+                              >
+                                <div className='font-medium sm:mr-3'>{j}:</div>
+                                <div className='min-w-0 break-words'>
                                   {typeof l === 'object'
                                     ? Object.entries(l).map(([m, n]) => (
                                         <div
                                           key={m}
-                                          className='flex items-center'>
-                                          <span className='mr-3 font-medium'>
+                                          className='flex flex-col sm:flex-row sm:items-center'
+                                        >
+                                          <span className='font-medium sm:mr-3'>
                                             {m}:
                                           </span>
-                                          <span>{n}</span>
+                                          <span className='min-w-0 break-words'>
+                                            {n}
+                                          </span>
                                         </div>
                                       ))
                                     : l}
@@ -359,20 +370,22 @@ export function OrderDetailsForm({
             </div>
             <div className='space-y-4 pt-6 shrink-0'>
               {/* Actions */}
-              <div className='flex gap-2 pt-2'>
+              <div className='flex flex-col gap-2 pt-2 sm:flex-row'>
                 <Button
                   size='lg'
                   variant='tertiary'
                   onPress={handleCancel}
                   className='flex-1 text-base font-medium rounded-lg'
-                  isDisabled={isSaving}>
+                  isDisabled={isSaving}
+                >
                   Cancel
                 </Button>
                 <Button
                   size='lg'
                   variant='primary'
                   onPress={handleSave}
-                  className='flex-1 text-base font-medium rounded-lg bg-dark-table text-white dark:text-dark-table dark:bg-white'>
+                  className='flex-1 text-base font-medium rounded-lg bg-dark-table text-white dark:text-dark-table dark:bg-white'
+                >
                   <span className='drop-shadow-sm'>Save Changes</span>
                 </Button>
               </div>

@@ -241,13 +241,13 @@ export const InsightsPage = () => {
   }
 
   return (
-    <div className='space-y-6 p-4 h-screen overflow-auto pb-32'>
+    <div className='h-[100svh] space-y-6 overflow-auto p-2 pb-32 md:p-4'>
       {/* Key Metrics Cards */}
-      <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-        <Card className='p-4 dark:bg-dark-table/40'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4'>
+        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Total Visits</p>
-            <p className='text-2xl font-bold font-space'>
+            <p className='text-xl font-bold font-space md:text-2xl'>
               {stats.totalVisits.toLocaleString()}
             </p>
             {timeBasedStats && (
@@ -258,10 +258,10 @@ export const InsightsPage = () => {
           </div>
         </Card>
 
-        <Card className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Unique Visitors</p>
-            <p className='text-2xl font-bold font-space'>
+            <p className='text-xl font-bold font-space md:text-2xl'>
               {stats.uniqueVisitors.toLocaleString()}
             </p>
             <p className='text-xs text-default-400 mt-1'>
@@ -270,20 +270,22 @@ export const InsightsPage = () => {
           </div>
         </Card>
 
-        <Card className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Avg Response Time</p>
-            <p className='text-2xl font-bold font-space'>{avgResponseTime}ms</p>
+            <p className='text-xl font-bold font-space md:text-2xl'>
+              {avgResponseTime}ms
+            </p>
             <p className='text-xs text-default-400 mt-1'>
               Page load performance
             </p>
           </div>
         </Card>
 
-        <Card className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Bounce Rate</p>
-            <p className='text-2xl font-bold font-space'>
+            <p className='text-xl font-bold font-space md:text-2xl'>
               {stats.totalVisits > 0
                 ? Math.round(
                     ((stats.totalVisits - stats.uniqueVisitors) /
@@ -361,7 +363,8 @@ export const InsightsPage = () => {
                 }
                 outerRadius={isMobile ? 50 : 80}
                 fill='#8884d8'
-                dataKey='value'>
+                dataKey='value'
+              >
                 {deviceData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
@@ -401,7 +404,8 @@ export const InsightsPage = () => {
               topPages.map((page, index) => (
                 <div
                   key={page.path}
-                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'>
+                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'
+                >
                   <div className='flex items-center gap-2 flex-1 min-w-0'>
                     <span className='text-sm font-medium text-default-400 w-6'>
                       {index + 1}
@@ -431,7 +435,8 @@ export const InsightsPage = () => {
               countryData.map((country, index) => (
                 <div
                   key={country.name}
-                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'>
+                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'
+                >
                   <div className='flex items-center gap-2 flex-1 min-w-0'>
                     <span className='text-sm font-medium text-default-400 w-6'>
                       {index + 1}
@@ -691,7 +696,8 @@ const MapboxUsChoropleth = ({
         {GEO_LEGEND.map((legendItem) => (
           <div
             key={legendItem.label}
-            className='flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1'>
+            className='flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1'
+          >
             <span
               className='size-2.5 rounded-full'
               style={{backgroundColor: legendItem.color}}
@@ -740,15 +746,15 @@ export const GeoPage = () => {
   }
 
   return (
-    <div className='space-y-6 h-screen overflow-auto pb-32'>
-      <Card className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-4 dark:bg-dark-table/60'>
+    <div className='h-[100svh] space-y-6 overflow-auto pb-32'>
+      <Card className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-3 dark:bg-dark-table/60 md:p-4'>
         <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl space-y-3'>
             <Chip size='sm' variant='tertiary' color='accent'>
               Geo
             </Chip>
             <div>
-              <h2 className='text-3xl font-space font-semibold text-white'>
+              <h2 className='text-2xl font-space font-semibold text-white md:text-3xl'>
                 World Visitor Map
               </h2>
               <p className='mt-2 text-sm text-white/70'>
@@ -758,7 +764,7 @@ export const GeoPage = () => {
             </div>
           </div>
 
-          <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+          <div className='grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:w-auto xl:grid-cols-4'>
             <div className='rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm'>
               <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
                 Visits
@@ -819,8 +825,8 @@ export const GeoPage = () => {
         </Card>
 
         <Card className='p-5 dark:bg-dark-table/40'>
-          <div className='flex items-start justify-between gap-3'>
-            <div>
+          <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+            <div className='min-w-0'>
               <p className='text-xs uppercase tracking-[0.28em] text-default-400'>
                 Ranked States
               </p>
@@ -844,9 +850,10 @@ export const GeoPage = () => {
                 return (
                   <div
                     key={state.name}
-                    className='rounded-2xl border border-white/6 bg-default-100/40 p-4 dark:bg-dark-gray/20'>
-                    <div className='flex items-start justify-between gap-3'>
-                      <div>
+                    className='rounded-2xl border border-white/6 bg-default-100/40 p-4 dark:bg-dark-gray/20'
+                  >
+                    <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+                      <div className='min-w-0'>
                         <p className='text-xs uppercase tracking-[0.28em] text-default-400'>
                           #{index + 1}
                         </p>

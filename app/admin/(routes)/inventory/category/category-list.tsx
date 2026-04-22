@@ -161,7 +161,8 @@ const CategoryCard = ({
           'border-emerald-500/60 ring-2 ring-emerald-500/30 dark:border-emerald-400/60 dark:ring-emerald-400/20':
             isDropTarget,
         },
-      )}>
+      )}
+    >
       <div className='relative h-36 overflow-hidden bg-linear-to-br from-emerald-500/15 via-sky-500/10 to-transparent'>
         {heroImageUrl ? (
           <Image
@@ -178,7 +179,7 @@ const CategoryCard = ({
             </div>
           </div>
         )}
-        <h4 className='absolute top-4 left-2 z-100 truncate text-3xl font-semibold tracking-tight text-white bg-linear-to-r from-transparent to-black/40 pl-2 pr-4 rounded-e-full'>
+        <h4 className='absolute top-4 left-2 z-100 max-w-[calc(100%-5rem)] truncate rounded-e-full bg-linear-to-r from-transparent to-black/40 pl-2 pr-4 text-2xl font-semibold tracking-tight text-white md:text-3xl'>
           {category.name}
         </h4>
         <div className='absolute inset-0 bg-linear-to-t from-white via-white/20 to-transparent dark:from-[#0a0c10] dark:via-[#0a0c10]/25' />
@@ -190,7 +191,8 @@ const CategoryCard = ({
             aria-label={`Drag to reorder ${category.name}`}
             isDisabled={dragHandleDisabled}
             onPointerDown={() => onDragHandlePointerDown?.()}
-            className='group/handle bg-black/20 h-6 rounded-sm flex items-center cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 text-white'>
+            className='group/handle bg-black/20 h-6 rounded-sm flex items-center cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 text-white'
+          >
             <Icon name='dots-fill' className='size-5 m-auto -rotate-45' />
           </Button>
           {/*<div className='flex size-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/35 dark:text-white/85'>
@@ -201,24 +203,26 @@ const CategoryCard = ({
 
       <div className='flex h-[calc(100%-9rem)] flex-col gap-1 p-4'>
         <div className=''>
-          <div className='flex items-start justify-between gap-2'>
+          <div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between'>
             <div className='min-w-0'>
               <p className='truncate text-xs text-neutral-500 font-ios tracking-wider'>
                 /{category.slug ?? 'Missing slug'}
               </p>
             </div>
-            <div className='flex items-center space-x-2'>
+            <div className='flex flex-wrap items-center gap-2'>
               <div className='flex h-7 gap-2 items-center font-clash text-sm '>
                 <Link
                   href={`/admin/inventory/category?id=${category._id}&tabId=edit`}
-                  className='group flex items-center rounded-md bg-black text-white dark:bg-white dark:text-dark-table touch-pan-y h-6 px-4'>
+                  className='group flex items-center rounded-md bg-black text-white dark:bg-white dark:text-dark-table touch-pan-y h-6 px-4'
+                >
                   Edit
                 </Link>
               </div>
               <div className='flex h-7 gap-2 items-center font-clash text-sm text-emerald-950 dark:text-emerald-200'>
                 <Link
                   href={categoryHref}
-                  className='group flex items-center h-6 rounded-md bg-emerald-500/10 px-3 touch-pan-y'>
+                  className='group flex items-center h-6 rounded-md bg-emerald-500/10 px-3 touch-pan-y'
+                >
                   View List
                 </Link>
               </div>
@@ -230,11 +234,12 @@ const CategoryCard = ({
           </p>
         </div>
 
-        <dl className='grid grid-cols-3 gap-2'>
+        <dl className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className='rounded-sm border border-black/5 bg-neutral-50/80 px-2 py-1 dark:border-white/10 dark:bg-white/5 space-y-1'>
+              className='rounded-sm border border-black/5 bg-neutral-50/80 px-2 py-1 dark:border-white/10 dark:bg-white/5 space-y-1'
+            >
               <dt className='text-xs font-ios uppercase tracking-wider text-neutral-500'>
                 {stat.label}
               </dt>
@@ -253,7 +258,8 @@ const CategoryCard = ({
                   key={tag}
                   size='sm'
                   variant='tertiary'
-                  className='bg-sky-400/10 rounded-md! h-6 text-xs text-sky-700 dark:text-sky-300'>
+                  className='bg-sky-400/10 rounded-md! h-6 text-xs text-sky-700 dark:text-sky-300'
+                >
                   {tag}
                 </Chip>
               ))
@@ -271,7 +277,8 @@ const CategoryCard = ({
                   key={warning}
                   size='sm'
                   variant='tertiary'
-                  className='bg-amber-500/10 text-xs text-amber-700 dark:text-amber-300'>
+                  className='bg-amber-500/10 text-xs text-amber-700 dark:text-amber-300'
+                >
                   {warning}
                 </Chip>
               ))}
@@ -360,31 +367,37 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
       <div className='flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between'>
         <SectionHeader
           title={
-            <div className='flex items-center space-x-2'>
+            <div className='flex min-w-0 items-center gap-2'>
               <Icon
                 name='circ'
-                className={cn('size-3 text-red-700 dark:text-red-300', {
-                  'text-emerald-700 dark:text-emerald-300':
-                    activeFilter === 'active',
-                })}
+                className={cn(
+                  'size-3 shrink-0 text-red-700 dark:text-red-300',
+                  {
+                    'text-emerald-700 dark:text-emerald-300':
+                      activeFilter === 'active',
+                  },
+                )}
               />
-              <span>
+              <span className='min-w-0 break-words'>
                 {activeFilter === 'active' ? 'Active' : 'Inactive'} Categories
               </span>
             </div>
           }
-          description={``}>
+          description={``}
+        >
           <div className='flex gap-2 text-xs'>
             <Chip
               size='sm'
               variant='tertiary'
-              className='bg-emerald-500/10 font-okxs text-emerald-700 dark:text-emerald-300 rounded-sm'>
+              className='bg-emerald-500/10 font-okxs text-emerald-700 dark:text-emerald-300 rounded-sm'
+            >
               {liveCategories} Live
             </Chip>
             <Chip
               size='sm'
               variant='tertiary'
-              className='bg-orange-500/10 text-orange-700 dark:text-orange-200 rounded-sm'>
+              className='bg-orange-500/10 text-orange-700 dark:text-orange-200 rounded-sm'
+            >
               {totalCategories - liveCategories} Hidden
             </Chip>
           </div>
@@ -407,7 +420,8 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
               startTransition(() => {
                 setActiveFilter(filter.id)
               })
-            }}>
+            }}
+          >
             {filter.label} <span className='font-ios opacity-50'>(</span>
             <span>{filter.count}</span>
             <span className='font-ios opacity-50'>)</span>
@@ -488,7 +502,8 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                 setDraggedId(null)
                 setDropTargetId(null)
               }}
-              className='[content-visibility:auto] [contain-intrinsic-size:28rem]'>
+              className='[content-visibility:auto] [contain-intrinsic-size:28rem]'
+            >
               <CategoryCard
                 category={category}
                 heroImageUrl={

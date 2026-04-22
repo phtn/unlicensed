@@ -114,15 +114,15 @@ export default function BlogEditorPage() {
   }
 
   return (
-    <div className='max-w-7xl mx-auto p-4 pb-32'>
-      <div className='flex items-center justify-between mb-8'>
-        <div className='flex items-center gap-4'>
+    <div className='mx-auto max-w-7xl p-3 pb-32 md:p-4'>
+      <div className='mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='flex min-w-0 items-center gap-4'>
           <Link href='/admin/blog'>
             <Button variant='ghost' isIconOnly>
               <Icon name='chevron-left' className='w-5 h-5' />
             </Button>
           </Link>
-          <h1 className='text-3xl font-bold tracking-tight'>
+          <h1 className='min-w-0 break-words text-2xl font-bold tracking-tight md:text-3xl'>
             {isNew ? 'Create Post' : 'Edit Post'}
           </h1>
         </div>
@@ -196,7 +196,8 @@ export default function BlogEditorPage() {
                 if (typeof value === 'string') {
                   setStatus(value as BlogPostStatus)
                 }
-              }}>
+              }}
+            >
               <ListBoxItem key='draft' textValue='Draft'>
                 Draft
               </ListBoxItem>
@@ -226,7 +227,8 @@ export default function BlogEditorPage() {
               <Button
                 variant='secondary'
                 isDisabled={isUploading}
-                className='w-full cursor-pointer'>
+                className='w-full cursor-pointer'
+              >
                 <Icon name='upload' className='w-4 h-4 mr-2' />
                 {isUploading
                   ? 'Uploading...'

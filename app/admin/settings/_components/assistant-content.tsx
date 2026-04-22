@@ -72,7 +72,8 @@ function SeedAssistantButton({
           className='rounded-sm bg-emerald-600 text-white hover:bg-emerald-700'
           isDisabled={!canSeed || isLoading || isSeeding}
           isPending={isSeeding}
-          onPress={handleSeed}>
+          onPress={handleSeed}
+        >
           Seed assistant
         </Button>
       </div>
@@ -133,11 +134,12 @@ function AIAssistantFormInner({
   }, [catalogSupportEnabled, instructions, isActive, updateAdmin, userUid])
 
   return (
-    <section className='flex md:w-md flex-col gap-4'>
+    <section className='flex w-full flex-col gap-4 md:w-md'>
       <ContentHeader
         title='AI Assistant Configuration'
-        description='Configure your AI assistant settings here.'>
-        <div className='flex items-center gap-3'>
+        description='Configure your AI assistant settings here.'
+      >
+        <div className='flex flex-wrap items-center gap-3'>
           <SeedAssistantButton
             canSeed={canSeedAssistant}
             isSeeded={isAssistantSeeded}
@@ -165,15 +167,15 @@ function AIAssistantFormInner({
         <div className='flex max-w-6xl flex-col gap-2'>
           <TextArea
             value={instructions}
-            onChange={() => setInstructions}
+            onChange={(e) => setInstructions(e.target.value)}
             className='w-full'
             disabled={!configLoaded}
             rows={12}
           />
         </div>
         <div className='flex flex-col gap-4'>
-          <div className='flex items-center justify-between gap-4'>
-            <div className='flex flex-col gap-1'>
+          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4'>
+            <div className='flex min-w-0 flex-col gap-1'>
               <span className='text-sm font-medium'>Active</span>
               <span className='text-xs text-muted-foreground'>
                 Allow customers to chat with the assistant.
