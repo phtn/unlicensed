@@ -1,6 +1,5 @@
 'use client'
 
-import 'mapbox-gl/dist/mapbox-gl.css'
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
 import {Card, Chip} from '@heroui/react'
@@ -10,6 +9,7 @@ import type {
   GeoJSONSource,
   Map as MapboxMap,
 } from 'mapbox-gl'
+import 'mapbox-gl/dist/mapbox-gl.css'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {
   Bar,
@@ -363,8 +363,7 @@ export const InsightsPage = () => {
                 }
                 outerRadius={isMobile ? 50 : 80}
                 fill='#8884d8'
-                dataKey='value'
-              >
+                dataKey='value'>
                 {deviceData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
@@ -404,8 +403,7 @@ export const InsightsPage = () => {
               topPages.map((page, index) => (
                 <div
                   key={page.path}
-                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'
-                >
+                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'>
                   <div className='flex items-center gap-2 flex-1 min-w-0'>
                     <span className='text-sm font-medium text-default-400 w-6'>
                       {index + 1}
@@ -435,8 +433,7 @@ export const InsightsPage = () => {
               countryData.map((country, index) => (
                 <div
                   key={country.name}
-                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'
-                >
+                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'>
                   <div className='flex items-center gap-2 flex-1 min-w-0'>
                     <span className='text-sm font-medium text-default-400 w-6'>
                       {index + 1}
@@ -650,9 +647,9 @@ const MapboxUsChoropleth = ({
   const displayState = hoveredState ?? defaultState
 
   return (
-    <div className='relative overflow-hidden rounded-3xl border border-white/10'>
+    <div className='relative overflow-hidden rounded-3xl md:rounded-e-none border border-sidebar'>
       <div className='absolute inset-x-0 top-0 z-10 flex flex-wrap items-start justify-between gap-3 p-4'>
-        <div className='max-w-sm rounded-2xl border border-white/10 bg-black/0 px-4 py-3 backdrop-blur-md'>
+        <div className='max-w-sm rounded-2xl border border-white/10 px-4 py-3'>
           <p className='text-[10px] uppercase tracking-[0.32em] text-white/45'>
             {hoveredState ? 'Hovered State' : 'Top State'}
           </p>
@@ -664,9 +661,6 @@ const MapboxUsChoropleth = ({
               ? `${displayState.value.toLocaleString()} visits`
               : 'Move across the map to inspect state traffic.'}
           </p>
-        </div>
-        <div className='rounded-full border border-white/10 bg-black/55 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-white/55 backdrop-blur-md'>
-          Mapbox GL JS
         </div>
       </div>
 
@@ -692,17 +686,16 @@ const MapboxUsChoropleth = ({
         </div>
       ) : null}
 
-      <div className='absolute inset-x-0 bottom-0 z-10 flex flex-wrap gap-2 border-t border-white/10 bg-black/55 p-4 text-[11px] text-white/70 backdrop-blur-md'>
+      <div className='overflow-hidden absolute inset-x-0 bottom-0 z-10 flex justify-end flex-wrap gap-2 border-t border-white/10 bg-black p-4 text-[11px] text-white/80'>
         {GEO_LEGEND.map((legendItem) => (
           <div
             key={legendItem.label}
-            className='flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1'
-          >
+            className='flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1'>
             <span
               className='size-2.5 rounded-full'
               style={{backgroundColor: legendItem.color}}
             />
-            <span>{legendItem.label}</span>
+            <span className='font-okxs'>{legendItem.label}</span>
           </div>
         ))}
       </div>
@@ -746,15 +739,12 @@ export const GeoPage = () => {
   }
 
   return (
-    <div className='h-[100svh] space-y-6 overflow-auto pb-32'>
-      <Card className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-3 dark:bg-dark-table/60 md:p-4'>
+    <div className='h-svh space-y-6 overflow-auto pb-32'>
+      <Card className='overflow-hidden p-3 md:py-4 md:px-0 rounded-none'>
         <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
-          <div className='max-w-2xl space-y-3'>
-            <Chip size='sm' variant='tertiary' color='accent'>
-              Geo
-            </Chip>
+          <div className='max-w-2xl'>
             <div>
-              <h2 className='text-2xl font-space font-semibold text-white md:text-3xl'>
+              <h2 className='text-2xl font-polysans-wide text-white md:text-3xl'>
                 World Visitor Map
               </h2>
               <p className='mt-2 text-sm text-white/70'>
@@ -765,11 +755,11 @@ export const GeoPage = () => {
           </div>
 
           <div className='grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:w-auto xl:grid-cols-4'>
-            <div className='rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm'>
+            <div className=''>
               <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
                 Visits
               </p>
-              <p className='mt-3 text-2xl font-space font-semibold text-white'>
+              <p className='mt-2 text-2xl font-space font-semibold text-white'>
                 {totalUnitedStatesVisits.toLocaleString()}
               </p>
               <p className='mt-1 text-xs text-white/55'>
@@ -777,21 +767,21 @@ export const GeoPage = () => {
               </p>
             </div>
 
-            <div className='rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm'>
+            <div className=''>
               <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
                 With Data
               </p>
-              <p className='mt-3 text-2xl font-space font-semibold text-white'>
+              <p className='mt-2 text-2xl font-space font-semibold text-white'>
                 {statesWithData.toLocaleString()}
               </p>
               <p className='mt-1 text-xs text-white/55'>Mapped to a state</p>
             </div>
 
-            <div className='rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm'>
+            <div className=''>
               <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
                 Coverage
               </p>
-              <p className='mt-3 text-2xl font-okxs font-semibold text-white'>
+              <p className='mt-2 text-2xl font-okxs font-semibold text-white'>
                 {coverage}%
               </p>
               <p className='mt-1 text-xs text-white/55'>
@@ -799,7 +789,7 @@ export const GeoPage = () => {
               </p>
             </div>
 
-            <div className='rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm'>
+            <div className=''>
               <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
                 Top State
               </p>
@@ -816,21 +806,21 @@ export const GeoPage = () => {
         </div>
       </Card>
 
-      <div className='grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.65fr)_22rem] rounded-b-3xl overflow-hidden'>
-        <Card className='dark:bg-dark-table/40 overflow-hidden bg-white'>
+      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_22rem] overflow-hidden'>
+        <div className='size-full rounded-s-3xl overflow-hidden'>
           <MapboxUsChoropleth
             defaultState={topState}
             stateVisits={stats.visitsByUsState ?? {}}
           />
-        </Card>
+        </div>
 
-        <Card className='p-5 dark:bg-dark-table/40'>
+        <Card className='p-5 dark:bg-dark-table/40 rounded-s-none'>
           <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
             <div className='min-w-0'>
-              <p className='text-xs uppercase tracking-[0.28em] text-default-400'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/70'>
                 Ranked States
               </p>
-              <h3 className='mt-2 text-xl font-space font-semibold'>
+              <h3 className='mt-2 text-xl font-clash font-medium'>
                 Where visits are landing
               </h3>
             </div>
@@ -850,22 +840,21 @@ export const GeoPage = () => {
                 return (
                   <div
                     key={state.name}
-                    className='rounded-2xl border border-white/6 bg-default-100/40 p-4 dark:bg-dark-gray/20'
-                  >
+                    className='rounded-2xl p-4 bg-foreground/6'>
                     <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
                       <div className='min-w-0'>
-                        <p className='text-xs uppercase tracking-[0.28em] text-default-400'>
+                        <p className='font-okxs text-xs uppercase tracking-[0.28em] text-default-400'>
                           #{index + 1}
                         </p>
-                        <p className='mt-2 text-lg font-space font-semibold'>
+                        <p className='mt-1 text-lg font-clash font-medium'>
                           {state.name}
                         </p>
                       </div>
-                      <Chip size='sm' variant='tertiary' color='accent'>
+                      <span className='font-okxs text-sm text-mac-blue'>
                         {state.value.toLocaleString()}
-                      </Chip>
+                      </span>
                     </div>
-                    <p className='mt-3 text-sm text-default-400'>
+                    <p className='mt-1 text-sm text-default-400'>
                       {percentage}% of mapped U.S. visits
                     </p>
                   </div>
@@ -880,11 +869,11 @@ export const GeoPage = () => {
             )}
           </div>
 
-          <div className='mt-6 rounded-2xl border border-white/6 bg-default-100/40 p-4 dark:bg-dark-gray/20'>
-            <p className='text-xs uppercase tracking-[0.28em] text-default-400'>
+          <div className='mt-6 rounded-2xl bg-foreground/6 p-4'>
+            <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/70'>
               Coverage Note
             </p>
-            <p className='mt-3 text-sm text-default-400'>
+            <p className='mt-3 text-sm text-default-400 text-balance'>
               {totalUnitedStatesVisits === 0
                 ? 'No United States visits have been recorded yet.'
                 : mappedUnitedStatesVisits < totalUnitedStatesVisits

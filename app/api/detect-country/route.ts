@@ -49,7 +49,7 @@ async function reverseGeocode(
     headers: {
       Accept: 'application/json',
       'Accept-Language': 'en-US,en;q=0.9',
-      'User-Agent': 'hyfe-location-detector/1.0',
+      'User-Agent': 'RapidFire-location-detector/1.0',
     },
     cache: 'no-store',
   })

@@ -7,6 +7,7 @@ import {useToggle} from '@/hooks/use-toggle'
 import {Suspense} from 'react'
 import {VisitorLogData} from './data'
 import {GeoPage, InsightsPage} from './insights'
+import {VisitorData} from './visitors'
 
 const ReportsContentInner = () => {
   const [tabId] = useAdminTabId()
@@ -24,6 +25,12 @@ const ReportsContentInner = () => {
       return (
         <Suspense fallback={<div>Loading...</div>}>
           <InsightsPage />
+        </Suspense>
+      )
+    case 'visitors':
+      return (
+        <Suspense fallback={<div>Loading...</div>}>
+          <VisitorData />
         </Suspense>
       )
     case 'logs':

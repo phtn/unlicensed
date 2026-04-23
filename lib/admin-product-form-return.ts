@@ -1,4 +1,4 @@
-const ADMIN_PRODUCT_FORM_RETURN_COOKIE = 'hyfe_admin_product_return'
+const ADMIN_PRODUCT_FORM_RETURN_COOKIE = 'rapidfire_admin_product_return'
 const ADMIN_PRODUCT_FORM_RETURN_MAX_AGE = 20 * 60
 
 const normalizeAdminReturnPath = (value: string) => {

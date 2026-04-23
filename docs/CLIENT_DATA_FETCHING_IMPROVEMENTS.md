@@ -15,8 +15,8 @@
 - `app/_components/age-confirmation-modal.tsx`
 
 **Changes:**
-- ✅ Added version prefix `v1` to `hyfe_cart_items` → `hyfe_cart_items:v1`
-- ✅ Added version prefix `v1` to `hyfe_cart_history` → `hyfe_cart_history:v1`
+- ✅ Added version prefix `v1` to `rapidfire_cart_items` → `rapidfire_cart_items:v1`
+- ✅ Added version prefix `v1` to `rapidfire_cart_history` → `rapidfire_cart_history:v1`
 - ✅ Added version prefix `v1` to `age-confirmed` → `age-confirmed:v1`
 
 **Benefits:**
@@ -180,10 +180,10 @@ All changes are production-ready!
 - Example migration pattern:
   ```typescript
   // Future: v2 migration
-  const v1Data = localStorage.getItem('hyfe_cart_items:v1')
-  if (v1Data && !localStorage.getItem('hyfe_cart_items:v2')) {
+  const v1Data = localStorage.getItem('rapidfire_cart_items:v1')
+  if (v1Data && !localStorage.getItem('rapidfire_cart_items:v2')) {
     // Migrate v1 to v2 format
     const migrated = migrateV1ToV2(JSON.parse(v1Data))
-    localStorage.setItem('hyfe_cart_items:v2', JSON.stringify(migrated))
+    localStorage.setItem('rapidfire_cart_items:v2', JSON.stringify(migrated))
   }
   ```

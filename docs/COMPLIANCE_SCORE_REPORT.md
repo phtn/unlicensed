@@ -1,6 +1,6 @@
 # React Best Practices Compliance Score Report
 **Date:** January 25, 2026  
-**Codebase:** hyfe  
+**Codebase:** RapidFire
 **Framework:** Next.js 16.1.1, React 19.2.3
 
 ---
@@ -108,8 +108,8 @@
 - Converted `hooks/use-paygate-providers.ts` to use SWR
 - Converted `hooks/use-currency-converter.ts` to use SWR
 - Added versioning to all localStorage keys:
-  - `hyfe_cart_items` → `hyfe_cart_items:v1`
-  - `hyfe_cart_history` → `hyfe_cart_history:v1`
+  - `rapidfire_cart_items` → `rapidfire_cart_items:v1`
+  - `rapidfire_cart_history` → `rapidfire_cart_history:v1`
   - `age-confirmed` → `age-confirmed:v1`
 - Added `{passive: true}` to `unhandledrejection` event listener
 

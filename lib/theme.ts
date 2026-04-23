@@ -1,11 +1,11 @@
 import type {Attribute} from 'next-themes'
-import {createHyfeStorageKey} from './storage-keys'
+import {createRapidFireStorageKey} from './storage-keys'
 
 export const THEME_ATTRIBUTE: Attribute = 'class'
 export const THEME_DEFAULT_THEME = 'dark'
 export const THEME_ENABLE_COLOR_SCHEME = true
 export const THEME_ENABLE_SYSTEM = true
-export const THEME_STORAGE_KEY = createHyfeStorageKey('theme')
+export const THEME_STORAGE_KEY = createRapidFireStorageKey('theme')
 export const THEME_LEGACY_STORAGE_KEYS = ['theme'] as const
 export const THEME_THEMES = ['light', 'dark'] as const
 

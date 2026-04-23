@@ -1,4 +1,4 @@
-import {createHyfeStorageKey} from '@/lib/storage-keys'
+import {createRapidFireStorageKey} from '@/lib/storage-keys'
 import {useCallback, useEffect, useRef, useState} from 'react'
 
 type ColumnWidths = Record<string, number>
@@ -10,7 +10,7 @@ export const useResizableColumns = (
   columns: Array<{uid: string; name: string; minWidth?: number}>,
   defaultWidths?: ColumnWidths,
 ) => {
-  const storageKey = createHyfeStorageKey('table-column-widths', tableId)
+  const storageKey = createRapidFireStorageKey('table-column-widths', tableId)
   const legacyStorageKey = `${LEGACY_STORAGE_KEY_PREFIX}${tableId}`
   const [columnWidths, setColumnWidths] = useState<ColumnWidths>(() => {
     if (typeof window === 'undefined') {

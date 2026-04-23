@@ -1,4 +1,4 @@
-export const GUEST_CHAT_COOKIE_NAME = 'hyfe_guest_chat_id'
+export const GUEST_CHAT_COOKIE_NAME = 'rapidfire_guest_chat_id'
 const GUEST_CHAT_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
 const getCookieString = () =>

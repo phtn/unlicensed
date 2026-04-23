@@ -16,11 +16,11 @@ import {
 } from 'firebase/auth'
 import {auth, firestore} from './config'
 import {clearFirebaseSession, createFirebaseSession} from './session'
-import {createHyfeStorageKey} from '../storage-keys'
+import {createRapidFireStorageKey} from '../storage-keys'
 import {createOrUpdateUserInFirestore} from './users'
 
 export const EMAIL_FOR_SIGN_IN_STORAGE_KEY =
-  createHyfeStorageKey('email-for-sign-in')
+  createRapidFireStorageKey('email-for-sign-in')
 export const EMAIL_FOR_SIGN_IN_LEGACY_STORAGE_KEYS = ['emailForSignIn'] as const
 
 export const getStoredEmailForSignIn = () => {

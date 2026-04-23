@@ -1,7 +1,7 @@
 # React Best Practices Audit Report
 
 **Date:** January 25, 2026  
-**Codebase:** hyfe  
+**Codebase:** RapidFire
 **Best Practices Source:** `.agents/skills/vercel-react-best-practices/`
 
 ## Executive Summary

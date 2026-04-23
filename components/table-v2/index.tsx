@@ -559,8 +559,8 @@ function DataTableContent<T>({
           {'md:max-w-[96.25lvw]': !sidebarOpen},
         )}
       >
-        <div className='portrait:sticky left-0 flex h-auto w-full max-w-full shrink flex-wrap items-center justify-between gap-2 overflow-visible md:h-10.5 md:flex-nowrap md:gap-0 md:overflow-hidden'>
-          <div className='flex min-w-0 flex-wrap items-center gap-2 md:flex-nowrap md:gap-3'>
+        <div className='portrait:sticky left-0 flex min-h-10.5 w-full max-w-full shrink-0 flex-nowrap items-center justify-between gap-2 overflow-x-auto overflow-y-visible md:gap-0'>
+          <div className='flex shrink-0 flex-nowrap items-center gap-2 md:gap-3'>
             <LeftTableToolbar
               select={
                 <SelectToggle

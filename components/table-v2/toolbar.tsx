@@ -15,10 +15,10 @@ export const CenterTableToolbar = ({
   dateRange,
 }: CenterTableToolbarProps) => {
   return (
-    <div className='order-3 flex w-full min-w-0 items-center justify-start pb-1 md:order-2 md:h-9 md:w-auto md:justify-center'>
-      <div className='flex w-full min-w-0 items-start justify-start gap-1 md:w-auto md:flex-nowrap md:justify-between md:gap-2'>
+    <div className='flex h-9 shrink-0 items-center justify-center'>
+      <div className='flex shrink-0 items-start justify-start gap-1 md:justify-between md:gap-2'>
         <div className='shrink-0'>{view}</div>
-        <div className='flex min-w-0 shrink-0 flex-wrap items-start md:flex-nowrap md:gap-2'>
+        <div className='flex shrink-0 flex-nowrap items-start md:gap-2'>
           <div className='shrink-0 flex'>{filter}</div>
           {dateRange ? (
             <div className='shrink-0 hidden md:flex'>{dateRange}</div>
@@ -36,9 +36,9 @@ interface RightTableToolbarProps {
 
 export const RightTableToolbar = ({left, search}: RightTableToolbarProps) => {
   return (
-    <Toolbar.Root className='order-2 flex h-9 w-full min-w-0 items-center justify-end gap-px overflow-visible pb-1 md:order-3 md:w-auto'>
+    <Toolbar.Root className='flex h-9 shrink-0 items-center justify-end gap-px overflow-visible'>
       <ToggleGroup
-        className='flex w-full min-w-0 items-center justify-end gap-1 md:w-auto md:gap-2'
+        className='flex shrink-0 items-center justify-end gap-1 md:gap-2'
         aria-label='Alignment'
       >
         {left}
@@ -59,7 +59,7 @@ export const LeftTableToolbar = ({
   deleteRow,
 }: LeftTableToolbarProps) => {
   return (
-    <Toolbar.Root className='order-1 relative flex h-9 w-full items-start gap-px overflow-visible bg-transparent px-1.5 py-0.5 md:w-auto'>
+    <Toolbar.Root className='relative flex h-9 shrink-0 items-start gap-px overflow-visible bg-transparent px-1.5 py-0.5'>
       <ToggleGroup
         className='relative flex items-center gap-2 bg-transparent md:gap-4'
         aria-label='Alignment'

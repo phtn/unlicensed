@@ -28,7 +28,7 @@ const ThemeContext = createContext<UseThemeProps>({
   themes: [...THEME_THEMES],
 })
 
-type HyfeThemeProviderProps = ThemeProviderProps & {
+type RapidFireThemeProviderProps = ThemeProviderProps & {
   legacyStorageKeys?: readonly string[]
 }
 
@@ -78,7 +78,7 @@ function withoutTransitions(nonce?: string) {
   }
 }
 
-export function ThemeProvider(props: HyfeThemeProviderProps) {
+export function ThemeProvider(props: RapidFireThemeProviderProps) {
   const {
     attribute = THEME_ATTRIBUTE,
     children,

@@ -95,10 +95,10 @@ const patchWuiIconSizeBug = () => {
       size?: string
       name?: string
       render?: (...args: unknown[]) => unknown
-      __hyfePatchedPhosphorSize?: boolean
+      __rapidFirePatchedPhosphorSize?: boolean
     }
 
-    if (prototypeWithPatch.__hyfePatchedPhosphorSize) return true
+    if (prototypeWithPatch.__rapidFirePatchedPhosphorSize) return true
     const originalRender = prototypeWithPatch.render
     if (typeof originalRender !== 'function') return false
 
@@ -116,7 +116,7 @@ const patchWuiIconSizeBug = () => {
       return originalRender.apply(this, args)
     }
 
-    prototypeWithPatch.__hyfePatchedPhosphorSize = true
+    prototypeWithPatch.__rapidFirePatchedPhosphorSize = true
     return true
   }
 

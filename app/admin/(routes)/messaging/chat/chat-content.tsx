@@ -3,13 +3,21 @@
 import {ASSISTANT_PRO_ID} from '@/app/account/chat/_components/assistant'
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {User} from '@/components/hero-v3/user'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {getInitials} from '@/utils/initials'
 import {Tabs} from '@base-ui/react'
-import {Badge} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {parseAsString, useQueryState} from 'nuqs'
@@ -38,9 +46,18 @@ const CHAT_TABS = [
 
 const DEFAULT_TAB = CHAT_TABS[0].id
 
+const GUEST_VIEW_MODES = [
+  {id: 'table', label: 'Table', icon: 'view-list'},
+  {id: 'grid', label: 'Grid', icon: 'grid-nine'},
+] as const
+
+const DEFAULT_GUEST_VIEW = GUEST_VIEW_MODES[0].id
+
 type ChatTabId = (typeof CHAT_TABS)[number]['id']
+type GuestViewMode = (typeof GUEST_VIEW_MODES)[number]['id']
 type UserDoc = Doc<'users'>
 type StaffDoc = Doc<'staff'>
+type GuestDoc = Doc<'guests'>
 
 const getUserConversationFid = (participant: UserDoc) =>
   participant.fid ?? participant.firebaseId ?? null
@@ -93,6 +110,36 @@ const getLocationLabel = ({
   )
 }
 
+const getGuestDisplayName = (guest: GuestDoc) => guest.name?.trim() || 'Guest'
+
+const getStatusLabel = (isActive?: boolean) => {
+  if (isActive) {
+    return 'Active'
+  }
+
+  if (isActive === false) {
+    return 'Inactive'
+  }
+
+  return 'Unknown'
+}
+
+const getGuestLastSeenAt = (guest: GuestDoc) =>
+  guest.updatedAt ?? guest.locationUpdatedAt ?? guest.createdAt ?? null
+
+const formatGuestTimestamp = (timestamp?: number | null) => {
+  if (!timestamp) {
+    return 'Unavailable'
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(timestamp)
+}
+
 interface ParticipantCardProps {
   avatarUrl?: string | null
   email?: string
@@ -102,7 +149,6 @@ interface ParticipantCardProps {
   label: string
   locationLabel: string
   name: string
-  statusText?: string
   subtitle: string
   onClick: VoidFunction
 }
@@ -115,59 +161,212 @@ const ParticipantCard = ({
   label,
   locationLabel,
   name,
-  statusText,
   onClick,
 }: ParticipantCardProps) => {
+  const statusLabel = getStatusLabel(isActive)
+
   return (
     <button
       type='button'
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group flex min-h-44 flex-col rounded-2xl border p-3 text-left transition-all duration-200',
-        'border-sidebar/70 bg-background/70 hover:-translate-y-0.5 hover:border-dark-gray/60 hover:shadow-lg',
+        'group flex min-h-20 flex-col rounded-none border p-2 text-left transition-all duration-200',
+        'border-light-gray dark:border-dark-gray bg-background/70 hover:-translate-y-px hover:border-brand',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-gray/60',
         'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:border-sidebar/70 disabled:hover:shadow-none',
         isSelected && 'border-dark-gray bg-alum/30 shadow-lg',
-      )}
-    >
-      <div className='flex items-start justify-between gap-2'>
-        <Badge
-          variant='primary'
-          placement='bottom-right'
-          color={isActive ? 'success' : 'warning'}
-        >
-          <User
-            avatar={avatarUrl ?? undefined}
-            name={name}
-            className='size-10 shrink-0 bg-dark-table/10 dark:bg-alum text-dark-table'
-          />
-        </Badge>
+      )}>
+      <div className='flex items-center justify-between gap-2'>
+        <User
+          avatar={avatarUrl ?? undefined}
+          name={getInitials(name)}
+          className='size-6 shrink-0 bg-dark-table/10 dark:bg-alum text-dark-table'
+        />
         <div className='flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground'>
-          <span className='rounded-full border border-sidebar'>
-            <Icon
-              name={label.toLowerCase() === 'authed' ? 'safe-shield' : 'user'}
-              className='size-4 text-emerald-400/80'
-            />
-          </span>
+          <span
+            aria-label={statusLabel}
+            className={cn(
+              'size-2 rounded-full',
+              isActive
+                ? 'bg-emerald-500'
+                : 'bg-muted-foreground/30 dark:bg-muted-foreground/40',
+            )}
+          />
+          <Icon
+            name={label.toLowerCase() === 'authed' ? 'round-shield' : 'user'}
+            className='size-5 text-emerald-500'
+          />
         </div>
       </div>
 
-      <div className='mt-4 space-y-1'>
-        <p className='line-clamp-1 font-clash text-base font-medium'>{name}</p>
+      <div className='mt-1 space-y-1'>
+        <p className='line-clamp-1 font-clash text-base font-normal'>{name}</p>
         <span className='font-okxs text-xs opacity-70 line-clamp-1'>
           {locationLabel}
-        </span>
-      </div>
-      <div className='mt-auto flex items-center justify-between pt-5'>
-        <span className='text-xs text-muted-foreground'>{statusText}</span>
-        <span className='inline-flex size-9 items-center justify-center rounded-full bg-dark-table text-white transition-transform duration-200 group-hover:scale-105'>
-          <Icon name='chat' className='size-4' />
         </span>
       </div>
     </button>
   )
 }
+
+interface GuestViewSwitcherProps {
+  activeView: GuestViewMode
+  onViewChange: (view: GuestViewMode) => void
+}
+
+const GuestViewSwitcher = ({
+  activeView,
+  onViewChange,
+}: GuestViewSwitcherProps) => (
+  <div
+    role='group'
+    aria-label='Guest list view'
+    className='inline-flex w-fit items-center gap-1 rounded-sm border border-sidebar bg-background/70 p-0.5'>
+    {GUEST_VIEW_MODES.map((mode) => (
+      <button
+        key={mode.id}
+        type='button'
+        aria-pressed={activeView === mode.id}
+        onClick={() => {
+          onViewChange(mode.id)
+        }}
+        className={cn(
+          'flex h-7 items-center gap-1.5 rounded-xs px-2 text-xs font-medium transition-colors',
+          'text-muted-foreground hover:bg-sidebar/50 hover:text-foreground',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-gray/60',
+          activeView === mode.id &&
+            'bg-dark-table text-white shadow-sm hover:bg-dark-table hover:text-white dark:bg-white dark:text-dark-table dark:hover:bg-white dark:hover:text-dark-table',
+        )}>
+        <Icon name={mode.icon} className='size-3.5' />
+        <span>{mode.label}</span>
+      </button>
+    ))}
+  </div>
+)
+
+interface GuestListViewProps {
+  guestUsers: GuestDoc[]
+  isChatWindowOpen: boolean
+  selectedConversationFid: string | null
+  onOpenConversation: (conversationFid: string) => void
+}
+
+const GuestGridView = ({
+  guestUsers,
+  isChatWindowOpen,
+  onOpenConversation,
+  selectedConversationFid,
+}: GuestListViewProps) => (
+  <div className='grid grid-cols-1 gap-3 [content-visibility:auto] sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8 p-1'>
+    {guestUsers.map((participant) => (
+      <ParticipantCard
+        key={participant._id}
+        avatarUrl={participant.photoUrl}
+        email={participant.email}
+        isActive={participant.isActive}
+        isSelected={
+          selectedConversationFid === participant.fid && isChatWindowOpen
+        }
+        label='Guest'
+        locationLabel={getLocationLabel(participant)}
+        name={getGuestDisplayName(participant)}
+        subtitle={participant.guestId}
+        onClick={() => {
+          onOpenConversation(participant.fid)
+        }}
+      />
+    ))}
+  </div>
+)
+
+const GuestTableView = ({
+  guestUsers,
+  isChatWindowOpen,
+  onOpenConversation,
+  selectedConversationFid,
+}: GuestListViewProps) => (
+  <div className='overflow-hidden rounded-sm border border-sidebar/80 bg-background/70'>
+    <Table className='min-w-[48rem]'>
+      <TableHeader>
+        <TableRow className='bg-sidebar/40 hover:bg-sidebar/40'>
+          <TableHead className='pl-3'>Guest</TableHead>
+          <TableHead>Guest ID</TableHead>
+          <TableHead>Location</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Last seen</TableHead>
+          <TableHead className='pr-3 text-right'>Chat</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {guestUsers.map((participant) => {
+          const name = getGuestDisplayName(participant)
+          const isSelected =
+            selectedConversationFid === participant.fid && isChatWindowOpen
+          const statusLabel = getStatusLabel(participant.isActive)
+
+          return (
+            <TableRow
+              key={participant._id}
+              data-state={isSelected ? 'selected' : undefined}
+              className='hover:bg-sidebar/30'>
+              <TableCell className='min-w-52 pl-3'>
+                <div className='flex items-center gap-2'>
+                  <User
+                    avatar={participant.photoUrl ?? undefined}
+                    name={getInitials(name)}
+                    className='size-7 shrink-0 bg-dark-table/10 dark:bg-alum text-dark-table'
+                  />
+                  <div className='min-w-0'>
+                    <p className='truncate font-clash text-sm'>{name}</p>
+                    <p className='truncate font-mono text-[11px] text-muted-foreground'>
+                      {participant.fid}
+                    </p>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <code className='rounded-xs bg-sidebar/50 px-1.5 py-0.5 text-[11px] uppercase'>
+                  {participant.guestId}
+                </code>
+              </TableCell>
+              <TableCell className='max-w-48 truncate'>
+                {getLocationLabel(participant)}
+              </TableCell>
+              <TableCell>
+                <span className='inline-flex items-center gap-1.5 rounded-full border border-sidebar px-2 py-0.5 text-xs'>
+                  <span
+                    className={cn(
+                      'size-1.5 rounded-full',
+                      participant.isActive
+                        ? 'bg-emerald-500'
+                        : 'bg-muted-foreground/40',
+                    )}
+                  />
+                  {statusLabel}
+                </span>
+              </TableCell>
+              <TableCell className='text-xs text-muted-foreground'>
+                {formatGuestTimestamp(getGuestLastSeenAt(participant))}
+              </TableCell>
+              <TableCell className='pr-3 text-right'>
+                <button
+                  type='button'
+                  onClick={() => {
+                    onOpenConversation(participant.fid)
+                  }}
+                  className='inline-flex h-8 items-center gap-1.5 rounded-xs border border-sidebar px-2 text-xs font-medium transition-colors hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-gray/60'>
+                  <Icon name='chat-rounded' className='size-4' />
+                  <span>Open</span>
+                </button>
+              </TableCell>
+            </TableRow>
+          )
+        })}
+      </TableBody>
+    </Table>
+  </div>
+)
 
 export const Content = () => {
   const {user} = useAuthCtx()
@@ -178,6 +377,10 @@ export const Content = () => {
     'chatTab',
     parseAsString.withDefault(DEFAULT_TAB),
   )
+  const [selectedGuestView, setSelectedGuestView] = useQueryState(
+    'guestView',
+    parseAsString.withDefault(DEFAULT_GUEST_VIEW),
+  )
   const [selectedConversationFid, setSelectedConversationFid] = useState<
     string | null
   >(null)
@@ -186,6 +389,11 @@ export const Content = () => {
   const activeTab = CHAT_TABS.some((tab) => tab.id === selectedTab)
     ? (selectedTab as ChatTabId)
     : DEFAULT_TAB
+  const activeGuestView = GUEST_VIEW_MODES.some(
+    (mode) => mode.id === selectedGuestView,
+  )
+    ? (selectedGuestView as GuestViewMode)
+    : DEFAULT_GUEST_VIEW
 
   const usersById = new Map(
     (users ?? []).map((participant) => [String(participant._id), participant]),
@@ -272,8 +480,7 @@ export const Content = () => {
         value={activeTab}
         onValueChange={(value) => {
           void setSelectedTab(value)
-        }}
-      >
+        }}>
         <div className='space-y-4'>
           <header className='flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between'>
             <p className='text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground'>
@@ -304,8 +511,7 @@ export const Content = () => {
                   'font-okxs text-sm font-medium data-active:text-white',
                   'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-sm',
                   'transition-colors duration-100 delay-100',
-                )}
-              >
+                )}>
                 {tab.label}
               </Tabs.Tab>
             ))}
@@ -315,15 +521,14 @@ export const Content = () => {
 
         <Tabs.Panel
           value='authed'
-          className='relative flex min-h-32 flex-1 flex-col py-4'
-        >
+          className='relative flex min-h-32 flex-1 flex-col py-4'>
           <section className='space-y-4'>
             {authenticatedUsers.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
                 No authenticated users are available for chat.
               </div>
             ) : (
-              <div className='grid grid-cols-1 gap-2 [content-visibility:auto] sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8'>
+              <div className='grid grid-cols-1 gap-2 [content-visibility:auto] sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8 p-1'>
                 {authenticatedUsers.map((participant) => {
                   const conversationFid = getUserConversationFid(participant)
 
@@ -362,8 +567,7 @@ export const Content = () => {
 
         <Tabs.Panel
           value='staff'
-          className='relative flex min-h-32 flex-1 flex-col py-4'
-        >
+          className='relative flex min-h-32 flex-1 flex-col py-4'>
           <section className='space-y-4'>
             {staffParticipants.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
@@ -399,9 +603,6 @@ export const Content = () => {
                       label='Staff'
                       locationLabel={getStaffLabel(participant.staff)}
                       name={displayName}
-                      statusText={
-                        conversationFid ? undefined : 'No chat profile'
-                      }
                       subtitle={participant.staff.position}
                       onClick={() => {
                         if (!conversationFid) {
@@ -420,35 +621,38 @@ export const Content = () => {
 
         <Tabs.Panel
           value='guests'
-          className='relative flex min-h-32 flex-1 flex-col py-4'
-        >
+          className='relative flex min-h-32 flex-1 flex-col py-4'>
           <section className='space-y-4'>
             {guestUsers.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
                 No guest conversations have been created yet.
               </div>
             ) : (
-              <div className='grid grid-cols-1 gap-3 [content-visibility:auto] sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8'>
-                {guestUsers.map((participant) => (
-                  <ParticipantCard
-                    key={participant._id}
-                    avatarUrl={participant.photoUrl}
-                    email={participant.email}
-                    isActive={participant.isActive}
-                    isSelected={
-                      selectedConversationFid === participant.fid &&
-                      isChatWindowOpen
-                    }
-                    label='Guest'
-                    locationLabel={getLocationLabel(participant)}
-                    name={participant.name || 'Guest'}
-                    subtitle={participant.guestId}
-                    onClick={() => {
-                      openConversation(participant.fid)
+              <>
+                <div className='flex justify-end'>
+                  <GuestViewSwitcher
+                    activeView={activeGuestView}
+                    onViewChange={(view) => {
+                      void setSelectedGuestView(view)
                     }}
                   />
-                ))}
-              </div>
+                </div>
+                {activeGuestView === 'table' ? (
+                  <GuestTableView
+                    guestUsers={guestUsers}
+                    isChatWindowOpen={isChatWindowOpen}
+                    selectedConversationFid={selectedConversationFid}
+                    onOpenConversation={openConversation}
+                  />
+                ) : (
+                  <GuestGridView
+                    guestUsers={guestUsers}
+                    isChatWindowOpen={isChatWindowOpen}
+                    selectedConversationFid={selectedConversationFid}
+                    onOpenConversation={openConversation}
+                  />
+                )}
+              </>
             )}
           </section>
         </Tabs.Panel>

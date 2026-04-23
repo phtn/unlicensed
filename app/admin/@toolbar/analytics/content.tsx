@@ -9,17 +9,18 @@ import {PageTitle} from '../../_components/ui/page-title'
 import {PrimaryTab, ToolbarButtonWrapper, ToolbarWrapper} from '../components'
 
 export const AnalyticsTabContent = () => {
-  const stats = useQuery(api.logs.q.getVisitStats, {})
+  const stats = useQuery(api.guestTracking.q.getVisitorStats, {})
 
   return (
     <ToolbarWrapper>
       <Link
         href='/admin/reports/analytics'
-        className='flex items-center w-full space-x-4'>
+        className='flex items-center w-full space-x-4'
+      >
         <PageTitle>Analytics</PageTitle>
         {stats ? (
           <div className='w-10 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
-            <AnimatedNumber value={stats?.totalVisits ?? 0} />
+            <AnimatedNumber value={stats?.totalPageViews ?? 0} />
           </div>
         ) : (
           <Icon name='spinners-ring' className='size-4' />

@@ -30,7 +30,7 @@ interface Expiry {
 
 const cookieNameMap: Record<CookieType, string> = {
   rfac: 'rf-ac',
-  guestCart: 'hyfe_guest_cart',
+  guestCart: 'rapidfire_guest_cart',
   guestChatId: GUEST_CHAT_COOKIE_NAME,
 }
 const defaults: CookieOptions = {

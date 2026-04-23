@@ -8,16 +8,14 @@ import {Doc} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 
-type LogRow = Doc<'logs'> & {
-  user?: {name: string; email: string; photoUrl?: string} | null
-}
+type GuestVisitorEventRow = Doc<'guestVisitorEvents'>
 
 export const VisitorLogData = () => {
-  const logsQuery = useQuery(api.logs.q.getLogs, {
+  const eventsQuery = useQuery(api.guestTracking.q.getRecentEvents, {
     limit: 100,
-    type: 'page_visit',
+    type: 'page_view',
   })
-  const data = logsQuery?.logs ?? []
+  const data = eventsQuery ?? []
 
   const columns = useMemo(
     () =>
@@ -37,23 +35,34 @@ export const VisitorLogData = () => {
           ),
         },
         {
+          id: 'visitorId',
+          header: 'Visitor',
+          accessorKey: 'visitorId',
+          size: 180,
+          cell: ({row}) => (
+            <code className='text-xs uppercase'>
+              {row.original.visitorId.slice(0, 14)}
+            </code>
+          ),
+        },
+        {
+          id: 'type',
+          header: 'Type',
+          accessorKey: 'type',
+          size: 120,
+          cell: ({row}) => (
+            <span className='text-xs uppercase tracking-wide'>
+              {row.original.type.replace('_', ' ')}
+            </span>
+          ),
+        },
+        {
           id: 'path',
           header: 'Path',
           accessorKey: 'path',
           size: 260,
           cell: ({row}) => (
             <span className='text-sm truncate'>{row.original.path}</span>
-          ),
-        },
-        {
-          id: 'method',
-          header: 'Method',
-          accessorKey: 'method',
-          size: 100,
-          cell: ({row}) => (
-            <span className='text-xs uppercase tracking-wide'>
-              {row.original.method ?? 'GET'}
-            </span>
           ),
         },
         {
@@ -93,7 +102,7 @@ export const VisitorLogData = () => {
             </span>
           ),
         },
-      ] as ColumnConfig<LogRow>[],
+      ] as ColumnConfig<GuestVisitorEventRow>[],
     [],
   )
 
@@ -102,7 +111,7 @@ export const VisitorLogData = () => {
       <DataTable
         title={'Visitor Logs'}
         data={data}
-        loading={!logsQuery}
+        loading={!eventsQuery}
         columnConfigs={columns}
         editingRowId={null}
       />

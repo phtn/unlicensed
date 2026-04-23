@@ -31,9 +31,18 @@ interface ToolbarButtonProps {
   icon?: IconName
 }
 
-export const ToolbarWrapper = ({children}: PropsWithChildren) => {
+interface ToolbarLayoutProps extends PropsWithChildren {
+  className?: string
+}
+
+export const ToolbarWrapper = ({children, className}: ToolbarLayoutProps) => {
   return (
-    <div className='flex h-auto min-h-12 w-full min-w-0 items-center justify-between overflow-x-auto text-base md:h-11 md:min-h-0 md:overflow-visible'>
+    <div
+      className={cn(
+        'flex h-auto min-h-12 w-full min-w-0 items-center justify-between overflow-x-auto text-base md:h-11 md:min-h-0 md:overflow-visible',
+        className,
+      )}
+    >
       {children}
     </div>
   )
@@ -124,9 +133,17 @@ export const SecondaryTab = (props: ToolbarButtonProps) => {
   )
 }
 
-export const ToolbarButtonWrapper = ({children}: PropsWithChildren) => {
+export const ToolbarButtonWrapper = ({
+  children,
+  className,
+}: ToolbarLayoutProps) => {
   return (
-    <div className='flex min-w-0 items-center gap-1 overflow-x-auto text-base md:gap-4 md:overflow-visible'>
+    <div
+      className={cn(
+        'flex min-w-0 items-center gap-1 overflow-x-auto text-base md:gap-4 md:overflow-visible',
+        className,
+      )}
+    >
       {children}
     </div>
   )

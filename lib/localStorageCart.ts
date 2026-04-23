@@ -2,8 +2,8 @@ import {Id} from '@/convex/_generated/dataModel'
 import {type ProductCartItem, CartItemType} from '@/convex/cart/d'
 
 const VERSION = 'v1'
-export const LOCAL_STORAGE_CART_KEY = `hyfe_cart_items:${VERSION}`
-export const LOCAL_STORAGE_CART_UPDATED_EVENT = 'hyfe_cart_updated'
+export const LOCAL_STORAGE_CART_KEY = `rapidfire_cart_items:${VERSION}`
+export const LOCAL_STORAGE_CART_UPDATED_EVENT = 'rapidfire_cart_updated'
 
 export type LocalStorageCartItem = ProductCartItem
 
@@ -162,4 +162,3 @@ export const getLocalStorageCartItemCount = (): number => {
   const items = getLocalStorageCartItems()
   return items.reduce((total, item) => total + item.quantity, 0)
 }
-

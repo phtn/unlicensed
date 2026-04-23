@@ -13,7 +13,7 @@ export const User = ({
   return (
     <Avatar className={className}>
       <HeroAvatarImage src={avatar} alt={name} />
-      <Avatar.Fallback>{name}</Avatar.Fallback>
+      <Avatar.Fallback className='text-sm'>{name}</Avatar.Fallback>
     </Avatar>
   )
 }

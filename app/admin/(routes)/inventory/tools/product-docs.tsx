@@ -130,7 +130,7 @@ const PRODUCT_FIELDS = [
     'Potency description.',
   ],
   ['weightGrams', 'Yes', 'number', '28.35', 'Weight in grams.'],
-  ['brand', 'Yes', 'string[]', "['Hyfe']", 'Brand values.'],
+  ['brand', 'Yes', 'string[]', "['RapidFire']", 'Brand values.'],
   ['lineage', 'Yes', 'string', 'Blueberry x Haze', 'Genetics or lineage.'],
   ['noseRating', 'Yes', 'number', '9', 'Aroma or nose score.'],
   [

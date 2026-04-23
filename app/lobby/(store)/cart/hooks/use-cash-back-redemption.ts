@@ -2,8 +2,10 @@
 
 import {useCallback, useEffect, useState} from 'react'
 
-const CASH_BACK_REDEMPTION_STORAGE_KEY = 'hyfe:cash-back-redemption:v2'
-const CASH_BACK_REDEMPTION_EVENT = 'hyfe:cash-back-redemption-updated'
+const CASH_BACK_REDEMPTION_STORAGE_KEY =
+  'rapidfire:cash-back-redemption:v2'
+const CASH_BACK_REDEMPTION_EVENT =
+  'rapidfire:cash-back-redemption-updated'
 
 interface CashBackRedemptionState {
   enabled: boolean
@@ -21,7 +23,9 @@ function readRedemptionState(): CashBackRedemptionState {
   const raw = window.localStorage.getItem(CASH_BACK_REDEMPTION_STORAGE_KEY)
   if (!raw) {
     // Migrate from v1 boolean key
-    const v1 = window.localStorage.getItem('hyfe:cash-back-redemption:v1')
+    const v1 = window.localStorage.getItem(
+      'rapidfire:cash-back-redemption:v1',
+    )
     if (v1 === 'true') return {enabled: true, customCents: null}
     return DEFAULT_STATE
   }

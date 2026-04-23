@@ -11,9 +11,10 @@ import {motion} from 'motion/react'
 import {usePathname} from 'next/navigation'
 import {Activity} from 'react'
 import {ProtectedModal} from '../_components/protected-modal'
-import {createHyfeStorageKey} from '@/lib/storage-keys'
+import {createRapidFireStorageKey} from '@/lib/storage-keys'
 
-const PROJECT_STATUS_STORAGE_KEY = createHyfeStorageKey('project-status')
+const PROJECT_STATUS_STORAGE_KEY =
+  createRapidFireStorageKey('project-status')
 
 interface TaskItemProps {
   title: string

@@ -47,6 +47,14 @@ const DynamicUserLocationTracker = dynamic(
   {ssr: false},
 )
 
+const DynamicGuestBehaviorTracker = dynamic(
+  () =>
+    import('./guest-behavior-tracker').then(
+      (module) => module.GuestBehaviorTracker,
+    ),
+  {ssr: false},
+)
+
 export function DeferredRootClient() {
   const [mountDeferredClients, setMountDeferredClients] = useState(false)
 
@@ -83,6 +91,7 @@ export function DeferredRootClient() {
           <DynamicGlobalAuthModal />
           <DynamicScreenDimensionsTracker />
           <DynamicUserLocationTracker />
+          <DynamicGuestBehaviorTracker />
         </>
       ) : null}
     </>

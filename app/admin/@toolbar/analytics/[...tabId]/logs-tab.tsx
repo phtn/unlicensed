@@ -11,9 +11,9 @@ import Link from 'next/link'
 import {Suspense} from 'react'
 
 const LogsInner = () => {
-  const logs = useQuery(api.logs.q.getLogs, {
+  const pageViews = useQuery(api.guestTracking.q.getRecentEvents, {
     limit: 1,
-    type: 'page_visit',
+    type: 'page_view',
   })
   const [tabId] = useAdminTabId()
   const isLogsRoute = tabId === 'logs' || !tabId
@@ -23,14 +23,16 @@ const LogsInner = () => {
       <Link
         href='/admin/reports/analytics?tabId=logs'
         prefetch
-        className='flex items-center space-x-4 group'>
+        className='flex items-center space-x-4 group'
+      >
         <PageTitle>Logs</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-10 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
             {'bg-blue-500 dark:bg-blue-500 text-white': isLogsRoute},
-          )}>
-          <AnimatedNumber value={logs?.logs.length ?? 0} />
+          )}
+        >
+          <AnimatedNumber value={pageViews?.length ?? 0} />
         </span>
       </Link>
       <ToolbarButtonWrapper>
@@ -56,7 +58,8 @@ export const LogsTab = () => {
     <Suspense
       fallback={
         <div className='flex text-base items-center justify-between w-full px-2' />
-      }>
+      }
+    >
       <LogsInner />
     </Suspense>
   )

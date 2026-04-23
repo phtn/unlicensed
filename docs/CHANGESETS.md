@@ -34,7 +34,7 @@ After running `bun run changeset`, you might create a file like:
 
 ```markdown
 ---
-"hyfe": patch
+"rapidfire": patch
 ---
 
 Fixed privacy policy typo and improved table of contents rendering

@@ -1,8 +1,9 @@
 import {Id} from '@/convex/_generated/dataModel'
 
 const VERSION = 'v1'
-export const LOCAL_STORAGE_CART_HISTORY_KEY = `hyfe_cart_history:${VERSION}`
-export const LOCAL_STORAGE_CART_HISTORY_UPDATED_EVENT = 'hyfe_cart_history_updated'
+export const LOCAL_STORAGE_CART_HISTORY_KEY = `rapidfire_cart_history:${VERSION}`
+export const LOCAL_STORAGE_CART_HISTORY_UPDATED_EVENT =
+  'rapidfire_cart_history_updated'
 export const MAX_HISTORY_ITEMS = 10
 
 export type CartHistoryItem = {

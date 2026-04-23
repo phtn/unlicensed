@@ -7,7 +7,7 @@ import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Suspense} from 'react'
-import {PrimaryTab, ToolbarButtonWrapper} from '../../../components'
+import {AnalyticsToolbarTabs} from '../analytics-tabs'
 
 const InsightsInner = () => {
   const stats = useQuery(api.logs.q.getVisitStats, {})
@@ -18,35 +18,18 @@ const InsightsInner = () => {
       <Link
         href='/admin/reports/analytics?tabId=insights'
         prefetch
-        className='flex items-center space-x-4 group'>
+        className='flex items-center space-x-4 group'
+      >
         <PageTitle>Insights</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold text-white',
-          )}>
+          )}
+        >
           <AnimatedNumber value={uniqueVisitors} />
         </span>
       </Link>
-      <ToolbarButtonWrapper>
-        <PrimaryTab
-          id='logs'
-          href='/admin/reports/analytics?tabId=logs'
-          icon='eye'
-          label='Logs'
-        />
-        <PrimaryTab
-          id='insights'
-          href='/admin/reports/analytics?tabId=insights'
-          icon='strength'
-          label='Insights'
-        />
-        <PrimaryTab
-          id='geo'
-          href='/admin/reports/analytics?tabId=geo'
-          icon='globe-light'
-          label='Geo'
-        />
-      </ToolbarButtonWrapper>
+      <AnalyticsToolbarTabs />
     </>
   )
 }
@@ -56,7 +39,8 @@ export const InsightsTab = () => {
     <Suspense
       fallback={
         <div className='flex text-base items-center justify-between w-full px-2' />
-      }>
+      }
+    >
       <InsightsInner />
     </Suspense>
   )

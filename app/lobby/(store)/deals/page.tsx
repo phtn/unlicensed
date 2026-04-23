@@ -3,7 +3,7 @@ import {Metadata} from 'next'
 import {DealsContent} from './content'
 
 export const metadata: Metadata = {
-  title: 'Deals & Bundles | Hyfe Goods',
+  title: 'Deals & Bundles | RapidFire',
   description:
     'Build your own oz, mix & match extracts, edibles and pre-rolls. Custom bundles at great prices.',
 }

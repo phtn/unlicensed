@@ -3,7 +3,7 @@ import type {MutationCtx} from '../_generated/server'
 import {getGuestByFid, getGuestByGuestId} from '../guests/lib'
 
 const GUEST_FID_PREFIX = 'guest:'
-const GUEST_EMAIL_DOMAIN = 'guest-chat.hyfe.local'
+const GUEST_EMAIL_DOMAIN = 'guest-chat.rapidfire.local'
 
 export const GUEST_DISPLAY_NAME = 'Guest'
 

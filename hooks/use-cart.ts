@@ -22,7 +22,7 @@ import {useAuth} from './use-auth'
  * Cart hook that uses different storage based on authentication:
  *
  * - Authenticated users: Cart is stored in Convex, linked to userId
- * - Unauthenticated users: Cart is stored in localStorage (hyfe_cart_items:v1)
+ * - Unauthenticated users: Cart is stored in localStorage (rapidfire_cart_items:v1)
  * - When user authenticates: Guest cart items are merged into Convex cart
  * - When user checks out: Guest cart items are synced to Convex before order creation
  *
@@ -281,7 +281,7 @@ export const useCart = (): UseCartResult => {
       // Merge guest cart into Convex when user authenticates
       hasMergedRef.current = true
       const mergeCart = async () => {
-        const mergeLockKey = `hyfe_cart_merge_done:${user.uid}`
+        const mergeLockKey = `rapidfire_cart_merge_done:${user.uid}`
         mergeLockKeyRef.current = mergeLockKey
 
         // Cross-instance lock: multiple `useCart()` hook instances can mount (navbar slot,

@@ -19,6 +19,7 @@ import {emailSettingsSchema} from './emailSettings/d'
 import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
 import {gatewaySchema} from './gateways/d'
+import {guestVisitorEventSchema, guestVisitorSchema} from './guestTracking/d'
 import {guestSchema} from './guests/d'
 import {inventoryMovementSchema} from './inventoryMovements/d'
 import {logSchema} from './logs/d'
@@ -59,6 +60,19 @@ export default defineSchema({
     .index('by_fid', ['fid'])
     .index('by_guestId', ['guestId'])
     .index('by_email', ['email']),
+  guestVisitors: defineTable(guestVisitorSchema)
+    .index('by_visitor_id', ['visitorId'])
+    .index('by_last_seen_at', ['lastSeenAt'])
+    .index('by_ip_network_hash_and_user_agent_hash', [
+      'ipNetworkHash',
+      'userAgentHash',
+    ])
+    .index('by_linked_user_fid', ['linkedUserFid']),
+  guestVisitorEvents: defineTable(guestVisitorEventSchema)
+    .index('by_visitor_id_and_created_at', ['visitorId', 'createdAt'])
+    .index('by_type_and_created_at', ['type', 'createdAt'])
+    .index('by_path_and_created_at', ['path', 'createdAt'])
+    .index('by_created_at', ['createdAt']),
   addresses: defineTable(addressRecordSchema)
     .index('by_user', ['userId'])
     .index('by_user_type', ['userId', 'type'])

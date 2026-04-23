@@ -1,23 +1,23 @@
 'use client'
 
-import {User} from '@/components/hero-v3/user'
-import {api} from '@/convex/_generated/api'
-import type {Doc} from '@/convex/_generated/dataModel'
-import {Icon, IconName} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {formatTimestamp} from '@/utils/date'
-import {toEmoji} from '@/utils/fingerprint'
+import { User } from '@/components/hero-v3/user'
+import { api } from '@/convex/_generated/api'
+import type { Doc } from '@/convex/_generated/dataModel'
+import { Icon, IconName } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { formatTimestamp } from '@/utils/date'
+import { toEmoji } from '@/utils/fingerprint'
 import {
-  Card,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
+    Card,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
 } from '@heroui/react'
-import {useQuery} from 'convex/react'
-import React, {ReactNode} from 'react'
+import { useQuery } from 'convex/react'
+import React, { ReactNode } from 'react'
 
 type Log = Doc<'logs'> & {
   user?: {name: string; email: string; photoUrl?: string} | null
@@ -301,7 +301,7 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
           'h-lvh overflow-auto transition-transform duration-300 md:h-[calc(100lvh-64px)]',
         )}
       >
-        <Table aria-label='Visit logs table' className='min-w-[58rem]'>
+        <Table aria-label='Visit logs table' className='min-w-232'>
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
