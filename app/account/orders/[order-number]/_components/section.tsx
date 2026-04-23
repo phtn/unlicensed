@@ -5,7 +5,7 @@ import {ReactNode} from 'react'
 
 export const SectionTitle = ({title}: {title: ReactNode}) => {
   return (
-    <h2 className='font-polysans font-medium text-lg tracking-wide mb-2 opacity-70'>
+    <h2 className='font-display font-semibold text-lg tracking-wide mb-2 opacity-70'>
       {title}
     </h2>
   )
@@ -13,7 +13,7 @@ export const SectionTitle = ({title}: {title: ReactNode}) => {
 
 export const Section = ({children}: {children: ReactNode}) => {
   return (
-    <h2 className='text-lg tracking-wide font-polysans font-semibold mb-2 md:mb-4'>
+    <h2 className='font-polysans font-semibold text-lg tracking-wide mb-2 md:mb-4'>
       {children}
     </h2>
   )

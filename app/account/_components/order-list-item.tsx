@@ -109,7 +109,7 @@ const statusConfig: Record<
   cancelled: {
     label: 'Cancelled',
     dotClass: 'bg-rose-400',
-    textClass: 'text-rose-500 dark:text-rose-400',
+    textClass: 'text-rose-300 dark:text-rose-200',
   },
 }
 

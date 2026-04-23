@@ -557,8 +557,7 @@ function DataTableContent<T>({
         className={cn(
           'relative inset-0 dark:inset-0 md:pb-8 md:max-w-[84lvw] md:w-full max-w-full overflow-hidden mb-0',
           {'md:max-w-[96.25lvw]': !sidebarOpen},
-        )}
-      >
+        )}>
         <div className='portrait:sticky left-0 flex min-h-10.5 w-full max-w-full shrink-0 flex-nowrap items-center justify-between gap-2 overflow-x-auto overflow-y-visible md:gap-0'>
           <div className='flex shrink-0 flex-nowrap items-center gap-2 md:gap-3'>
             <LeftTableToolbar
@@ -618,14 +617,12 @@ function DataTableContent<T>({
           <TableContainer>
             <Table
               className='w-fit min-w-4xl table-fixed'
-              style={{width: `${table.getTotalSize()}px`}}
-            >
+              style={{width: `${table.getTotalSize()}px`}}>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
-                    className='bg-dark-table dark:bg-dark-table/0 md:h-8 h-7'
-                  >
+                    className='bg-dark-table dark:bg-dark-table/0 md:h-8 h-7'>
                     {headerGroup.headers
                       .filter((header) => header.column.getIsVisible())
                       .map((header) => {
@@ -642,8 +639,7 @@ function DataTableContent<T>({
                               'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-7 uppercase overflow-hidden',
                               'font-clash font-medium tracking-tight text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
                               'dark:text-zinc-300 dark:bg-dark-table ps-2',
-                            )}
-                          >
+                            )}>
                             <ColumnSort
                               flexRender={flexRender}
                               header={header}
@@ -700,14 +696,13 @@ function DataTableContent<T>({
         description={`Review and confirm changed values before they are applied.`}
         className={cn(
           'h-auto max-h-none translate-x-0 rounded-xl border-dark-table/20',
-          'w-[calc(100vw-1.5rem)] max-w-[31rem] md:w-[min(calc(100vw-3rem),31rem)]',
+          'w-[calc(100vw-1.5rem)] max-w-124 md:w-[min(calc(100vw-3rem),31rem)]',
           {
             'w-[min(calc(100vw-16rem),32rem)] md:w-[min(calc(100vw-20rem),16rem)]':
               multiRowCompact,
           },
           'md:right-6 md:top-24 md:bottom-6 left-auto right-3 top-30 bottom-16 ',
-        )}
-      >
+        )}>
         <MultiSelect
           key={selectedRowSignature}
           selectedRows={selectedRowData}
@@ -735,8 +730,7 @@ export const DataTable = <T,>(props: TableProps<T>) => {
   return (
     <ColumnVisibilityProvider
       valueFromUrl={columnVisibilityParam ?? {}}
-      onVisibilityChange={setColumnVisibilityParam}
-    >
+      onVisibilityChange={setColumnVisibilityParam}>
       <DataTableContent<T> {...props} />
     </ColumnVisibilityProvider>
   )

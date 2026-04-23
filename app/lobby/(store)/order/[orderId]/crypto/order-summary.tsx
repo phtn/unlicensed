@@ -9,7 +9,11 @@ import {
 } from '@/components/expermtl/arc-card'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {computeOrderSummarySubtotalCents} from '@/lib/checkout/processing-fee'
+import {
+  CRYPTO_PAYMENT_DISCOUNT_PERCENT,
+  formatProcessingFeePercent,
+  resolveOrderPayableTotalCents,
+} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
@@ -21,20 +25,37 @@ export const OrderSummaryWidget = () => {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
   const order = useQuery(api.orders.q.getById, {id: orderId})
-  const itemsTotal =
-    order?.items.reduce(
-      (acc, item) => acc + item.unitPriceCents * item.quantity,
-      0,
-    ) ?? 0
+  const subtotalCents = order?.subtotalCents ?? 0
+  const couponCode = order?.couponCode?.trim().toUpperCase()
+  const couponDiscountCents = order?.couponDiscountCents ?? 0
+  const paymentMethodDiscountCents = order?.paymentMethodDiscountCents ?? 0
   const redeemedStoreCreditCents = order?.redeemedStoreCreditCents ?? 0
   const taxCents = order?.taxCents ?? 0
-  const subtotal = computeOrderSummarySubtotalCents({
-    itemsTotalCents: itemsTotal,
-    redeemedStoreCreditCents,
-    shippingCents: order?.shippingCents ?? 0,
+  const shippingCents = order?.shippingCents ?? 0
+  const processingFeeCents = order?.processingFeeCents ?? 0
+  const additionalDiscountCents = Math.max(
+    0,
+    (order?.discountCents ?? 0) -
+      couponDiscountCents -
+      paymentMethodDiscountCents -
+      redeemedStoreCreditCents,
+  )
+  const cryptoFeeCents = Math.max(
+    0,
+    (order?.totalWithCryptoFeeCents ??
+      (order?.totalCents ?? 0) + (order?.cryptoFeeCents ?? 0)) -
+      (order?.totalCents ?? 0) -
+      processingFeeCents,
+  )
+  const totalCents = resolveOrderPayableTotalCents({
+    paymentMethod: order?.payment.method,
+    totalCents: order?.totalCents,
+    processingFeeCents: order?.processingFeeCents,
+    totalWithCryptoFeeCents: order?.totalWithCryptoFeeCents,
   })
-  const total = order?.totalWithCryptoFeeCents ?? 0
-  const processingFee = total - subtotal
+  const paymentMethodDiscountLabel = `Crypto Discount (${formatProcessingFeePercent(
+    CRYPTO_PAYMENT_DISCOUNT_PERCENT,
+  )})`
 
   return (
     <main className='lg:w-3xl z-80'>
@@ -69,22 +90,9 @@ export const OrderSummaryWidget = () => {
         <div className='mt-2'>Summary</div>
         <ArcLineItems
           data={[
-            // ...data,
             {
-              label: 'Items Total',
-              value: `$${formatPrice(itemsTotal)}`,
-            },
-            ...(redeemedStoreCreditCents > 0
-              ? [
-                  {
-                    label: 'Redeemed Points',
-                    value: `- $${formatPrice(redeemedStoreCreditCents)}`,
-                  },
-                ]
-              : []),
-            {
-              label: 'Shipping',
-              value: `$${formatPrice(order?.shippingCents ?? 0)}`,
+              label: 'Subtotal',
+              value: `$${formatPrice(subtotalCents)}`,
             },
             ...(taxCents > 0
               ? [
@@ -94,18 +102,61 @@ export const OrderSummaryWidget = () => {
                   },
                 ]
               : []),
-
             {
-              label: 'Subtotal',
-              value: `$${formatPrice(subtotal)}`,
+              label: 'Shipping',
+              value: shippingCents === 0 ? 'Free' : `$${formatPrice(shippingCents)}`,
             },
-            {
-              label: 'Processing Fee',
-              value: `$${formatPrice(processingFee)}`,
-            },
+            ...(couponDiscountCents > 0
+              ? [
+                  {
+                    label: couponCode ? `Coupon (${couponCode})` : 'Coupon',
+                    value: `- $${formatPrice(couponDiscountCents)}`,
+                  },
+                ]
+              : []),
+            ...(paymentMethodDiscountCents > 0
+              ? [
+                  {
+                    label: paymentMethodDiscountLabel,
+                    value: `- $${formatPrice(paymentMethodDiscountCents)}`,
+                  },
+                ]
+              : []),
+            ...(redeemedStoreCreditCents > 0
+              ? [
+                  {
+                    label: 'Rewards',
+                    value: `- $${formatPrice(redeemedStoreCreditCents)}`,
+                  },
+                ]
+              : []),
+            ...(additionalDiscountCents > 0
+              ? [
+                  {
+                    label: 'Additional Discount',
+                    value: `- $${formatPrice(additionalDiscountCents)}`,
+                  },
+                ]
+              : []),
+            ...(processingFeeCents > 0
+              ? [
+                  {
+                    label: 'Processing Fee',
+                    value: `$${formatPrice(processingFeeCents)}`,
+                  },
+                ]
+              : []),
+            ...(cryptoFeeCents > 0
+              ? [
+                  {
+                    label: 'Crypto Fee',
+                    value: `$${formatPrice(cryptoFeeCents)}`,
+                  },
+                ]
+              : []),
             {
               label: 'Total',
-              value: `$${formatPrice(total)}`,
+              value: `$${formatPrice(totalCents)}`,
             },
           ]}
         />

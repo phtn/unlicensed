@@ -4,7 +4,12 @@ import {Button as LinkButton} from '@/components/ui/button'
 import {LegacyImage} from '@/components/ui/legacy-image'
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
-import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
+import {
+  CRYPTO_PAYMENT_DISCOUNT_PERCENT,
+  formatProcessingFeePercent,
+  isCryptoPaymentMethod,
+  resolveOrderPayableTotalCents,
+} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
@@ -93,10 +98,34 @@ export default function OrderDetailPage() {
     processingFeeCents: order.processingFeeCents,
     totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
   })
+  const isCryptoPayment = isCryptoPaymentMethod(order.payment.method)
+  const couponCode = order.couponCode?.trim().toUpperCase()
+  const couponDiscountCents = order.couponDiscountCents ?? 0
+  const paymentMethodDiscountCents = order.paymentMethodDiscountCents ?? 0
+  const redeemedStoreCreditCents = order.redeemedStoreCreditCents ?? 0
+  const additionalDiscountCents = Math.max(
+    0,
+    (order.discountCents ?? 0) -
+      couponDiscountCents -
+      paymentMethodDiscountCents -
+      redeemedStoreCreditCents,
+  )
+  const cryptoFeeCents = isCryptoPayment
+    ? Math.max(
+        0,
+        (order.totalWithCryptoFeeCents ??
+          order.totalCents + (order.cryptoFeeCents ?? 0)) -
+          order.totalCents -
+          (order.processingFeeCents ?? 0),
+      )
+    : 0
   const processingFeeLabel =
     order.payment.method === 'cash_app'
       ? 'Cash App Processing Fee'
       : 'Processing Fee'
+  const paymentMethodDiscountLabel = `Crypto Discount (${formatProcessingFeePercent(
+    CRYPTO_PAYMENT_DISCOUNT_PERCENT,
+  )})`
 
   return (
     <div className='min-h-screen pt-4'>
@@ -165,7 +194,7 @@ export default function OrderDetailPage() {
           />
         </div>
 
-        <div className='grid gap-3 sm:gap-4 md:gap-6'>
+        <div className='grid gap-0'>
           {/* Order Items */}
           <Card className='relative dark:bg-dark-table/50 rounded-xs border border-light-gray dark:border-dark-table shadow-none overflow-hidden'>
             <div className="absolute w-full h-full inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-60 scale-100 pointer-events-none" />
@@ -186,11 +215,13 @@ export default function OrderDetailPage() {
                         className='w-20 h-20 aspect-square object-cover rounded-xs shrink-0'
                         loading='lazy'
                       />
-                      <div className='font-okxs flex-1 w-full space-y-1'>
-                        <h3 className=''>{item.productName}</h3>
+                      <div className='font-clash flex-1 w-full space-y-1'>
+                        <h3 className='font-semibold'>{item.productName}</h3>
+                        <p className='text-base opacity-80 mt-2'>
+                          ${formatPrice(item.unitPriceCents)}
+                        </p>
                         <div className='flex items-center text-sm opacity-80'>
                           <span className='hidden md:flex mr-1'>Quantity:</span>
-                          <span className='md:hidden flex mr-1'>Qty:</span>
                           <span>
                             {item.quantity}
                             {item.denomination && item.denomination > 1
@@ -198,9 +229,6 @@ export default function OrderDetailPage() {
                               : ''}
                           </span>
                         </div>
-                        <p className='text-sm opacity-80 mt-2'>
-                          ${formatPrice(item.unitPriceCents)} each
-                        </p>
                       </div>
                       <div className='flex-1 text-right font-okxs'>
                         <p className='font-semibold'>
@@ -213,45 +241,78 @@ export default function OrderDetailPage() {
               </div>
             </Card.Content>
           </Card>
-
           {/* Order Summary */}
-          <div className='grid gap-3 sm:gap-4 md:gap-6 md:grid-cols-2 '>
-            <Card className='rounded-xs dark:bg-dark-table/30'>
+          <div className='grid gap-0 md:grid-cols-2 '>
+            <Card className='shadow-none bg-sidebar/50 rounded-xs dark:bg-dark-table/30 md:border-r md:border-b border-background'>
               <Card.Content className='p-3 sm:p-4 md:p-6'>
                 <SectionTitle title='Order Summary' />
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between text-sm'>
-                    <span className='text-color-muted'>Subtotal</span>
+                    <span className='text-muted'>Subtotal</span>
                     <span>${formatPrice(order.subtotalCents ?? 0)}</span>
                   </div>
-                  {order.discountCents && order.discountCents > 0 && (
-                    <div className='flex justify-between text-sm'>
-                      <span className='text-color-muted'>Discount</span>
-                      <span className='text-success'>
-                        -${formatPrice(order.discountCents ?? 0)}
-                      </span>
-                    </div>
-                  )}
                   <div className='flex justify-between text-sm'>
-                    <span className='text-color-muted'>Tax</span>
+                    <span className='text-muted'>Tax</span>
                     <span>${formatPrice(order.taxCents ?? 0)}</span>
                   </div>
                   <div className='flex justify-between text-sm'>
-                    <span className='text-color-muted'>Shipping</span>
+                    <span className='text-muted'>Shipping</span>
                     <span>
                       {order.shippingCents === 0 ? (
-                        <span className='text-teal-500'>Free</span>
+                        <span className='bg-limited px-1.5 uppercase rounded-sm font-bone text-dark-gray border border-dark-gray'>
+                          Free
+                        </span>
                       ) : (
                         `$${formatPrice(order.shippingCents ?? 0)}`
                       )}
                     </span>
                   </div>
+                  {couponDiscountCents > 0 && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-success'>
+                        {couponCode ? `Coupon (${couponCode})` : 'Coupon'}
+                      </span>
+                      <span className='text-success'>
+                        -${formatPrice(couponDiscountCents)}
+                      </span>
+                    </div>
+                  )}
+                  {paymentMethodDiscountCents > 0 && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-success'>
+                        {paymentMethodDiscountLabel}
+                      </span>
+                      <span className='text-success'>
+                        -${formatPrice(paymentMethodDiscountCents)}
+                      </span>
+                    </div>
+                  )}
+                  {redeemedStoreCreditCents > 0 && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-success'>Rewards</span>
+                      <span className='text-success'>
+                        -${formatPrice(redeemedStoreCreditCents)}
+                      </span>
+                    </div>
+                  )}
+                  {additionalDiscountCents > 0 && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-success'>Additional Discount</span>
+                      <span className='text-success'>
+                        -${formatPrice(additionalDiscountCents)}
+                      </span>
+                    </div>
+                  )}
                   {order.processingFeeCents && order.processingFeeCents > 0 && (
                     <div className='flex justify-between text-sm'>
-                      <span className='text-color-muted'>
-                        {processingFeeLabel}
-                      </span>
+                      <span className='text-muted'>{processingFeeLabel}</span>
                       <span>${formatPrice(order.processingFeeCents)}</span>
+                    </div>
+                  )}
+                  {cryptoFeeCents > 0 && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-muted'>Crypto Fee</span>
+                      <span>${formatPrice(cryptoFeeCents)}</span>
                     </div>
                   )}
                   <Separator className='my-2' />
@@ -264,10 +325,10 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Payment Information */}
-            <Card className='rounded-xs dark:bg-dark-table/30'>
+            <Card className='shadow-none bg-sidebar/50 rounded-xs dark:bg-dark-table/30 md:border-b border-background'>
               <Card.Content className='p-4 md:p-6'>
                 <div className='flex items-center justify-between'>
-                  <SectionTitle title='Payment' />
+                  <SectionTitle title='Payment Details' />
                   {/*<div className='font-okxs text-cashapp'>
                     {order.payment.method === 'cash_app'
                       ? '@' + convexUser?.cashAppUsername
@@ -276,24 +337,22 @@ export default function OrderDetailPage() {
                 </div>
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between'>
-                    <span className='text-sm md:text-base text-color-muted'>
-                      Method
-                    </span>
+                    <span className='text-sm text-muted'>Method</span>
                     <span>{mmap[order.payment.method]}</span>
                   </div>
                   <div className='flex justify-between'>
-                    <span className='text-sm text-color-muted'>Status</span>
+                    <span className='text-sm text-muted'>Status</span>
                     <OrderStatusBadge status={order.orderStatus} />
                   </div>
                   {order.payment.transactionId && (
                     <div className='flex justify-between'>
-                      <span className='text-color-muted'>Transaction ID</span>
+                      <span className='text-muted'>Transaction ID</span>
                       <TxnId id={order.payment.transactionId} />
                     </div>
                   )}
                   {order.payment.gateway?.transactionId && (
                     <div className='flex justify-between'>
-                      <span className='text-color-muted'>Transaction ID</span>
+                      <span className='text-muted'>Transaction ID</span>
                       <span className='text-sm font-mono'>
                         {order.payment.gateway?.transactionId}
                       </span>
@@ -315,7 +374,7 @@ export default function OrderDetailPage() {
                     )}
                   {order.payment.paidAt && (
                     <div className='flex justify-between'>
-                      <span className='text-color-muted'>Paid At</span>
+                      <span className='text-muted'>Paid At</span>
                       <span className='text-sm'>
                         {order.payment.paidAt
                           ? formatDate(order.payment.paidAt)
@@ -327,31 +386,30 @@ export default function OrderDetailPage() {
               </Card.Content>
             </Card>
           </div>
-
           {/* Shipping Information */}
-          <div className='grid gap-3 sm:gap-4 md:gap-6 md:grid-cols-2'>
-            <Card className='rounded-xs dark:bg-dark-table/30'>
+          <div className='grid md:grid-cols-2'>
+            <Card className='shadow-none bg-sidebar/50 rounded-xs dark:bg-dark-table/30 md:border-r border-background'>
               <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Shipping Address' />
                 <div className='space-y-1 font-okxs text-sm'>
                   {order.shippingAddress.firstName &&
                     order.shippingAddress.lastName && (
-                      <p className='font-semibold'>
+                      <p className='font-medium text-foreground text-base uppercase'>
                         {order.shippingAddress.firstName}{' '}
                         {order.shippingAddress.lastName}
                       </p>
                     )}
-                  <p>{order.shippingAddress.addressLine1}</p>
+                  <address>{order.shippingAddress.addressLine1}</address>
                   {order.shippingAddress.addressLine2 && (
-                    <p>{order.shippingAddress.addressLine2}</p>
+                    <address>{order.shippingAddress.addressLine2}</address>
                   )}
-                  <p>
+                  <address>
                     {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
                     {order.shippingAddress.zipCode},{' '}
                     <span className='uppercase'>
                       {order.shippingAddress.country}
                     </span>
-                  </p>
+                  </address>
                   {order.shippingAddress.phone && (
                     <p className='mt-2'>{order.shippingAddress.phone}</p>
                   )}
@@ -395,33 +453,31 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Order Details */}
-            <Card className='rounded-xs border-light-gray shadow-none dark:bg-dark-table/30'>
+            <Card className='rounded-xs bg-sidebar/50 border-light-gray shadow-none dark:bg-dark-table/30'>
               <Card.Content className='p-2 md:p-6'>
                 <SectionTitle title='Order Details' />
                 <div className='space-y-2 font-okxs text-sm'>
                   <div className='flex justify-between'>
-                    <span className='text-color-muted'>Order Number</span>
-                    <span className='font-mono tracking-widest'>
-                      {order.orderNumber}
-                    </span>
+                    <span className='text-muted'>Order Number</span>
+                    <span className=''>{order.orderNumber}</span>
                   </div>
                   <div className='flex justify-between'>
-                    <span className='text-color-muted'>Placed On</span>
+                    <span className='text-muted'>Placed On</span>
                     <span>{formatDate(order.createdAt ?? 0)}</span>
                   </div>
                   <div className='flex justify-between'>
-                    <span className='text-color-muted'>Contact Email</span>
+                    <span className='text-muted'>Contact Email</span>
                     <span>{order.contactEmail}</span>
                   </div>
                   {order.contactPhone && (
                     <div className='flex justify-between'>
-                      <span className='text-color-muted'>Contact Phone</span>
+                      <span className='text-muted'>Contact Phone</span>
                       <span>{order.contactPhone}</span>
                     </div>
                   )}
                   {order.customerNotes && (
                     <div className='mt-4 pt-4 border-t border-divider'>
-                      <p className='text-color-muted mb-2'>Customer Notes</p>
+                      <p className='text-muted mb-2'>Customer Notes</p>
                       <p className='text-sm'>{order.customerNotes}</p>
                     </div>
                   )}
@@ -429,9 +485,8 @@ export default function OrderDetailPage() {
               </Card.Content>
             </Card>
           </div>
-
           {/* Actions */}
-          <div className='flex gap-4 justify-end mb-4'>
+          <div className='hidden _flex gap-4 justify-end mb-4'>
             <LinkButton
               asChild
               variant='ghost'

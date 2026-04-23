@@ -241,7 +241,7 @@ export const InsightsPage = () => {
   }
 
   return (
-    <div className='h-[100svh] space-y-6 overflow-auto p-2 pb-32 md:p-4'>
+    <div className='h-svh space-y-6 overflow-auto p-2 pb-32 md:p-4'>
       {/* Key Metrics Cards */}
       <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4'>
         <Card className='p-3 dark:bg-dark-table/40 md:p-4'>

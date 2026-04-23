@@ -23,7 +23,7 @@ export const OrderStatusBadge = ({status}: Props) => {
       color={chipColorByStatus[status]}
       variant='secondary'
       className={cn(
-        'ml-1 rounded-sm border-none px-1 uppercase font-ios dark:bg-black/30 bg-dark-table',
+        'ml-1 rounded-sm border-none px-1 uppercase font-ios dark:bg-gray-700 bg-dark-table dark:text-white',
         {
           'bg-emerald-500 dark:bg-emerald-500/80 text-white opacity-100':
             status === 'order_processing',

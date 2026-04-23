@@ -287,7 +287,7 @@ const GuestTableView = ({
   selectedConversationFid,
 }: GuestListViewProps) => (
   <div className='overflow-hidden rounded-sm border border-sidebar/80 bg-background/70'>
-    <Table className='min-w-[48rem]'>
+    <Table className='min-w-3xl'>
       <TableHeader>
         <TableRow className='bg-sidebar/40 hover:bg-sidebar/40'>
           <TableHead className='pl-3'>Guest</TableHead>

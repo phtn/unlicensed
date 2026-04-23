@@ -768,8 +768,7 @@ export const DealsContent = () => {
     <div className='flex h-[90lvh] min-w-0 w-full max-w-full flex-col space-y-2 overflow-y-auto pb-24'>
       <ContentHeader
         title='Deals & Bundles'
-        description='Configure store deals and mix-and-match bundles. Only enabled deals appear on the Deals page.'
-      >
+        description='Configure store deals and mix-and-match bundles. Only enabled deals appear on the Deals page.'>
         <div className='flex flex-wrap gap-2'>
           {deals.length === 0 && (
             <PrimaryButton
@@ -806,8 +805,7 @@ export const DealsContent = () => {
             {deals.map((deal, i) => (
               <Card
                 key={deal.id}
-                className='border border-alum/30 rounded-xs overflow-hidden transition-colors hover:border-default-300/80'
-              >
+                className='border border-alum/30 rounded-xs overflow-hidden transition-colors hover:border-default-300/80'>
                 <Card.Content className='p-0'>
                   <div className='flex flex-col gap-3 p-0 pb-3 sm:flex-row sm:items-start sm:justify-between'>
                     <div className='flex min-w-0 flex-1 items-start gap-3'>
@@ -821,7 +819,7 @@ export const DealsContent = () => {
                               name='book-open'
                               className='size-4.5 shrink-0'
                             />
-                            <span className='min-w-0 break-words text-foreground/80'>
+                            <span className='min-w-0 wrap-break-word text-foreground/80'>
                               {deal.description}
                             </span>
                           </div>
@@ -852,8 +850,7 @@ export const DealsContent = () => {
                       {deal.categorySlugs.map((s) => (
                         <span
                           key={s}
-                          className='rounded-lg bg-terpenes/5 border border-foreground/25 px-2 py-0.5 text-[10px] text-foreground/60'
-                        >
+                          className='rounded-lg bg-terpenes/5 border border-foreground/25 px-2 py-0.5 text-[10px] text-foreground/60'>
                           {s}
                         </span>
                       ))}
@@ -866,8 +863,7 @@ export const DealsContent = () => {
                         aria-label='Move up'
                         isDisabled={i === 0}
                         onPress={() => handleMove(i, -1)}
-                        className='min-w-8 rounded-sm'
-                      >
+                        className='min-w-8 rounded-sm'>
                         <Icon name='arrow-up' className='size-4' />
                       </Button>
                       <Button
@@ -877,8 +873,7 @@ export const DealsContent = () => {
                         aria-label='Move down'
                         isDisabled={i === deals.length - 1}
                         onPress={() => handleMove(i, 1)}
-                        className='min-w-8 rounded-sm'
-                      >
+                        className='min-w-8 rounded-sm'>
                         <Icon name='arrow-down' className='size-4' />
                       </Button>
                       <div className='md:mx-3 w-px my-2 md:self-stretch bg-default-200' />
@@ -886,16 +881,14 @@ export const DealsContent = () => {
                         size='sm'
                         variant='tertiary'
                         className='rounded-sm dark:bg-white/10 hover:bg-dark-table dark:hover:bg-white active:bg-dark-table dark:active:bg-white dark:active:text-dark-table hover:opacity-100! hover:text-white dark:hover:text-dark-table'
-                        onPress={() => openEdit(deal)}
-                      >
+                        onPress={() => openEdit(deal)}>
                         Edit
                       </Button>
                       <Button
                         size='sm'
                         variant='danger-soft'
                         className='rounded-sm'
-                        onPress={() => setDeleteConfirmId(deal.id)}
-                      >
+                        onPress={() => setDeleteConfirmId(deal.id)}>
                         <Icon name='trash' className='size-4 md:hidden' />
                         <span className='hidden md:flex'>Delete</span>
                       </Button>
@@ -913,8 +906,7 @@ export const DealsContent = () => {
         isOpen={modalOpen}
         onOpenChange={(open) => {
           if (!open) closeModal()
-        }}
-      >
+        }}>
         <Modal.Backdrop>
           <Modal.Container size='lg' scroll='inside'>
             <Modal.Dialog className='max-w-4xl overflow-hidden rounded-2xl'>
@@ -984,8 +976,7 @@ export const DealsContent = () => {
                             isSelected
                               ? 'border-terpenes bg-terpenes text-white'
                               : 'border-foreground/25 bg-transparent',
-                          )}
-                        >
+                          )}>
                           <Checkbox.Control className='shrink-0'>
                             <Checkbox.Indicator className=''>
                               {({isSelected}) =>
@@ -1048,8 +1039,7 @@ export const DealsContent = () => {
                                     isSelected
                                       ? 'border-rose-400 bg-rose-400 text-white'
                                       : 'border-foreground/25 bg-transparent',
-                                  )}
-                                >
+                                  )}>
                                   <Checkbox.Control className='shrink-0'>
                                     <Checkbox.Indicator>
                                       {({isSelected}) =>
@@ -1111,8 +1101,7 @@ export const DealsContent = () => {
                       return (
                         <div
                           key={idx}
-                          className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'
-                        >
+                          className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
                           <div className='grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4'>
                             <Select
                               label='Category'
@@ -1248,8 +1237,7 @@ export const DealsContent = () => {
                                   (_, i) => i !== idx,
                                 ),
                               }))
-                            }
-                          >
+                            }>
                             <Icon name='x' />
                           </Button>
                         </div>
@@ -1266,8 +1254,7 @@ export const DealsContent = () => {
                             emptyVariation(selectedCategories),
                           ],
                         }))
-                      }
-                    >
+                      }>
                       Add variation
                     </Button>
                   </div>
@@ -1322,8 +1309,7 @@ export const DealsContent = () => {
                       onChange={(isSelected) =>
                         setForm((f) => ({...f, enabled: isSelected}))
                       }
-                      className='flex items-center gap-2'
-                    >
+                      className='flex items-center gap-2'>
                       <Checkbox.Control>
                         <Checkbox.Indicator className='aspect-square' />
                       </Checkbox.Control>
@@ -1350,8 +1336,7 @@ export const DealsContent = () => {
                   variant='primary'
                   onPress={handleSave}
                   isDisabled={!formToDealPatch(form) || isSaving}
-                  className='bg-dark-table dark:bg-white dark:text-dark-table'
-                >
+                  className='bg-dark-table dark:bg-white dark:text-dark-table'>
                   {isSaving
                     ? 'Saving...'
                     : editingId
@@ -1369,8 +1354,7 @@ export const DealsContent = () => {
         isOpen={deleteConfirmId != null}
         onOpenChange={(open) => {
           if (!open) setDeleteConfirmId(null)
-        }}
-      >
+        }}>
         <Modal.Backdrop>
           <Modal.Container size='sm'>
             <Modal.Dialog className='rounded-2xl overflow-hidden'>
@@ -1386,15 +1370,13 @@ export const DealsContent = () => {
               <Modal.Footer className='gap-2'>
                 <Button
                   variant='tertiary'
-                  onPress={() => setDeleteConfirmId(null)}
-                >
+                  onPress={() => setDeleteConfirmId(null)}>
                   Cancel
                 </Button>
                 <Button
                   variant='danger'
                   onPress={handleDelete}
-                  isDisabled={isDeleting}
-                >
+                  isDisabled={isDeleting}>
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </Button>
               </Modal.Footer>

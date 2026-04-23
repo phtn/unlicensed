@@ -67,7 +67,7 @@ export const Content = ({orderNumber}: ContentProps) => {
   }
 
   return (
-    <main className='min-h-screen px-4 pb-16'>
+    <main className='min-h-screen px-4 md:px-1 pb-16'>
       <div className='space-y-6'>
         {/* Header with back button */}
         <div className='flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4'>
@@ -77,8 +77,7 @@ export const Content = ({orderNumber}: ContentProps) => {
             variant='secondary'
             onPress={router.back}
             aria-label='Back to orders'
-            className='min-w-0 rounded-lg border-none'
-          >
+            className='min-w-0 rounded-lg border-none'>
             <Icon name='chevron-left' className='size-4' />
           </Button>
           <div className='min-w-0 flex-1'>
@@ -97,6 +96,7 @@ export const Content = ({orderNumber}: ContentProps) => {
           {/* Status */}
           <div className='w-full sm:w-auto sm:min-w-sm'>
             <Select
+              label='Order Status'
               value={order.orderStatus}
               onChange={(key) => {
                 if (key)
@@ -116,7 +116,7 @@ export const Content = ({orderNumber}: ContentProps) => {
         </div>
 
         {/* Order Details Form */}
-        <Card className='border-none p-3 md:p-6'>
+        <Card className='border-none rounded-none shadow-none p-1 md:p-0'>
           <OrderDetailsForm order={order} hideHeader />
         </Card>
       </div>

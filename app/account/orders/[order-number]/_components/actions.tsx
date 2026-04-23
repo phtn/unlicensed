@@ -32,8 +32,8 @@ export const Actions = ({status, href, isMobile}: Props) => {
       case 'cancelled':
         return (
           <div className='flex items-center justify-center space-x-1'>
-            <Icon name='cancel-circle' className='size-3 text-rose-500' />
-            <p className='text-center text-sm font-semibold text-gray-400'>
+            <Icon name='cancel-circle' className='size-3 text-rose-400' />
+            <p className='text-center text-sm font-semibold text-gray-500'>
               Order Cancelled
             </p>
           </div>
