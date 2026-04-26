@@ -24,12 +24,13 @@ export const PrimaryButton = ({
       size='sm'
       onPress={onPress}
       isDisabled={disabled}
-      className='bg-dark-table dark:bg-white dark:text-dark-table rounded-md h-7'>
-      <span className='md:flex'>{label}</span>
+      className='bg-dark-table dark:bg-white dark:text-dark-table rounded-md h-7 my-1.5'>
       <Icon
         name={icon}
         className={cn('size-4 opacity-80', {hidden: disabled})}
       />
+
+      <span className='md:flex'>{label}</span>
     </Button>
   )
 }
@@ -70,7 +71,7 @@ export const ContentHeader = ({
   children,
 }: ContentHeaderProps) => {
   return (
-    <div className='flex items-start w-full min-h-20'>
+    <div className='flex items-start w-full md:w-[78vw] min-h-20'>
       <SectionHeader title={title} className='ps-2' description={description}>
         {children}
       </SectionHeader>

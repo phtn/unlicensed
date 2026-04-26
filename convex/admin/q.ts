@@ -506,6 +506,7 @@ const DEFAULT_REWARDS_TIERS = [
     shippingCost: 12.99,
     cashBackPct: 1.5,
     label: 'Starter',
+    enabled: true,
   },
   {
     minSubtotal: 99,
@@ -513,6 +514,7 @@ const DEFAULT_REWARDS_TIERS = [
     shippingCost: 3.99,
     cashBackPct: 2.0,
     label: 'Silver',
+    enabled: true,
   },
   {
     minSubtotal: 149,
@@ -520,6 +522,7 @@ const DEFAULT_REWARDS_TIERS = [
     shippingCost: 0,
     cashBackPct: 3.0,
     label: 'Gold',
+    enabled: true,
   },
   {
     minSubtotal: 249,
@@ -527,6 +530,7 @@ const DEFAULT_REWARDS_TIERS = [
     shippingCost: 0,
     cashBackPct: 5.0,
     label: 'Platinum',
+    enabled: true,
   },
 ] as const
 
@@ -569,6 +573,7 @@ export const getRewardsConfig = query({
           typeof row.shippingCost === 'number' ? row.shippingCost : 0,
         cashBackPct: typeof row.cashBackPct === 'number' ? row.cashBackPct : 0,
         label: typeof row.label === 'string' ? row.label : 'Tier',
+        enabled: typeof row.enabled === 'boolean' ? row.enabled : true,
       }
     })
     if (tiers.length === 0) {

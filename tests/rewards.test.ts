@@ -80,6 +80,26 @@ describe('computeRewards', () => {
     expect(result.isBundleBonusActive).toBe(false)
     expect(result.cashBackPct).toBe(2)
   })
+
+  test('ignores disabled tiers when computing the active rewards ladder', () => {
+    const customConfig = {
+      ...REWARDS_CONFIG,
+      tiers: REWARDS_CONFIG.tiers.map((tier) =>
+        tier.label === 'Silver' ? {...tier, enabled: false} : tier,
+      ),
+    }
+
+    const result = computeRewards(
+      [{category: 'flower'}],
+      100,
+      false,
+      customConfig,
+    )
+
+    expect(result.currentTier.label).toBe('Bronze')
+    expect(result.nextTier?.label).toBe('Gold')
+    expect(result.amountToNextTier).toBe(49)
+  })
 })
 
 describe('formatRewardsCurrency', () => {

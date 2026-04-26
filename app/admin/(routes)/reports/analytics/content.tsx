@@ -6,7 +6,8 @@ import {useMobile} from '@/hooks/use-mobile'
 import {useToggle} from '@/hooks/use-toggle'
 import {Suspense} from 'react'
 import {VisitorLogData} from './data'
-import {GeoPage, InsightsPage} from './insights'
+import {GeoPage} from './geo'
+import {InsightsPage} from './insights'
 import {VisitorData} from './visitors'
 
 const ReportsContentInner = () => {
@@ -27,22 +28,17 @@ const ReportsContentInner = () => {
           <InsightsPage />
         </Suspense>
       )
-    case 'visitors':
-      return (
-        <Suspense fallback={<div>Loading...</div>}>
-          <VisitorData />
-        </Suspense>
-      )
     case 'logs':
-    default:
       return (
         <Suspense fallback={<div>Loading...</div>}>
           <VisitorLogData />
-          {/*<LogsTable
-            fullTable={fullTable}
-            toggleFullTable={toggleFullTable}
-            isMobile={isMobile}
-          />*/}
+        </Suspense>
+      )
+    case 'visitors':
+    default:
+      return (
+        <Suspense fallback={<div>Loading...</div>}>
+          <VisitorData />
         </Suspense>
       )
   }

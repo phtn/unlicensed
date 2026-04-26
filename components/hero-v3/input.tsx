@@ -16,7 +16,7 @@ export const inputClass = {
   label:
     'uppercase font-ios text-[8px] tracking-widest lg:tracking-[0.30em] pl-2 pt-2 pb-2 opacity-80 whitespace-nowrap overflow-scroll',
   input:
-    'p-0 border-transparent h-9 ps-2 placeholder:text-slate-400/80 bg-linear-to-r from-sidebar/60! dark:from-dark-table/40 dark:via-dark-table/0 via-sidebar/40 to-sidebar/30! dark:to-transparent! shadow-none font-medium h-9 w-full flex items-center rounded-sm outline-none ring-blue-500 data-focus-visible:ring-blue-500 dark:data-hover:ring-blue-500 overflow-hidden text-mac-blue font-clash font-medium tracking-wider',
+    'p-0 border-t-[0.5px] border-light-gray/55 dark:border-dark-table/50 h-9 ps-2 placeholder:text-slate-400/80 bg-linear-to-r from-sidebar/60! dark:from-dark-table/40 dark:via-dark-table/0 via-sidebar/40 to-sidebar/30! dark:to-transparent! shadow-none font-medium h-9 w-full flex items-center rounded-xs outline-none ring-blue-500 data-focus-visible:ring-blue-500 dark:data-hover:ring-blue-500 overflow-hidden text-mac-blue font-clash font-medium tracking-wider',
   mainWrapper:
     'border h-18 flex flex-col px-0.5 w-full border-light-gray/80 dark:border-dark-table/80 bg-background dark:bg-background/60 shadow-none rounded-md',
 }

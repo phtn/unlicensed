@@ -405,7 +405,7 @@ export const VisitorData = () => {
                 onPress={() => {
                   void handleOpenVisitorChat(row.original)
                 }}
-                className='h-7 w-7 min-w-7 rounded-md bg-sidebar/60 text-neutral-600 hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-800'>
+                className='h-7 w-7 min-w-7 rounded-md bg-sidebar/20 text-neutral-600 hover:bg-neutral-200 dark:text-white dark:hover:bg-neutral-800 disabled:opacity-30'>
                 <Icon name='chat' className='size-4' />
               </Button>
             )
@@ -423,7 +423,7 @@ export const VisitorData = () => {
               <span
                 className={
                   isVisitor
-                    ? `${COMPACT_TEXT_CLASS} font-medium text-brand dark:text-light-brand`
+                    ? `${COMPACT_TEXT_CLASS} font-medium text-orange-500 dark:text-orange-300`
                     : COMPACT_TEXT_CLASS
                 }
                 title={formatChatLabel(row.original)}>
@@ -475,10 +475,9 @@ export const VisitorData = () => {
             <span
               className={COMPACT_MUTED_TEXT_CLASS}
               title={formatVisitorTimestamp(row.original.lastSeenAt)}>
-              {formatVisitorRelativeTime(row.original.lastSeenAt).replace(
-                'about ',
-                '',
-              )}
+              {formatVisitorRelativeTime(row.original.lastSeenAt)
+                .replace('about ', '')
+                .replaceAll('less than ', '')}
             </span>
           ),
         },

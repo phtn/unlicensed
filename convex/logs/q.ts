@@ -1,111 +1,7 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
+import {isUnitedStatesCountry, normalizeUsState} from '../geo/lib'
 import {safeGet} from '../utils/id_validation'
-
-const US_STATE_NAME_BY_CODE = {
-  AL: 'Alabama',
-  AK: 'Alaska',
-  AZ: 'Arizona',
-  AR: 'Arkansas',
-  CA: 'California',
-  CO: 'Colorado',
-  CT: 'Connecticut',
-  DE: 'Delaware',
-  FL: 'Florida',
-  GA: 'Georgia',
-  HI: 'Hawaii',
-  ID: 'Idaho',
-  IL: 'Illinois',
-  IN: 'Indiana',
-  IA: 'Iowa',
-  KS: 'Kansas',
-  KY: 'Kentucky',
-  LA: 'Louisiana',
-  ME: 'Maine',
-  MD: 'Maryland',
-  MA: 'Massachusetts',
-  MI: 'Michigan',
-  MN: 'Minnesota',
-  MS: 'Mississippi',
-  MO: 'Missouri',
-  MT: 'Montana',
-  NE: 'Nebraska',
-  NV: 'Nevada',
-  NH: 'New Hampshire',
-  NJ: 'New Jersey',
-  NM: 'New Mexico',
-  NY: 'New York',
-  NC: 'North Carolina',
-  ND: 'North Dakota',
-  OH: 'Ohio',
-  OK: 'Oklahoma',
-  OR: 'Oregon',
-  PA: 'Pennsylvania',
-  RI: 'Rhode Island',
-  SC: 'South Carolina',
-  SD: 'South Dakota',
-  TN: 'Tennessee',
-  TX: 'Texas',
-  UT: 'Utah',
-  VT: 'Vermont',
-  VA: 'Virginia',
-  WA: 'Washington',
-  WV: 'West Virginia',
-  WI: 'Wisconsin',
-  WY: 'Wyoming',
-  DC: 'District of Columbia',
-} as const
-
-const US_STATE_LOOKUP = Object.fromEntries(
-  Object.entries(US_STATE_NAME_BY_CODE).flatMap(([code, name]) => [
-    [normalizeLocationKey(code), name],
-    [normalizeLocationKey(name), name],
-  ]),
-) as Record<string, string>
-
-function normalizeLocationKey(value: string) {
-  return value.toLowerCase().replace(/[^a-z]/g, ' ').replace(/\s+/g, ' ').trim()
-}
-
-function isUnitedStatesCountry(country?: string | null) {
-  if (!country) {
-    return false
-  }
-
-  const normalizedCountry = normalizeLocationKey(country)
-  return (
-    normalizedCountry === 'us' ||
-    normalizedCountry === 'usa' ||
-    normalizedCountry === 'united states' ||
-    normalizedCountry === 'united states of america' ||
-    normalizedCountry.includes('united states')
-  )
-}
-
-function normalizeUsState(location?: string | null) {
-  if (!location) {
-    return null
-  }
-
-  const locationParts = location.split(',')
-  const lastLocationPart = locationParts[locationParts.length - 1] ?? ''
-  const candidates = [location, lastLocationPart]
-
-  for (const candidate of candidates) {
-    const normalizedCandidate = normalizeLocationKey(candidate)
-
-    if (!normalizedCandidate) {
-      continue
-    }
-
-    const stateName = US_STATE_LOOKUP[normalizedCandidate]
-    if (stateName) {
-      return stateName
-    }
-  }
-
-  return null
-}
 
 /**
  * Get logs with pagination
@@ -160,11 +56,15 @@ export const getLogs = query({
     }
 
     if (args.startDate) {
-      filteredLogs = filteredLogs.filter((log) => log.createdAt >= args.startDate!)
+      filteredLogs = filteredLogs.filter(
+        (log) => log.createdAt >= args.startDate!,
+      )
     }
 
     if (args.endDate) {
-      filteredLogs = filteredLogs.filter((log) => log.createdAt <= args.endDate!)
+      filteredLogs = filteredLogs.filter(
+        (log) => log.createdAt <= args.endDate!,
+      )
     }
 
     // Apply pagination
@@ -253,17 +153,23 @@ export const getVisitStats = query({
     path: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const query = ctx.db.query('logs').withIndex('by_type', (q) => q.eq('type', 'page_visit'))
+    const query = ctx.db
+      .query('logs')
+      .withIndex('by_type', (q) => q.eq('type', 'page_visit'))
 
     const logs = await query.collect()
 
     // Apply date filters
     let filteredLogs = logs
     if (args.startDate) {
-      filteredLogs = filteredLogs.filter((log) => log.createdAt >= args.startDate!)
+      filteredLogs = filteredLogs.filter(
+        (log) => log.createdAt >= args.startDate!,
+      )
     }
     if (args.endDate) {
-      filteredLogs = filteredLogs.filter((log) => log.createdAt <= args.endDate!)
+      filteredLogs = filteredLogs.filter(
+        (log) => log.createdAt <= args.endDate!,
+      )
     }
     if (args.path) {
       filteredLogs = filteredLogs.filter((log) => log.path === args.path)
@@ -271,7 +177,8 @@ export const getVisitStats = query({
 
     // Calculate statistics
     const totalVisits = filteredLogs.length
-    const uniqueVisitors = new Set(filteredLogs.map((log) => log.ipAddress)).size
+    const uniqueVisitors = new Set(filteredLogs.map((log) => log.ipAddress))
+      .size
     const uniqueUsers = new Set(
       filteredLogs.filter((log) => log.userId).map((log) => log.userId),
     ).size
@@ -347,9 +254,7 @@ export const getGeoByIp = query({
 
     // Find the most recent log with this IP that has geo data
     const logWithGeo = logs.find(
-      (log) =>
-        log.ipAddress === args.ipAddress &&
-        (log.country || log.city),
+      (log) => log.ipAddress === args.ipAddress && (log.country || log.city),
     )
 
     if (logWithGeo) {

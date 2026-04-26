@@ -45,10 +45,9 @@ export const SettingsTabs = () => {
       onValueChange={(nextTab) => {
         void setTabParam(nextTab)
       }}
-      className='flex min-w-0 max-w-full flex-col gap-2 md:w-full'
-    >
+      className='flex min-w-0 max-w-full flex-col gap-2 md:w-full'>
       <div className='w-full max-w-full overflow-x-auto px-0 pr-3 sm:mx-0 lg:px-1'>
-        <Tabs.List className='relative z-0 flex w-max min-w-full flex-nowrap gap-1 overflow-visible px-0 md:px-0'>
+        <Tabs.List className='relative z-0 flex w-full md:w-fit flex-nowrap gap-1 overflow-visible px-1 md:px-1.75 bg-sidebar/70 dark:bg-background/20 rounded-lg'>
           {tabs.map((tab) => (
             <Tabs.Tab
               key={tab.id}
@@ -58,12 +57,11 @@ export const SettingsTabs = () => {
                 'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-md',
                 'transition-colors duration-100 delay-100',
               )}
-              value={tab.id}
-            >
+              value={tab.id}>
               {tab.label}
             </Tabs.Tab>
           ))}
-          <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-600 dark:to-dark-table transition-all duration-300 ease-in-out' />
+          <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-500/90 dark:to-slate-600 transition-all duration-300 ease-in-out' />
         </Tabs.List>
       </div>
 
@@ -71,8 +69,7 @@ export const SettingsTabs = () => {
         <Tabs.Panel
           key={tab.id}
           className='relative flex w-full min-w-0 flex-col overflow-y-auto px-0! sm:py-4 md:max-w-full'
-          value={tab.id}
-        >
+          value={tab.id}>
           {tab.panel}
         </Tabs.Panel>
       ))}

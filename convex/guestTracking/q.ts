@@ -2,6 +2,7 @@ import {ConvexError, v} from 'convex/values'
 import type {Doc} from '../_generated/dataModel'
 import type {QueryCtx} from '../_generated/server'
 import {query} from '../_generated/server'
+import {isUnitedStatesCountry, normalizeUsState} from '../geo/lib'
 import {
   getChatParticipantDisplayName,
   getChatParticipantFid,
@@ -15,6 +16,8 @@ import {guestTrackingEventTypeSchema} from './d'
 const DEFAULT_LIMIT = 100
 const MAX_LIMIT = 500
 const DEFAULT_STATS_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
+const DEFAULT_GEO_LIMIT = 5000
+const MAX_GEO_LIMIT = 10000
 
 async function requireAdminAccess(ctx: QueryCtx) {
   const identity = await ctx.auth.getUserIdentity()
@@ -32,6 +35,9 @@ async function requireAdminAccess(ctx: QueryCtx) {
 
 const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT)
+
+const clampGeoLimit = (limit: number | undefined) =>
+  Math.min(Math.max(limit ?? DEFAULT_GEO_LIMIT, 1), MAX_GEO_LIMIT)
 
 const findGuestForVisitor = async (
   ctx: QueryCtx,
@@ -199,6 +205,49 @@ export const getVisitorStats = query({
       eventsByType,
       visitsByDevice,
       visitsByCountry,
+    }
+  },
+})
+
+export const getVisitorGeoStats = query({
+  args: {
+    since: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireAdminAccess(ctx)
+
+    const since = args.since ?? Date.now() - DEFAULT_STATS_WINDOW_MS
+    const pageViewEvents = await ctx.db
+      .query('guestVisitorEvents')
+      .withIndex('by_type_and_created_at', (q) => q.eq('type', 'page_view'))
+      .order('desc')
+      .take(clampGeoLimit(args.limit))
+
+    const recentPageViewEvents = pageViewEvents.filter(
+      (event) => event.createdAt >= since,
+    )
+    const visitsByUsState: Record<string, number> = {}
+    let totalUnitedStatesVisits = 0
+
+    for (const event of recentPageViewEvents) {
+      if (!isUnitedStatesCountry(event.country)) {
+        continue
+      }
+
+      totalUnitedStatesVisits += 1
+
+      const stateName = normalizeUsState(event.region || event.city)
+      if (!stateName) {
+        continue
+      }
+
+      visitsByUsState[stateName] = (visitsByUsState[stateName] ?? 0) + 1
+    }
+
+    return {
+      totalUnitedStatesVisits,
+      visitsByUsState,
     }
   },
 })

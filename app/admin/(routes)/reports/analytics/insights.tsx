@@ -2,15 +2,10 @@
 
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
+import {cn} from '@/lib/utils'
 import {Card, Chip} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import type {
-  ExpressionSpecification,
-  GeoJSONSource,
-  Map as MapboxMap,
-} from 'mapbox-gl'
-import 'mapbox-gl/dist/mapbox-gl.css'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useMemo, useState} from 'react'
 import {
   Bar,
   BarChart,
@@ -26,92 +21,134 @@ import {
   YAxis,
 } from 'recharts'
 
-// Color palette for charts
 const COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#ef4444', // red
-  '#8b5cf6', // purple
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#84cc16', // lime
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#ec4899',
+  '#06b6d4',
+  '#84cc16',
 ]
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? null
-const US_STATES_GEOJSON_URL =
-  'https://docs.mapbox.com/mapbox-gl-js/assets/us_states.geojson'
-const GEO_FILL_COLOR = [
-  'step',
-  ['coalesce', ['get', 'visitCount'], 0],
-  '#101827',
-  1,
-  '#1d4ed8',
-  5,
-  '#2563eb',
-  10,
-  '#0ea5e9',
-  25,
-  '#14b8a6',
-  50,
-  '#84cc16',
-] as ExpressionSpecification
-const GEO_FILL_OPACITY = [
-  'case',
-  ['boolean', ['feature-state', 'hover'], false],
-  0.95,
-  ['>', ['coalesce', ['get', 'visitCount'], 0], 0],
-  0.82,
-  0.36,
-] as ExpressionSpecification
-const GEO_LINE_COLOR = [
-  'case',
-  ['boolean', ['feature-state', 'hover'], false],
-  '#f8fafc',
-  '#64748b',
-] as ExpressionSpecification
-const GEO_LINE_WIDTH = [
-  'case',
-  ['boolean', ['feature-state', 'hover'], false],
-  2.2,
-  0.9,
-] as ExpressionSpecification
-const GEO_LEGEND = [
-  {label: '0', color: '#101827'},
-  {label: '1-4', color: '#1d4ed8'},
-  {label: '5-9', color: '#2563eb'},
-  {label: '10-24', color: '#0ea5e9'},
-  {label: '25-49', color: '#14b8a6'},
-  {label: '50+', color: '#84cc16'},
-] as const
+const CHART_GRID_STROKE = 'rgba(148, 163, 184, 0.14)'
+const CHART_TICK_COLOR = '#94a3b8'
+const CHART_TOOLTIP_STYLE = {
+  backgroundColor: 'rgba(2, 6, 23, 0.94)',
+  border: '1px solid rgba(148, 163, 184, 0.16)',
+  borderRadius: '18px',
+  color: '#e2e8f0',
+  boxShadow: '0 24px 64px rgba(2, 6, 23, 0.35)',
+}
+const PANEL_CLASSNAME =
+  'relative overflow-hidden rounded-lg border border-sidebar/70 bg-default-50/80 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] dark:bg-dark-table/45 dark:shadow-[0_18px_40px_rgba(2,6,23,0.28)] md:p-5'
 
-type StateVisit = {
+type CountryDatum = {
+  code: string
+  flag: string
   name: string
+  share: number
   value: number
 }
 
-type StatesGeoJson = GeoJSON.FeatureCollection<
-  GeoJSON.Geometry,
-  {
-    STATE_ID: string
-    STATE_NAME: string
-    visitCount?: number
-  }
->
+type MetricCardProps = {
+  accentClassName: string
+  detail: string
+  eyebrow: string
+  value: string
+}
 
-const decorateStatesGeoJson = (
-  geoJson: StatesGeoJson,
-  stateVisits: Record<string, number>,
-): StatesGeoJson => ({
-  ...geoJson,
-  features: geoJson.features.map((feature) => ({
-    ...feature,
-    properties: {
-      ...feature.properties,
-      visitCount: stateVisits[feature.properties.STATE_NAME] ?? 0,
-    },
-  })),
-})
+const REGION_DISPLAY_NAMES =
+  typeof Intl !== 'undefined' && typeof Intl.DisplayNames === 'function'
+    ? new Intl.DisplayNames(['en'], {type: 'region'})
+    : null
+
+const isCountryCode = (value: string) => /^[A-Z]{2}$/.test(value)
+
+const normalizeCountryCode = (value: string) => value.trim().toUpperCase()
+
+const isValidCountryValue = (value: string) => {
+  const normalized = value.trim()
+  return (
+    normalized.length > 0 && normalized !== 'null' && normalized !== 'null null'
+  )
+}
+
+const getCountryFlag = (country: string) => {
+  const code = normalizeCountryCode(country)
+  if (!isCountryCode(code)) {
+    return '🌐'
+  }
+
+  return String.fromCodePoint(
+    ...Array.from(code).map((char) => 127397 + char.charCodeAt(0)),
+  )
+}
+
+const getCountryName = (country: string) => {
+  const code = normalizeCountryCode(country)
+  if (!isCountryCode(code)) {
+    return country.trim()
+  }
+
+  return REGION_DISPLAY_NAMES?.of(code) ?? code
+}
+
+const formatCompactNumber = (value: number) =>
+  new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: value >= 1000 ? 1 : 0,
+    notation: value >= 1000 ? 'compact' : 'standard',
+  }).format(value)
+
+function MetricCard({
+  accentClassName,
+  detail,
+  eyebrow,
+  value,
+}: MetricCardProps) {
+  return (
+    <Card className={PANEL_CLASSNAME}>
+      <div
+        className={cn(
+          'absolute inset-x-4 top-0 h-px rounded-lg bg-linear-to-r opacity-80',
+          accentClassName,
+        )}
+      />
+      <div className='relative flex flex-col gap-2'>
+        <p className='text-[10px] uppercase tracking-[0.28em] text-foreground/55'>
+          {eyebrow}
+        </p>
+        <p className='text-2xl font-space font-semibold text-foreground md:text-3xl'>
+          {value}
+        </p>
+        <p className='text-sm text-foreground/60'>{detail}</p>
+      </div>
+    </Card>
+  )
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow: string
+  subtitle: string
+  title: string
+}) {
+  return (
+    <div className='mb-4 flex flex-col gap-1'>
+      <p className='text-[10px] uppercase tracking-[0.3em] text-foreground/55'>
+        {eyebrow}
+      </p>
+      <h3 className='text-lg font-space font-semibold text-foreground md:text-xl'>
+        {title}
+      </h3>
+      <p className='text-sm text-foreground/55'>{subtitle}</p>
+    </div>
+  )
+}
 
 export const InsightsPage = () => {
   const isMobile = useMobile()
@@ -122,7 +159,6 @@ export const InsightsPage = () => {
   })
   const [now] = useState(() => Date.now())
 
-  // Calculate time-based metrics (last 7 days, 30 days)
   const timeBasedStats = useMemo(() => {
     if (!logs?.logs) return null
 
@@ -132,103 +168,163 @@ export const InsightsPage = () => {
     const last7Days = logs.logs.filter((log) => log.createdAt >= sevenDaysAgo)
     const last30Days = logs.logs.filter((log) => log.createdAt >= thirtyDaysAgo)
 
-    // Hourly distribution for last 24 hours
     const last24Hours = logs.logs.filter(
       (log) => log.createdAt >= now - 24 * 60 * 60 * 1000,
     )
-    const hourlyData = Array.from({length: 24}, (_, i) => {
-      const hourStart = now - (24 - i) * 60 * 60 * 1000
+    const hourlyData = Array.from({length: 24}, (_, index) => {
+      const hourStart = now - (24 - index) * 60 * 60 * 1000
       const hourEnd = hourStart + 60 * 60 * 1000
       const count = last24Hours.filter(
         (log) => log.createdAt >= hourStart && log.createdAt < hourEnd,
       ).length
+
       return {
         hour: new Date(hourStart).getHours(),
-        visits: count,
         label: `${new Date(hourStart).getHours()}:00`,
+        visits: count,
       }
     })
 
-    // Daily distribution for last 7 days
-    const dailyData = Array.from({length: 7}, (_, i) => {
-      const dayStart = now - (7 - i) * 24 * 60 * 60 * 1000
+    const dailyData = Array.from({length: 7}, (_, index) => {
+      const dayStart = now - (7 - index) * 24 * 60 * 60 * 1000
       const dayEnd = dayStart + 24 * 60 * 60 * 1000
       const dayLogs = logs.logs.filter(
         (log) => log.createdAt >= dayStart && log.createdAt < dayEnd,
       )
+
       return {
         date: new Date(dayStart).toLocaleDateString('en-US', {
-          month: 'short',
           day: 'numeric',
+          month: 'short',
         }),
-        visits: dayLogs.length,
         uniqueVisitors: new Set(dayLogs.map((log) => log.ipAddress)).size,
+        visits: dayLogs.length,
       }
     })
 
     return {
-      last7Days: last7Days.length,
-      last30Days: last30Days.length,
-      hourlyData,
       dailyData,
+      hourlyData,
+      last30Days: last30Days.length,
+      last7Days: last7Days.length,
     }
   }, [logs, now])
 
-  // Top pages data
   const topPages = useMemo(() => {
     if (!stats?.visitsByPath) return []
+
     return Object.entries(stats.visitsByPath)
-      .map(([path, count]) => ({path, count}))
+      .map(([path, count]) => ({
+        count,
+        path,
+        share:
+          stats.totalVisits > 0
+            ? Math.round((count / stats.totalVisits) * 100)
+            : 0,
+      }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 10)
+      .slice(0, 8)
   }, [stats])
 
-  // Device distribution
   const deviceData = useMemo(() => {
     if (!stats?.visitsByDevice) return []
+
+    const totalDeviceVisits = Object.values(stats.visitsByDevice).reduce(
+      (sum, value) => sum + value,
+      0,
+    )
+
     return Object.entries(stats.visitsByDevice).map(([device, count]) => ({
       name: device.charAt(0).toUpperCase() + device.slice(1),
+      share:
+        totalDeviceVisits > 0
+          ? Math.round((count / totalDeviceVisits) * 100)
+          : 0,
       value: count,
     }))
   }, [stats])
 
-  // Country distribution
-  const countryData = useMemo(() => {
+  const countryData = useMemo<CountryDatum[]>(() => {
     if (!stats?.visitsByCountry) return []
-    return Object.entries(stats.visitsByCountry)
-      .map(([country, count]) => ({name: country, value: count}))
+
+    const normalizedCountries = Object.entries(stats.visitsByCountry).filter(
+      ([country]) => isValidCountryValue(country),
+    )
+    const totalCountryVisits = normalizedCountries.reduce(
+      (sum, [, count]) => sum + count,
+      0,
+    )
+
+    return normalizedCountries
+      .map(([country, count]) => ({
+        code: normalizeCountryCode(country),
+        flag: getCountryFlag(country),
+        name: getCountryName(country),
+        share:
+          totalCountryVisits > 0
+            ? Math.round((count / totalCountryVisits) * 100)
+            : 0,
+        value: count,
+      }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 10)
+      .slice(0, 8)
   }, [stats])
 
-  // Browser distribution
   const browserData = useMemo(() => {
     if (!logs?.logs) return []
+
     const browserCounts: Record<string, number> = {}
     logs.logs.forEach((log) => {
       if (log.browser) {
         browserCounts[log.browser] = (browserCounts[log.browser] || 0) + 1
       }
     })
+
     return Object.entries(browserCounts)
       .map(([browser, count]) => ({name: browser, value: count}))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5)
   }, [logs])
 
-  // Average response time
   const avgResponseTime = useMemo(() => {
     if (!logs?.logs || logs.logs.length === 0) return 0
+
     const logsWithResponseTime = logs.logs.filter(
       (log) => log.responseTime !== undefined,
     )
     if (logsWithResponseTime.length === 0) return 0
-    const sum = logsWithResponseTime.reduce(
-      (acc, log) => acc + (log.responseTime || 0),
+
+    const totalResponseTime = logsWithResponseTime.reduce(
+      (sum, log) => sum + (log.responseTime || 0),
       0,
     )
-    return Math.round(sum / logsWithResponseTime.length)
+
+    return Math.round(totalResponseTime / logsWithResponseTime.length)
   }, [logs])
+
+  const repeatTraffic = useMemo(() => {
+    if (!stats || stats.totalVisits <= 0) return 0
+
+    return Math.max(
+      0,
+      Math.round(
+        ((stats.totalVisits - stats.uniqueVisitors) / stats.totalVisits) * 100,
+      ),
+    )
+  }, [stats])
+
+  const peakHour = useMemo(() => {
+    if (!timeBasedStats || timeBasedStats.hourlyData.length === 0) {
+      return null
+    }
+
+    return timeBasedStats.hourlyData.reduce((peak, current) =>
+      current.visits > peak.visits ? current : peak,
+    )
+  }, [timeBasedStats])
+
+  const topCountry = countryData[0] ?? null
+  const topPage = topPages[0] ?? null
 
   if (!stats || !logs) {
     return (
@@ -241,645 +337,431 @@ export const InsightsPage = () => {
   }
 
   return (
-    <div className='h-svh space-y-6 overflow-auto p-2 pb-32 md:p-4'>
-      {/* Key Metrics Cards */}
-      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4'>
-        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
-          <div className='flex flex-col'>
-            <p className='text-sm text-default-500 mb-1'>Total Visits</p>
-            <p className='text-xl font-bold font-space md:text-2xl'>
-              {stats.totalVisits.toLocaleString()}
+    <div className='h-svh space-y-5 overflow-auto p-2 pb-32 md:space-y-6 md:p-4'>
+      <Card className='relative overflow-hidden px-5 py-5 md:px-6 md:py-6 shadow-none'>
+        <div className='pointer-events-none absolute inset-0' />
+        <div className='relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between'>
+          <div className='max-w-3xl'>
+            <p className='text-[8px] uppercase tracking-[0.34em]'>
+              Traffic Insights
             </p>
-            {timeBasedStats && (
-              <p className='text-xs text-default-400 mt-1'>
-                {timeBasedStats.last7Days} in last 7 days
+            <h2 className='mt-3 text-xl font-polysans font-semibold tracking-tight md:text-3xl'>
+              Visitor Analytics
+            </h2>
+            <p className='mt-3 max-w-2xl text-sm leading-6 md:text-base'>
+              Refined analytics for traffic volume, device mix, top content, and
+              country distribution across the current page-visit dataset.
+            </p>
+            <div className='mt-5 flex flex-wrap gap-2'>
+              <Chip
+                size='sm'
+                variant='tertiary'
+                className='border border-foreground/10 bg-foreground/4'>
+                {timeBasedStats?.last30Days.toLocaleString() ?? '0'} visits in
+                30 days
+              </Chip>
+              {topCountry ? (
+                <Chip
+                  size='sm'
+                  variant='tertiary'
+                  className='border border-foreground/10 bg-foreground/4'>
+                  {topCountry.flag} {topCountry.name}
+                </Chip>
+              ) : null}
+              {peakHour ? (
+                <Chip
+                  size='sm'
+                  variant='tertiary'
+                  className='border border-foreground/10 bg-foreground/4 text-foreground'>
+                  Peak hour {peakHour.label}
+                </Chip>
+              ) : null}
+              {topPage ? (
+                <Chip
+                  size='sm'
+                  variant='tertiary'
+                  className='border border-foreground/10 bg-foreground/4 text-foreground'>
+                  Top page {topPage.path}
+                </Chip>
+              ) : null}
+            </div>
+          </div>
+
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-136'>
+            <div className='rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-md'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/45'>
+                Today Flow
               </p>
-            )}
+              <p className='mt-2 text-2xl font-space font-semibold text-foreground'>
+                {formatCompactNumber(timeBasedStats?.last7Days ?? 0)}
+              </p>
+              <p className='mt-1 text-xs text-foreground/55'>
+                Visits in the last 7 days
+              </p>
+            </div>
+            <div className='rounded-2xl border border-foreground/10 bg-foreground/6 p-4 backdrop-blur-md'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/45'>
+                Response
+              </p>
+              <p className='mt-2 text-lg font-okxs font-semibold text-foreground'>
+                {avgResponseTime}ms
+              </p>
+              <p className='mt-1 text-xs text-foreground/55'>
+                Average measured latency
+              </p>
+            </div>
+            <div className='rounded-lg border border-foreground/10 bg-foreground/6 p-4 backdrop-blur-md'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/45'>
+                Return Mix
+              </p>
+              <p className='mt-2 text-lg font-okxs font-semibold text-foreground'>
+                {repeatTraffic}%
+              </p>
+              <p className='mt-1 text-xs text-foreground/55'>
+                Repeat traffic share
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 md:gap-4'>
+        <MetricCard
+          accentClassName='from-sky-400 via-blue-500 to-transparent'
+          eyebrow='Total Visits'
+          value={stats.totalVisits.toLocaleString()}
+          detail={`${timeBasedStats?.last7Days.toLocaleString() ?? '0'} in the last 7 days`}
+        />
+        <MetricCard
+          accentClassName='from-emerald-400 via-teal-500 to-transparent'
+          eyebrow='Unique Visitors'
+          value={stats.uniqueVisitors.toLocaleString()}
+          detail={`${stats.uniqueUsers.toLocaleString()} authenticated users`}
+        />
+        <MetricCard
+          accentClassName='from-amber-300 via-orange-500 to-transparent'
+          eyebrow='Avg Response Time'
+          value={`${avgResponseTime}ms`}
+          detail='Measured across recent page-visit logs'
+        />
+        <MetricCard
+          accentClassName='from-fuchsia-400 via-violet-500 to-transparent'
+          eyebrow='Repeat Traffic'
+          value={`${repeatTraffic}%`}
+          detail='Visits beyond the first unique visitor marker'
+        />
+      </div>
+
+      <div className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+        <Card className={PANEL_CLASSNAME}>
+          <div className='pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_62%)]' />
+          <div className='relative'>
+            <SectionHeading
+              eyebrow='Velocity'
+              title='Daily Visits'
+              subtitle='A seven-day read on overall traffic and visitor consistency.'
+            />
+            {timeBasedStats ? (
+              <ResponsiveContainer width='100%' height={280}>
+                <BarChart data={timeBasedStats.dailyData}>
+                  <CartesianGrid vertical={false} stroke={CHART_GRID_STROKE} />
+                  <XAxis
+                    axisLine={false}
+                    dataKey='date'
+                    tick={{fill: CHART_TICK_COLOR, fontSize: 12}}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tick={{fill: CHART_TICK_COLOR, fontSize: 12}}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    cursor={{fill: 'rgba(59,130,246,0.08)'}}
+                    itemStyle={{color: '#e2e8f0'}}
+                    labelStyle={{color: '#94a3b8'}}
+                  />
+                  <Bar
+                    dataKey='visits'
+                    fill={COLORS[0]}
+                    radius={[10, 10, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : null}
           </div>
         </Card>
 
-        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
-          <div className='flex flex-col'>
-            <p className='text-sm text-default-500 mb-1'>Unique Visitors</p>
-            <p className='text-xl font-bold font-space md:text-2xl'>
-              {stats.uniqueVisitors.toLocaleString()}
-            </p>
-            <p className='text-xs text-default-400 mt-1'>
-              {stats.uniqueUsers} authenticated users
-            </p>
-          </div>
-        </Card>
-
-        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
-          <div className='flex flex-col'>
-            <p className='text-sm text-default-500 mb-1'>Avg Response Time</p>
-            <p className='text-xl font-bold font-space md:text-2xl'>
-              {avgResponseTime}ms
-            </p>
-            <p className='text-xs text-default-400 mt-1'>
-              Page load performance
-            </p>
-          </div>
-        </Card>
-
-        <Card className='p-3 dark:bg-dark-table/40 md:p-4'>
-          <div className='flex flex-col'>
-            <p className='text-sm text-default-500 mb-1'>Bounce Rate</p>
-            <p className='text-xl font-bold font-space md:text-2xl'>
-              {stats.totalVisits > 0
-                ? Math.round(
-                    ((stats.totalVisits - stats.uniqueVisitors) /
-                      stats.totalVisits) *
-                      100,
-                  )
-                : 0}
-              %
-            </p>
-            <p className='text-xs text-default-400 mt-1'>Single-page visits</p>
+        <Card className={PANEL_CLASSNAME}>
+          <div className='pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_62%)]' />
+          <div className='relative'>
+            <SectionHeading
+              eyebrow='Cadence'
+              title='Hourly Distribution'
+              subtitle='The most recent 24-hour rhythm of site activity.'
+            />
+            {timeBasedStats ? (
+              <ResponsiveContainer width='100%' height={280}>
+                <LineChart data={timeBasedStats.hourlyData}>
+                  <CartesianGrid vertical={false} stroke={CHART_GRID_STROKE} />
+                  <XAxis
+                    axisLine={false}
+                    dataKey='hour'
+                    tick={{fill: CHART_TICK_COLOR, fontSize: 12}}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tick={{fill: CHART_TICK_COLOR, fontSize: 12}}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    cursor={{stroke: 'rgba(16,185,129,0.2)', strokeWidth: 1}}
+                    itemStyle={{color: '#e2e8f0'}}
+                    labelStyle={{color: '#94a3b8'}}
+                  />
+                  <Line
+                    activeDot={{fill: COLORS[1], r: 5, strokeWidth: 0}}
+                    dataKey='visits'
+                    dot={false}
+                    stroke={COLORS[1]}
+                    strokeWidth={2.5}
+                    type='monotone'
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : null}
           </div>
         </Card>
       </div>
 
-      {/* Charts Row 1: Time-based analytics */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-        {/* Daily Visits Chart */}
-        {timeBasedStats && (
-          <Card className='p-4 dark:bg-dark-table/40'>
-            <h3 className='text-lg font-semibold font-space mb-4'>
-              Daily Visits (Last 7 Days)
-            </h3>
-            <ResponsiveContainer width='100%' height={300}>
-              <BarChart data={timeBasedStats.dailyData}>
-                <CartesianGrid strokeDasharray='3 3' />
-                <XAxis dataKey='date' />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey='visits' fill={COLORS[0]} />
+      <div className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+        <Card className={PANEL_CLASSNAME}>
+          <div className='pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.12),transparent_62%)]' />
+          <div className='relative'>
+            <SectionHeading
+              eyebrow='Audience'
+              title='Device Distribution'
+              subtitle='How people are arriving across desktop, mobile, and tablet.'
+            />
+            <div className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_13rem] lg:items-center'>
+              <ResponsiveContainer width='100%' height={280}>
+                <PieChart>
+                  <Pie
+                    cx='50%'
+                    cy='50%'
+                    data={deviceData}
+                    dataKey='value'
+                    innerRadius={isMobile ? 48 : 62}
+                    labelLine={false}
+                    outerRadius={isMobile ? 72 : 92}
+                    paddingAngle={3}
+                    stroke='rgba(15, 23, 42, 0.8)'
+                    strokeWidth={2}>
+                    {deviceData.map((_, index) => (
+                      <Cell
+                        key={`device-cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    itemStyle={{color: '#e2e8f0'}}
+                    labelStyle={{color: '#94a3b8'}}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+
+              <div className='grid gap-2'>
+                {deviceData.length > 0 ? (
+                  deviceData.map((device, index) => (
+                    <div
+                      key={device.name}
+                      className='rounded-2xl border border-foreground/8 bg-foreground/4 px-3 py-2.5'>
+                      <div className='flex items-center justify-between gap-3'>
+                        <div className='flex items-center gap-2'>
+                          <span
+                            className='size-2.5 rounded-full'
+                            style={{
+                              backgroundColor: COLORS[index % COLORS.length],
+                            }}
+                          />
+                          <span className='text-sm text-foreground'>
+                            {device.name}
+                          </span>
+                        </div>
+                        <span className='text-xs font-okxs text-foreground/65'>
+                          {device.share}%
+                        </span>
+                      </div>
+                      <p className='mt-1 text-xs text-foreground/50'>
+                        {device.value.toLocaleString()} visits
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className='text-sm text-foreground/50'>
+                    No device data available
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className={cn(PANEL_CLASSNAME)}>
+          <div className='pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.12),transparent_62%)]' />
+          <div className='relative'>
+            <SectionHeading
+              eyebrow='Environment'
+              title='Browser Distribution'
+              subtitle='The browser stack showing up most often in recent visits.'
+            />
+            <ResponsiveContainer width='100%' height={280}>
+              <BarChart data={browserData} layout='vertical'>
+                <CartesianGrid horizontal stroke={CHART_GRID_STROKE} />
+                <XAxis
+                  axisLine={false}
+                  tick={{fill: CHART_TICK_COLOR, fontSize: 12}}
+                  tickLine={false}
+                  type='number'
+                />
+                <YAxis
+                  axisLine={false}
+                  dataKey='name'
+                  tick={{fill: CHART_TICK_COLOR, fontSize: 12}}
+                  tickLine={false}
+                  type='category'
+                  width={88}
+                />
+                <Tooltip
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  cursor={{fill: 'rgba(245,158,11,0.08)'}}
+                  itemStyle={{color: '#e2e8f0'}}
+                  labelStyle={{color: '#94a3b8'}}
+                />
+                <Bar dataKey='value' fill={COLORS[2]} radius={[0, 10, 10, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </Card>
-        )}
-
-        {/* Hourly Distribution */}
-        {timeBasedStats && (
-          <Card className='p-4 dark:bg-dark-table/40'>
-            <h3 className='text-lg font-semibold font-space mb-4'>
-              Hourly Distribution (Last 24 Hours)
-            </h3>
-            <ResponsiveContainer width='100%' height={300}>
-              <LineChart data={timeBasedStats.hourlyData}>
-                <CartesianGrid strokeDasharray='3 3' />
-                <XAxis dataKey='hour' />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type='monotone'
-                  dataKey='visits'
-                  stroke={COLORS[1]}
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-        )}
-      </div>
-
-      {/* Charts Row 2: Distribution charts */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-        {/* Device Distribution */}
-        <Card className='p-4 dark:bg-dark-table/40'>
-          <h3 className='text-lg font-semibold font-space mb-4'>
-            Device Distribution
-          </h3>
-          <ResponsiveContainer width='100%' height={300}>
-            <PieChart>
-              <Pie
-                data={deviceData}
-                cx='50%'
-                cy='50%'
-                labelLine={false}
-                label={({name, percent}) =>
-                  `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
-                }
-                outerRadius={isMobile ? 50 : 80}
-                fill='#8884d8'
-                dataKey='value'>
-                {deviceData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* Browser Distribution */}
-        <Card className='p-4 dark:bg-dark-table/40'>
-          <h3 className='text-lg font-semibold font-space mb-4'>
-            Browser Distribution
-          </h3>
-          <ResponsiveContainer width='100%' height={300}>
-            <BarChart data={browserData} layout='vertical'>
-              <CartesianGrid strokeDasharray='3 3' />
-              <XAxis type='number' />
-              <YAxis dataKey='name' type='category' width={80} />
-              <Tooltip />
-              <Bar dataKey='value' fill={COLORS[2]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
-
-      {/* Top Pages and Countries */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-        {/* Top Pages */}
-        <Card className='p-4 dark:bg-dark-table/40'>
-          <h3 className='text-lg font-semibold font-space mb-4'>Top Pages</h3>
-          <div className='space-y-2'>
-            {topPages.length > 0 ? (
-              topPages.map((page, index) => (
-                <div
-                  key={page.path}
-                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'>
-                  <div className='flex items-center gap-2 flex-1 min-w-0'>
-                    <span className='text-sm font-medium text-default-400 w-6'>
-                      {index + 1}
-                    </span>
-                    <p className='text-sm text-foreground truncate'>
-                      {page.path}
-                    </p>
-                  </div>
-                  <Chip size='sm' variant='tertiary' color='accent'>
-                    {page.count}
-                  </Chip>
-                </div>
-              ))
-            ) : (
-              <p className='text-sm text-default-400'>No data available</p>
-            )}
-          </div>
-        </Card>
-
-        {/* Top Countries */}
-        <Card className='p-4 dark:bg-dark-table/40'>
-          <h3 className='text-lg font-semibold font-space mb-4'>
-            Top Countries
-          </h3>
-          <div className='space-y-2'>
-            {countryData.length > 0 ? (
-              countryData.map((country, index) => (
-                <div
-                  key={country.name}
-                  className='flex items-center justify-between p-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50'>
-                  <div className='flex items-center gap-2 flex-1 min-w-0'>
-                    <span className='text-sm font-medium text-default-400 w-6'>
-                      {index + 1}
-                    </span>
-                    <p className='text-sm text-foreground'>{country.name}</p>
-                  </div>
-                  <Chip size='sm' variant='tertiary' color='default'>
-                    {country.value}
-                  </Chip>
-                </div>
-              ))
-            ) : (
-              <p className='text-sm text-default-400'>No data available</p>
-            )}
           </div>
         </Card>
       </div>
-    </div>
-  )
-}
 
-interface MapboxUsChoroplethProps {
-  defaultState: StateVisit | null
-  stateVisits: Record<string, number>
-}
-
-const MapboxUsChoropleth = ({
-  defaultState,
-  stateVisits,
-}: MapboxUsChoroplethProps) => {
-  const mapContainerRef = useRef<HTMLDivElement | null>(null)
-  const mapRef = useRef<MapboxMap | null>(null)
-  const baseGeoJsonRef = useRef<StatesGeoJson | null>(null)
-  const hoveredStateIdRef = useRef<string | number | null>(null)
-  const stateVisitsRef = useRef(stateVisits)
-  const [hoveredState, setHoveredState] = useState<StateVisit | null>(null)
-  const [isMapReady, setIsMapReady] = useState(false)
-  const [mapError, setMapError] = useState<string | null>(null)
-
-  useEffect(() => {
-    stateVisitsRef.current = stateVisits
-  }, [stateVisits])
-
-  useEffect(() => {
-    let isCancelled = false
-
-    const initializeMap = async () => {
-      if (!mapContainerRef.current || mapRef.current) {
-        return
-      }
-
-      try {
-        if (!MAPBOX_TOKEN) {
-          throw new Error('NEXT_PUBLIC_MAPBOX_TOKEN is not configured.')
-        }
-
-        const [{default: mapboxgl}, response] = await Promise.all([
-          import('mapbox-gl'),
-          fetch(US_STATES_GEOJSON_URL, {cache: 'force-cache'}),
-        ])
-
-        if (!response.ok) {
-          throw new Error('Unable to load United States map geometry.')
-        }
-
-        const geoJson = (await response.json()) as StatesGeoJson
-        if (isCancelled || !mapContainerRef.current) {
-          return
-        }
-
-        baseGeoJsonRef.current = geoJson
-        mapboxgl.accessToken = MAPBOX_TOKEN
-
-        const map = new mapboxgl.Map({
-          container: mapContainerRef.current,
-          style: 'mapbox://styles/mapbox/dark-v11',
-          center: [-98.5795, 39.8283],
-          zoom: 2.7,
-          minZoom: 2.5,
-          maxZoom: 6,
-          cooperativeGestures: true,
-          attributionControl: false,
-        })
-
-        mapRef.current = map
-        map.addControl(
-          new mapboxgl.NavigationControl({showCompass: false}),
-          'top-right',
-        )
-
-        map.on('load', () => {
-          if (isCancelled || !baseGeoJsonRef.current) {
-            return
-          }
-
-          map.addSource('us-states', {
-            type: 'geojson',
-            data: decorateStatesGeoJson(
-              baseGeoJsonRef.current,
-              stateVisitsRef.current,
-            ),
-          })
-
-          map.addLayer({
-            id: 'us-states-fill',
-            type: 'fill',
-            source: 'us-states',
-            paint: {
-              'fill-color': GEO_FILL_COLOR,
-              'fill-opacity': GEO_FILL_OPACITY,
-            },
-          })
-
-          map.addLayer({
-            id: 'us-states-outline',
-            type: 'line',
-            source: 'us-states',
-            paint: {
-              'line-color': GEO_LINE_COLOR,
-              'line-opacity': 0.85,
-              'line-width': GEO_LINE_WIDTH,
-            },
-          })
-
-          map.on('mousemove', 'us-states-fill', (event) => {
-            const feature = event.features?.[0]
-            if (!feature || feature.id === undefined) {
-              return
-            }
-
-            if (
-              hoveredStateIdRef.current !== null &&
-              hoveredStateIdRef.current !== feature.id
-            ) {
-              map.setFeatureState(
-                {source: 'us-states', id: hoveredStateIdRef.current},
-                {hover: false},
-              )
-            }
-
-            hoveredStateIdRef.current = feature.id
-            map.setFeatureState(
-              {source: 'us-states', id: hoveredStateIdRef.current},
-              {hover: true},
-            )
-
-            const stateName =
-              typeof feature.properties?.STATE_NAME === 'string'
-                ? feature.properties.STATE_NAME
-                : 'Unknown'
-            const visitCount =
-              typeof feature.properties?.visitCount === 'number'
-                ? feature.properties.visitCount
-                : Number(feature.properties?.visitCount ?? 0)
-
-            setHoveredState({
-              name: stateName,
-              value: Number.isNaN(visitCount) ? 0 : visitCount,
-            })
-          })
-
-          map.on('mouseleave', 'us-states-fill', () => {
-            if (hoveredStateIdRef.current !== null) {
-              map.setFeatureState(
-                {source: 'us-states', id: hoveredStateIdRef.current},
-                {hover: false},
-              )
-              hoveredStateIdRef.current = null
-            }
-
-            setHoveredState(null)
-          })
-
-          setIsMapReady(true)
-        })
-      } catch (error) {
-        if (isCancelled) {
-          return
-        }
-
-        setMapError(
-          error instanceof Error ? error.message : 'Unable to initialize map.',
-        )
-      }
-    }
-
-    void initializeMap()
-
-    return () => {
-      isCancelled = true
-
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!mapRef.current || !baseGeoJsonRef.current) {
-      return
-    }
-
-    const source = mapRef.current.getSource('us-states') as
-      | GeoJSONSource
-      | undefined
-
-    source?.setData(decorateStatesGeoJson(baseGeoJsonRef.current, stateVisits))
-  }, [stateVisits])
-
-  const displayState = hoveredState ?? defaultState
-
-  return (
-    <div className='relative overflow-hidden rounded-3xl md:rounded-e-none border border-sidebar'>
-      <div className='absolute inset-x-0 top-0 z-10 flex flex-wrap items-start justify-between gap-3 p-4'>
-        <div className='max-w-sm rounded-2xl border border-white/10 px-4 py-3'>
-          <p className='text-[10px] uppercase tracking-[0.32em] text-white/45'>
-            {hoveredState ? 'Hovered State' : 'Top State'}
-          </p>
-          <p className='mt-2 text-xl font-space font-semibold text-white'>
-            {displayState?.name ?? 'United States'}
-          </p>
-          <p className='text-sm text-white/70'>
-            {displayState
-              ? `${displayState.value.toLocaleString()} visits`
-              : 'Move across the map to inspect state traffic.'}
-          </p>
-        </div>
-      </div>
-
-      <div ref={mapContainerRef} className='h-[420.01px] md:h-[580.01px]' />
-
-      {!isMapReady && !mapError ? (
-        <div className='absolute inset-0 flex items-center justify-center bg-[#050811]/75 backdrop-blur-sm'>
-          <div className='text-center'>
-            <p className='font-space text-lg text-white'>Loading map</p>
-            <p className='mt-2 text-sm text-white/65'>
-              Preparing the U.S. visitor layer.
-            </p>
-          </div>
-        </div>
-      ) : null}
-
-      {mapError ? (
-        <div className='absolute inset-0 flex items-center justify-center bg-[#050811]/85 p-6 text-center backdrop-blur-sm'>
-          <div>
-            <p className='font-space text-lg text-white'>Map unavailable</p>
-            <p className='mt-2 text-sm text-white/65'>{mapError}</p>
-          </div>
-        </div>
-      ) : null}
-
-      <div className='overflow-hidden absolute inset-x-0 bottom-0 z-10 flex justify-end flex-wrap gap-2 border-t border-white/10 bg-black p-4 text-[11px] text-white/80'>
-        {GEO_LEGEND.map((legendItem) => (
-          <div
-            key={legendItem.label}
-            className='flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1'>
-            <span
-              className='size-2.5 rounded-full'
-              style={{backgroundColor: legendItem.color}}
-            />
-            <span className='font-okxs'>{legendItem.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-export const GeoPage = () => {
-  const stats = useQuery(api.logs.q.getVisitStats, {})
-
-  const rankedStates = useMemo<StateVisit[]>(() => {
-    if (!stats?.visitsByUsState) {
-      return []
-    }
-
-    return Object.entries(stats.visitsByUsState)
-      .map(([name, value]) => ({name, value}))
-      .sort((left, right) => right.value - left.value)
-  }, [stats])
-
-  const totalUnitedStatesVisits = stats?.totalUnitedStatesVisits ?? 0
-  const statesWithData = rankedStates.length
-  const mappedUnitedStatesVisits = useMemo(
-    () => rankedStates.reduce((total, state) => total + state.value, 0),
-    [rankedStates],
-  )
-  const coverage =
-    totalUnitedStatesVisits > 0
-      ? Math.round((mappedUnitedStatesVisits / totalUnitedStatesVisits) * 100)
-      : 0
-  const topState = rankedStates[0] ?? null
-
-  if (!stats) {
-    return (
-      <Card className='p-4 dark:bg-dark-table/60'>
-        <div className='flex items-center justify-center py-8'>
-          <p className='text-sm text-gray-400'>Loading geo analytics...</p>
-        </div>
-      </Card>
-    )
-  }
-
-  return (
-    <div className='h-svh space-y-6 overflow-auto pb-32'>
-      <Card className='overflow-hidden p-3 md:py-4 md:px-0 rounded-none'>
-        <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
-          <div className='max-w-2xl'>
-            <div>
-              <h2 className='text-lg font-polysans text-white md:text-2xl'>
-                Visitor World Map
-              </h2>
-              <p className='mt-2 text-sm text-white/70'>
-                Mapbox choropleth of U.S. traffic from visitor logs, recorded
-                state data and city-based fallbacks when region data is missing.
-              </p>
+      <div className='grid grid-cols-1 gap-4 xl:grid-cols-2 pb-32'>
+        <Card className={PANEL_CLASSNAME}>
+          <div className='pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(236,72,153,0.12),transparent_62%)]' />
+          <div className='relative'>
+            <div className='mb-4 flex items-start justify-between gap-3'>
+              <SectionHeading
+                eyebrow='Content'
+                title='Top Pages'
+                subtitle='The pages pulling the most attention right now.'
+              />
+              <Chip size='sm' variant='tertiary' color='accent'>
+                {topPages.length} pages
+              </Chip>
             </div>
-          </div>
-
-          <div className='grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:w-auto xl:grid-cols-4'>
-            <div className=''>
-              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
-                Visits
-              </p>
-              <p className='mt-2 text-lg font-okxs font-semibold text-white'>
-                {totalUnitedStatesVisits.toLocaleString()}
-              </p>
-              <p className='mt-1 text-xs text-white/55'>
-                Current analytics set
-              </p>
-            </div>
-
-            <div className=''>
-              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
-                With Data
-              </p>
-              <p className='mt-2 text-lg font-okxs font-semibold text-white'>
-                {statesWithData.toLocaleString()}
-              </p>
-              <p className='mt-1 text-xs text-white/55'>Mapped to a state</p>
-            </div>
-
-            <div className=''>
-              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
-                Coverage
-              </p>
-              <p className='mt-2 text-lg font-okxs font-semibold text-white'>
-                {coverage}%
-              </p>
-              <p className='mt-1 text-xs text-white/55'>
-                {mappedUnitedStatesVisits.toLocaleString()} mapped visits
-              </p>
-            </div>
-
-            <div className=''>
-              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
-                Top State
-              </p>
-              <p className='mt-2 text-lg font-clash font-semibold text-white'>
-                {topState?.name ?? 'Waiting for data'}
-              </p>
-              <p className='mt-1 text-xs text-white/55'>
-                {topState
-                  ? `${topState.value.toLocaleString()} visits`
-                  : '0 visits'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_22rem] overflow-hidden'>
-        <div className='size-full rounded-s-3xl overflow-hidden'>
-          <MapboxUsChoropleth
-            defaultState={topState}
-            stateVisits={stats.visitsByUsState ?? {}}
-          />
-        </div>
-
-        <Card className='p-5 dark:bg-dark-table/40 rounded-s-none'>
-          <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-            <div className='min-w-0'>
-              <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/70'>
-                Ranked States
-              </p>
-              <h3 className='mt-2 text-xl font-clash font-medium'>
-                Where visits are landing
-              </h3>
-            </div>
-            <Chip size='sm' variant='tertiary' color='success'>
-              {statesWithData} states
-            </Chip>
-          </div>
-
-          <div className='mt-6 space-y-3'>
-            {rankedStates.length > 0 ? (
-              rankedStates.slice(0, 8).map((state, index) => {
-                const percentage =
-                  mappedUnitedStatesVisits > 0
-                    ? Math.round((state.value / mappedUnitedStatesVisits) * 100)
-                    : 0
-
-                return (
+            <div className='space-y-3'>
+              {topPages.length > 0 ? (
+                topPages.map((page, index) => (
                   <div
-                    key={state.name}
-                    className='rounded-2xl p-4 bg-foreground/6'>
-                    <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+                    key={page.path}
+                    className='rounded-2xl border border-foreground/8 bg-foreground/4 p-3'>
+                    <div className='flex items-start justify-between gap-3'>
                       <div className='min-w-0'>
-                        <p className='font-okxs text-xs uppercase tracking-[0.28em] text-default-400'>
+                        <p className='text-[10px] uppercase tracking-[0.28em] text-foreground/45'>
                           #{index + 1}
                         </p>
-                        <p className='mt-1 text-lg font-clash font-medium'>
-                          {state.name}
+                        <p className='mt-1 truncate text-sm font-medium text-foreground'>
+                          {page.path}
                         </p>
                       </div>
-                      <span className='font-okxs text-sm text-mac-blue'>
-                        {state.value.toLocaleString()}
-                      </span>
+                      <div className='shrink-0 text-right'>
+                        <p className='text-sm font-okxs text-foreground'>
+                          {page.count.toLocaleString()}
+                        </p>
+                        <p className='text-xs text-foreground/50'>
+                          {page.share}% share
+                        </p>
+                      </div>
                     </div>
-                    <p className='mt-1 text-sm text-default-400'>
-                      {percentage}% of mapped U.S. visits
-                    </p>
+                    <div className='mt-3 h-2 rounded-full bg-foreground/8'>
+                      <div
+                        className='h-full rounded-full bg-linear-to-r from-pink-500 via-fuchsia-500 to-violet-500'
+                        style={{width: `${Math.max(page.share, 6)}%`}}
+                      />
+                    </div>
                   </div>
-                )
-              })
-            ) : (
-              <div className='rounded-2xl border border-dashed border-white/10 p-4 text-sm text-default-400'>
-                No state-level visit data is available yet. The map will
-                populate as soon as U.S. logs include a state or a city that can
-                be resolved to one.
-              </div>
-            )}
+                ))
+              ) : (
+                <p className='text-sm text-foreground/50'>
+                  No page data available
+                </p>
+              )}
+            </div>
           </div>
+        </Card>
 
-          <div className='mt-6 rounded-2xl bg-foreground/6 p-4'>
-            <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/70'>
-              Coverage Note
-            </p>
-            <p className='mt-3 text-sm text-default-400 text-balance'>
-              {totalUnitedStatesVisits === 0
-                ? 'No United States visits have been recorded yet.'
-                : mappedUnitedStatesVisits < totalUnitedStatesVisits
-                  ? 'Some U.S. visits only contain country-level geo data, so the map reflects the visits that can be resolved to a state from either region or city text.'
-                  : 'All logged U.S. visits in the current dataset map cleanly to a state.'}
-            </p>
+        <Card className={PANEL_CLASSNAME}>
+          <div className='pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(6,182,212,0.12),transparent_62%)]' />
+          <div className='relative'>
+            <div className='mb-4 flex items-start justify-between gap-3'>
+              <SectionHeading
+                eyebrow='Geography'
+                title='Top Countries'
+                subtitle='Country codes are expanded into readable names and flags.'
+              />
+              <Chip size='sm' variant='tertiary' color='success'>
+                {countryData.length} countries
+              </Chip>
+            </div>
+            <div className='space-y-3'>
+              {countryData.length > 0 ? (
+                countryData.map((country, index) => (
+                  <div
+                    key={`${country.code}-${index}`}
+                    className='rounded-2xl border border-foreground/8 bg-foreground/4 p-3'>
+                    <div className='flex items-start justify-between gap-3'>
+                      <div className='flex min-w-0 items-center gap-3'>
+                        <div className='flex size-11 shrink-0 items-center justify-center rounded-2xl border border-foreground/8 bg-foreground/5 text-xl'>
+                          {country.flag}
+                        </div>
+                        <div className='min-w-0'>
+                          <p className='text-[8px] uppercase tracking-[0.28em] text-foreground/45'>
+                            #{index + 1} ·{' '}
+                            {country.code.split(' ').slice(0, 2).join(' ')}
+                          </p>
+                          <p className='mt-1 truncate text-base font-medium text-foreground'>
+                            {country.name.split(' ').pop()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className='shrink-0 text-right'>
+                        <p className='text-base font-okxs text-foreground'>
+                          {country.value.toLocaleString()}
+                        </p>
+                        <p className='text-xs text-foreground/50'>
+                          {country.share}% share
+                        </p>
+                      </div>
+                    </div>
+                    <div className='mt-3 h-2 rounded-full bg-foreground/8'>
+                      <div
+                        className='h-full rounded-full bg-linear-to-r from-cyan-500 via-sky-500 to-blue-500'
+                        style={{width: `${Math.max(country.share, 6)}%`}}
+                      />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className='text-sm text-foreground/50'>
+                  No country data available
+                </p>
+              )}
+            </div>
           </div>
         </Card>
       </div>

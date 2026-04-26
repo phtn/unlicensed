@@ -54,24 +54,28 @@ const DEFAULT_REWARDS_TIERS = [
     maxSubtotal: 98.99,
     shippingCost: 12.99,
     cashBackPct: 1.5,
+    enabled: true,
   },
   {
     minSubtotal: 99,
     maxSubtotal: 148.99,
     shippingCost: 3.99,
     cashBackPct: 2.0,
+    enabled: true,
   },
   {
     minSubtotal: 149,
     maxSubtotal: 248.99,
     shippingCost: 0,
     cashBackPct: 3.0,
+    enabled: true,
   },
   {
     minSubtotal: 249,
     maxSubtotal: null,
     shippingCost: 0,
     cashBackPct: 5.0,
+    enabled: true,
   },
 ] as const
 const DEFAULT_BUNDLE_BONUS = {enabled: true, bonusPct: 0.5, minCategories: 2}
@@ -85,6 +89,7 @@ type RewardsTierConfig = {
   maxSubtotal: number | null
   shippingCost: number
   cashBackPct: number
+  enabled?: boolean
 }
 
 async function getAdminSettingValue(
@@ -642,8 +647,18 @@ export const createOrder = mutation({
                 typeof tier.shippingCost === 'number' &&
                 typeof tier.cashBackPct === 'number',
             )
+            .map((tier) => ({
+              ...tier,
+              enabled: typeof tier.enabled === 'boolean' ? tier.enabled : true,
+            }))
         : []
-    const rewardTiers = tiers.length > 0 ? tiers : [...DEFAULT_REWARDS_TIERS]
+    const configuredRewardTiers =
+      tiers.length > 0 ? tiers : [...DEFAULT_REWARDS_TIERS]
+    const activeRewardTiers = configuredRewardTiers.filter(
+      (tier) => tier.enabled !== false,
+    )
+    const rewardTiers =
+      activeRewardTiers.length > 0 ? activeRewardTiers : configuredRewardTiers
     const bundleBonus =
       rewardsConfig &&
       rewardsConfig.bundleBonus &&
@@ -673,12 +688,21 @@ export const createOrder = mutation({
             .collect()
         ).some((order) => order.payment.status === 'completed')
       : false
-    const currentTier =
-      rewardTiers.find(
-        (tier) =>
-          subtotalDollars >= tier.minSubtotal &&
-          (tier.maxSubtotal === null || subtotalDollars <= tier.maxSubtotal),
-      ) ?? rewardTiers[0]
+    const matchedTierIndex = rewardTiers.findIndex(
+      (tier) =>
+        subtotalDollars >= tier.minSubtotal &&
+        (tier.maxSubtotal === null || subtotalDollars <= tier.maxSubtotal),
+    )
+    const fallbackRewardTierIndex = rewardTiers.reduce(
+      (lastEligibleIdx, tier, index) =>
+        subtotalDollars >= tier.minSubtotal ? index : lastEligibleIdx,
+      -1,
+    )
+    const rewardTierIndex =
+      matchedTierIndex >= 0
+        ? matchedTierIndex
+        : Math.max(0, fallbackRewardTierIndex)
+    const currentTier = rewardTiers[rewardTierIndex] ?? rewardTiers[0]
     const isBundleBonusActive =
       (bundleBonus?.enabled ?? DEFAULT_BUNDLE_BONUS.enabled) &&
       categorySlugs.size >=
@@ -817,7 +841,9 @@ export const createOrder = mutation({
         : 1
     const cashAppPercent = getCashAppProcessingFeePercent(paymentMethodsConfig)
     const totalDiscountCents =
-      couponDiscountCents + paymentMethodDiscountCents + redeemedStoreCreditCents
+      couponDiscountCents +
+      paymentMethodDiscountCents +
+      redeemedStoreCreditCents
     const discountedSubtotalCents = Math.max(
       0,
       subtotalCents - totalDiscountCents,
@@ -868,9 +894,7 @@ export const createOrder = mutation({
       couponDiscountCents:
         couponDiscountCents > 0 ? couponDiscountCents : undefined,
       paymentMethodDiscountCents:
-        paymentMethodDiscountCents > 0
-          ? paymentMethodDiscountCents
-          : undefined,
+        paymentMethodDiscountCents > 0 ? paymentMethodDiscountCents : undefined,
       totalCents,
       ...(cryptoFeeCents !== undefined ? {cryptoFeeCents} : {}),
       ...(totalWithCryptoFeeCents !== undefined

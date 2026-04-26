@@ -8,9 +8,11 @@ import type {
 import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Card, Checkbox, Chip, Modal} from '@heroui/react'
+import {Icon} from '@/lib/icons'
+import {Button, Card, Checkbox, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState, ViewTransition} from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type TierFormState = {
@@ -19,6 +21,7 @@ type TierFormState = {
   shippingCost: string
   cashBackPct: string
   label: string
+  enabled: boolean
 }
 
 function emptyTierForm(): TierFormState {
@@ -28,6 +31,7 @@ function emptyTierForm(): TierFormState {
     shippingCost: '0',
     cashBackPct: '0',
     label: '',
+    enabled: true,
   }
 }
 
@@ -38,6 +42,7 @@ function tierToForm(t: RewardsTier): TierFormState {
     shippingCost: String(t.shippingCost),
     cashBackPct: String(t.cashBackPct),
     label: t.label,
+    enabled: t.enabled !== false,
   }
 }
 
@@ -124,7 +129,7 @@ function BundleAndThresholdsSection({
   ])
 
   return (
-    <section className='flex flex-col gap-4 mt-6'>
+    <section className='flex flex-col gap-4 mt-6 md:md:px-2'>
       <h3 className='text-sm font-semibold uppercase tracking-wider text-foreground/70'>
         Bundle Bonus & Thresholds
       </h3>
@@ -170,7 +175,6 @@ function BundleAndThresholdsSection({
                 minCategories: parseInt(v.target.value, 10) || 2,
               }))
             }
-            // classNames={commonInputClassNames}
             disabled={!bundleForm.enabled}
           />
         </div>
@@ -253,6 +257,7 @@ function formToTier(f: TierFormState): RewardsTier | null {
     shippingCost,
     cashBackPct,
     label,
+    enabled: f.enabled,
   }
 }
 
@@ -271,12 +276,19 @@ export const RewardsContent = () => {
   const [deleteTierIndex, setDeleteTierIndex] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteMessage, setDeleteMessage] = useState<null | 'error'>(null)
+  const [pendingTierToggleIndex, setPendingTierToggleIndex] = useState<
+    number | null
+  >(null)
+  const [tierListMessage, setTierListMessage] = useState<
+    null | 'error' | 'must_keep_one_enabled'
+  >(null)
 
   const openAddTier = useCallback(() => {
     setEditingTierIndex(null)
     setTierForm(emptyTierForm())
     setTierModalOpen(true)
     setTierSaveMessage(null)
+    setTierListMessage(null)
   }, [])
 
   const openEditTier = useCallback(
@@ -286,6 +298,7 @@ export const RewardsContent = () => {
       setTierForm(tier ? tierToForm(tier) : emptyTierForm())
       setTierModalOpen(true)
       setTierSaveMessage(null)
+      setTierListMessage(null)
     },
     [config?.tiers],
   )
@@ -295,6 +308,15 @@ export const RewardsContent = () => {
     setEditingTierIndex(null)
     setTierForm(emptyTierForm())
     setTierSaveMessage(null)
+  }, [])
+
+  const openDeleteTier = useCallback((index: number) => {
+    setTierModalOpen(false)
+    setEditingTierIndex(null)
+    setTierForm(emptyTierForm())
+    setTierSaveMessage(null)
+    setDeleteMessage(null)
+    setDeleteTierIndex(index)
   }, [])
 
   const persistConfig = useCallback(
@@ -330,6 +352,7 @@ export const RewardsContent = () => {
     })
       .then(() => {
         setIsTierSaving(false)
+        setTierListMessage(null)
         setTierSaveMessage('saved')
         closeTierModal()
       })
@@ -338,6 +361,43 @@ export const RewardsContent = () => {
         setTierSaveMessage('error')
       })
   }, [closeTierModal, config, editingTierIndex, persistConfig, tierForm])
+
+  const enabledTierCount = useMemo(
+    () => (config?.tiers ?? []).filter((tier) => tier.enabled !== false).length,
+    [config],
+  )
+
+  const handleToggleTier = useCallback(
+    (index: number, enabled: boolean) => {
+      if (!config) return
+
+      const currentTier = config.tiers[index]
+      if (!currentTier) return
+
+      if (!enabled && currentTier.enabled !== false && enabledTierCount <= 1) {
+        setTierListMessage('must_keep_one_enabled')
+        return
+      }
+
+      setPendingTierToggleIndex(index)
+      setTierListMessage(null)
+
+      void persistConfig({
+        ...config,
+        tiers: config.tiers.map((tier, tierIndex) =>
+          tierIndex === index ? {...tier, enabled} : tier,
+        ),
+      })
+        .then(() => {
+          setPendingTierToggleIndex(null)
+        })
+        .catch(() => {
+          setPendingTierToggleIndex(null)
+          setTierListMessage('error')
+        })
+    },
+    [config, enabledTierCount, persistConfig],
+  )
 
   const handleDeleteTier = useCallback(() => {
     if (deleteTierIndex === null || !config) return
@@ -354,6 +414,7 @@ export const RewardsContent = () => {
       .then(() => {
         setDeleteTierIndex(null)
         setIsDeleting(false)
+        setTierListMessage(null)
       })
       .catch(() => {
         setIsDeleting(false)
@@ -369,13 +430,15 @@ export const RewardsContent = () => {
         .sort((a, b) => a.tier.minSubtotal - b.tier.minSubtotal),
     [config],
   )
+  const isTierMutationBusy =
+    pendingTierToggleIndex !== null || isTierSaving || isDeleting
 
   if (isLoading) {
     return <LoadingHeader title='Rewards Manager' />
   }
 
   return (
-    <div className='flex h-[90lvh] min-w-0 w-full max-w-full flex-col space-y-2 overflow-y-auto pb-24'>
+    <div className='flex h-[90lvh] min-w-0 w-full flex-col space-y-2 overflow-y-auto pb-24'>
       <ContentHeader
         title='Rewards Manager'
         description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'
@@ -383,65 +446,76 @@ export const RewardsContent = () => {
         <PrimaryButton onPress={openAddTier} icon='plus' label='Add Tier' />
       </ContentHeader>
 
-      <section className='flex flex-col gap-4 mt-2'>
+      <section className='flex flex-col gap-4 mt-2 md:md:px-2'>
         <h3 className='text-sm font-semibold uppercase tracking-wider text-foreground/70'>
           Shipping & Cash Back Tiers
         </h3>
-        <div className='grid md:grid-cols-2 gap-3'>
+        <div className='grid md:grid-cols-3 gap-3'>
           {sortedTiers.map(({index, tier}) => (
             <Card
               key={`${tier.label}-${tier.minSubtotal}-${tier.maxSubtotal ?? 'max'}`}
-              className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-alum/20 dark:bg-dark-table/40'
+              className={`border border-alum/80 rounded-xs overflow-hidden transition-colors dark:bg-dark-table/40 p-0 shadow-none ${
+                tier.enabled === false ? 'opacity-60' : ''
+              }`}
             >
               <Card.Content className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
                 <div className='min-w-0'>
-                  <div className='flex min-w-0 flex-wrap items-center gap-2'>
-                    <span className='min-w-0 break-words font-medium'>
+                  <div className='flex flex-wrap items-center min-w-0 gap-4'>
+                    <h3 className='min-w-0 wrap-break-word font-clash font-medium text-lg'>
                       {tier.label}
-                    </span>
-                    <Chip
-                      size='sm'
-                      variant='tertiary'
-                      className='bg-sidebar/80 dark:bg-white/5'
-                    >
+                    </h3>
+                    <p className='text-base tracking-wider leading-3'>
                       ${tier.minSubtotal}
                       {tier.maxSubtotal !== null
                         ? ` – $${tier.maxSubtotal}`
                         : '+'}
-                    </Chip>
+                    </p>
                   </div>
                   <div className='mt-1 flex flex-wrap gap-2 text-xs text-foreground/70'>
-                    <span>
+                    <span className='font-medium'>
                       {tier.shippingCost === 0
                         ? 'Free shipping'
                         : `$${tier.shippingCost} shipping`}
                     </span>
+                    <span>&middot;</span>
                     <span>{tier.cashBackPct}% cash back</span>
+                    <span>&middot;</span>
+                    <span>
+                      {tier.enabled === false ? 'Inactive' : 'Active'}
+                    </span>
                   </div>
                 </div>
                 <div className='flex gap-2'>
                   <Button
                     size='sm'
-                    variant='tertiary'
-                    className='rounded-sm'
+                    variant='ghost'
+                    isIconOnly
                     onPress={() => openEditTier(index)}
+                    isDisabled={isTierMutationBusy}
                   >
-                    Edit
+                    <Icon name='cf-pen-2' className='size-4' />
                   </Button>
-                  <Button
-                    size='sm'
-                    variant='tertiary'
-                    onPress={() => setDeleteTierIndex(index)}
-                    className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
-                    isDisabled={config.tiers.length <= 1}
-                  >
-                    Delete
-                  </Button>
+                  <Toggle
+                    title={`${tier.label} active`}
+                    checked={tier.enabled !== false}
+                    onChange={(checked) => handleToggleTier(index, checked)}
+                    disabled={isTierMutationBusy}
+                  />
                 </div>
               </Card.Content>
             </Card>
           ))}
         </div>
+        <ViewTransition>
+          {tierListMessage === 'must_keep_one_enabled' && (
+            <span className='text-sm text-destructive'>
+              Keep at least one tier enabled.
+            </span>
+          )}
+          {tierListMessage === 'error' && (
+            <span className='text-sm text-destructive'>Tier update failed</span>
+          )}
+        </ViewTransition>
       </section>
 
       <BundleAndThresholdsSection config={config} onSave={persistConfig} />
@@ -530,18 +604,33 @@ export const RewardsContent = () => {
                 </ViewTransition>
               </Modal.Body>
               <Modal.Footer className='gap-2'>
+                {editingTierIndex !== null && (
+                  <div className='w-full flex items-center justify-start'>
+                    <Button
+                      size='sm'
+                      variant='tertiary'
+                      onPress={() => openDeleteTier(editingTierIndex)}
+                      className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
+                      isDisabled={config.tiers.length <= 1 || isDeleting}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                )}
                 <Button
+                  size='sm'
                   variant='ghost'
                   onPress={closeTierModal}
-                  className='h-7'
+                  className='rounded-sm'
                 >
                   Cancel
                 </Button>
                 <Button
+                  size='sm'
                   variant='primary'
                   onPress={handleSaveTier}
                   isDisabled={!formToTier(tierForm) || isTierSaving}
-                  className='font-clash font-medium bg-dark-table dark:bg-white dark:text-dark-table rounded-md h-7'
+                  className='font-clash font-medium bg-dark-table dark:bg-white dark:text-dark-table rounded-sm'
                 >
                   {isTierSaving
                     ? 'Saving...'

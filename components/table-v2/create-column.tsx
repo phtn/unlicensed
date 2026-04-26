@@ -267,7 +267,9 @@ const PinRowButton = <T,>({
 }) => {
   const rowPinningParser = useMemo(() => createRowPinningParser(), [])
   const [rowPinningParam] = useQueryState(pinParamKey, rowPinningParser)
-  const isPinned = ((rowPinningParam as RowPinningState | null)?.top ?? []).includes(row.id)
+  const isPinned = (
+    (rowPinningParam as RowPinningState | null)?.top ?? []
+  ).includes(row.id)
   const canPin = row.getCanPin()
 
   return (
@@ -284,16 +286,11 @@ const PinRowButton = <T,>({
       className={cn(
         'flex size-7 items-center justify-center rounded-md transition-colors',
         isPinned
-          ? 'bg-brand/5 text-brand dark:bg-cyan-100/5 dark:text-light-brand'
+          ? 'text-mac-blue'
           : 'text-muted-foreground hover:bg-sidebar hover:text-foreground',
         !canPin && 'cursor-not-allowed opacity-40',
       )}>
-      <Icon
-        name={'pin-fill'}
-        className={cn('size-4 dark:text-dark-table opacity-80', {
-          'dark:text-white opacity-100': isPinned,
-        })}
-      />
+      <Icon name={'pin-fill'} className={cn('size-4')} />
     </button>
   )
 }

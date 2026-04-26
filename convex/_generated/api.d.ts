@@ -71,6 +71,7 @@ import type * as gateways_d from "../gateways/d.js";
 import type * as gateways_m from "../gateways/m.js";
 import type * as gateways_q from "../gateways/q.js";
 import type * as gateways_seed from "../gateways/seed.js";
+import type * as geo_lib from "../geo/lib.js";
 import type * as guestTracking_d from "../guestTracking/d.js";
 import type * as guestTracking_m from "../guestTracking/m.js";
 import type * as guestTracking_q from "../guestTracking/q.js";
@@ -209,6 +210,7 @@ declare const fullApi: ApiFromModules<{
   "gateways/m": typeof gateways_m;
   "gateways/q": typeof gateways_q;
   "gateways/seed": typeof gateways_seed;
+  "geo/lib": typeof geo_lib;
   "guestTracking/d": typeof guestTracking_d;
   "guestTracking/m": typeof guestTracking_m;
   "guestTracking/q": typeof guestTracking_q;

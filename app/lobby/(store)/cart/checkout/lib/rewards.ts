@@ -22,6 +22,7 @@ export interface RewardsTier {
   shippingCost: number
   cashBackPct: number
   label: string
+  enabled: boolean
 }
 
 export interface BundleBonus {
@@ -71,6 +72,7 @@ export const REWARDS_CONFIG: RewardsConfig = {
       shippingCost: 12.99,
       cashBackPct: 1.5,
       label: 'Bronze',
+      enabled: true,
     },
     {
       minSubtotal: 99,
@@ -78,6 +80,7 @@ export const REWARDS_CONFIG: RewardsConfig = {
       shippingCost: 3.99,
       cashBackPct: 2.0,
       label: 'Silver',
+      enabled: true,
     },
     {
       minSubtotal: 149,
@@ -85,6 +88,7 @@ export const REWARDS_CONFIG: RewardsConfig = {
       shippingCost: 0,
       cashBackPct: 3.0,
       label: 'Gold',
+      enabled: true,
     },
     {
       minSubtotal: 249,
@@ -92,6 +96,7 @@ export const REWARDS_CONFIG: RewardsConfig = {
       shippingCost: 0,
       cashBackPct: 5.0,
       label: 'Platinum',
+      enabled: true,
     },
   ],
   bundleBonus: {enabled: true, bonusPct: 0.5, minCategories: 2},
@@ -114,16 +119,28 @@ export function computeRewards(
   isFirstOrder: boolean,
   config: RewardsConfig = REWARDS_CONFIG,
 ): ComputedRewards {
-  const tierIdx = config.tiers.findIndex(
+  const configuredTiers =
+    config.tiers.length > 0 ? config.tiers : REWARDS_CONFIG.tiers
+  const activeTiers = configuredTiers.filter((tier) => tier.enabled !== false)
+  const tiers = activeTiers.length > 0 ? activeTiers : configuredTiers
+
+  const matchedTierIdx = tiers.findIndex(
     (t) =>
       subtotalDollars >= t.minSubtotal &&
       (t.maxSubtotal === null || subtotalDollars <= t.maxSubtotal),
   )
-  const currentTier = config.tiers[tierIdx] ?? config.tiers[0]
-  const nextTier =
-    tierIdx < config.tiers.length - 1 ? config.tiers[tierIdx + 1] : null
-  const futureTiers =
-    tierIdx < config.tiers.length - 2 ? config.tiers.slice(tierIdx + 2) : []
+  const fallbackTierIdx = tiers.reduce(
+    (lastEligibleIdx, tier, index) =>
+      subtotalDollars >= tier.minSubtotal ? index : lastEligibleIdx,
+    -1,
+  )
+  const tierIdx =
+    matchedTierIdx >= 0
+      ? matchedTierIdx
+      : Math.max(0, fallbackTierIdx)
+  const currentTier = tiers[tierIdx] ?? tiers[0]
+  const nextTier = tierIdx < tiers.length - 1 ? tiers[tierIdx + 1] : null
+  const futureTiers = tierIdx < tiers.length - 2 ? tiers.slice(tierIdx + 2) : []
 
   const uniqueCategories = new Set(items.map((i) => i.category)).size
   const isBundleBonusActive =

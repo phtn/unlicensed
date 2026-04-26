@@ -78,7 +78,7 @@ export const RenderRow = <T,>({
           // Apply selected styles when viewer is open - same as hover but persistent
           ' border-y-dark-table/30 bg-sidebar hover:bg-sidebar dark:bg-mac-blue/20 last:rounded-tr-2xl':
             isSelected && !isEditing,
-          'border-y-brand/40 bg-brand/5 hover:bg-brand/10 dark:border-y-light-brand/30 dark:bg-light-brand/10 dark:hover:bg-light-brand/15':
+          'border-y-light-gray bg-sky-300/20 hover:bg-brand/10 dark:border-y-sky-300/15 dark:bg-background/20 dark:hover:bg-background/30':
             isPinned && !isEditing && !isSelected,
           // Add cursor pointer when select mode is on
           'cursor-pointer': showSelectColumn && row.getCanSelect(),
