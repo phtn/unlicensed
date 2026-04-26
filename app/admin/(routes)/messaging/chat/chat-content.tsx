@@ -41,7 +41,6 @@ const ChatWindow = dynamic(
 const CHAT_TABS = [
   {id: 'authed', label: 'Users'},
   {id: 'staff', label: 'Staff'},
-  {id: 'guests', label: 'Guests'},
 ] as const
 
 const DEFAULT_TAB = CHAT_TABS[0].id
@@ -370,9 +369,9 @@ const GuestTableView = ({
 
 export const Content = () => {
   const {user} = useAuthCtx()
-  const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
+  const users = useQuery(api.users.q.getAllUsers, {limit: 1000})
   const staff = useQuery(api.staff.q.getStaff)
-  const guests = useQuery(api.guests.q.getAllGuests, {limit: 5000})
+  // const guests = useQuery(api.guests.q.getAllGuests, {limit: 5000})
   const [selectedTab, setSelectedTab] = useQueryState(
     'chatTab',
     parseAsString.withDefault(DEFAULT_TAB),
@@ -465,7 +464,7 @@ export const Content = () => {
     )
   })
 
-  const guestUsers = guests ?? []
+  // const guestUsers = guests ?? []
 
   const openConversation = (conversationFid: string) => {
     startTransition(() => {
@@ -495,7 +494,7 @@ export const Content = () => {
                   {staffParticipants.length} Staff
                 </span>
                 <span className='rounded-full border border-sidebar px-1.5 md:px-3 py-0.5 md:py-1.5 capitalize font-ios'>
-                  {guestUsers.length} guests
+                  {[].length}
                 </span>
               </div>
             </div>
@@ -621,9 +620,9 @@ export const Content = () => {
 
         <Tabs.Panel
           value='guests'
-          className='relative flex min-h-32 flex-1 flex-col py-4'>
+          className='hidden relative _flex min-h-32 flex-1 flex-col py-4'>
           <section className='space-y-4'>
-            {guestUsers.length === 0 ? (
+            {[].length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
                 No guest conversations have been created yet.
               </div>
@@ -639,14 +638,14 @@ export const Content = () => {
                 </div>
                 {activeGuestView === 'table' ? (
                   <GuestTableView
-                    guestUsers={guestUsers}
+                    guestUsers={[]}
                     isChatWindowOpen={isChatWindowOpen}
                     selectedConversationFid={selectedConversationFid}
                     onOpenConversation={openConversation}
                   />
                 ) : (
                   <GuestGridView
-                    guestUsers={guestUsers}
+                    guestUsers={[]}
                     isChatWindowOpen={isChatWindowOpen}
                     selectedConversationFid={selectedConversationFid}
                     onOpenConversation={openConversation}
