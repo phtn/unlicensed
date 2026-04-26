@@ -10,6 +10,7 @@ import {
   getSortedRowModel,
   PaginationState,
   Row,
+  RowPinningState,
   RowSelectionState,
   SortingState,
   useReactTable,
@@ -64,6 +65,7 @@ import {
   createColumnVisibilityParser,
   createLoadedCountParser,
   createPaginationParser,
+  createRowPinningParser,
   createRowSelectionParser,
   createSortingParser,
   searchParser,
@@ -88,6 +90,10 @@ interface BulkUpdateSelectionArgs<T> {
   rows: T[]
   updates: Partial<T>
 }
+
+type RowIdAccessor<T> =
+  | keyof T
+  | ((row: T, index: number) => string | number | null | undefined)
 
 interface TableProps<T> {
   data: T[]
@@ -115,6 +121,37 @@ interface TableProps<T> {
   rightToolbarLeft?:
     | ReactNode
     | ((context: TableToolbarContext<T>) => ReactNode)
+  /** Enables a pin column that keeps selected rows rendered above the table body. */
+  enableRowPinning?: boolean
+  /** Query param key used to persist pinned row IDs. Defaults to "pinnedRows". */
+  rowPinningParamKey?: string
+  /** Stable row identifier used for selection and URL-persisted row pinning. */
+  rowIdAccessor?: RowIdAccessor<T>
+}
+
+const getFallbackRowIdValue = <T,>(row: T) => {
+  if (!row || typeof row !== 'object') {
+    return null
+  }
+
+  const record = row as Record<string, unknown>
+
+  return record._id ?? record.id ?? record.visitorId ?? record.fid ?? null
+}
+
+const resolveRowId = <T,>(
+  row: T,
+  index: number,
+  rowIdAccessor: RowIdAccessor<T> | undefined,
+) => {
+  const value =
+    typeof rowIdAccessor === 'function'
+      ? rowIdAccessor(row, index)
+      : rowIdAccessor
+        ? row[rowIdAccessor]
+        : getFallbackRowIdValue(row)
+
+  return value == null ? String(index) : String(value)
 }
 
 function DataTableContent<T>({
@@ -133,6 +170,9 @@ function DataTableContent<T>({
   loadedCountParamKey,
   centerToolbarDateRange,
   rightToolbarLeft,
+  enableRowPinning = false,
+  rowPinningParamKey = 'pinnedRows',
+  rowIdAccessor,
 }: TableProps<T>) {
   const [tableData, setTableData] = useState(data)
   const [bulkAction, setBulkAction] = useState<'idle' | 'update' | 'delete'>(
@@ -160,6 +200,11 @@ function DataTableContent<T>({
   const [rowSelectionParam, setRowSelectionParam] = useQueryState(
     'selected',
     rowSelectionParser,
+  )
+  const rowPinningParser = useMemo(() => createRowPinningParser(), [])
+  const [rowPinningParam, setRowPinningParam] = useQueryState(
+    rowPinningParamKey,
+    rowPinningParser,
   )
   const [selectModeParam, setSelectModeParam] = useQueryState(
     'selectMode',
@@ -196,6 +241,26 @@ function DataTableContent<T>({
     () => rowSelectionParam ?? {},
     [rowSelectionParam],
   )
+  const getTableRowId = useCallback(
+    (row: T, index: number) => resolveRowId(row, index, rowIdAccessor),
+    [rowIdAccessor],
+  )
+  const availableRowIds = useMemo(
+    () => new Set(tableData.map((row, index) => getTableRowId(row, index))),
+    [getTableRowId, tableData],
+  )
+  const rowPinning: RowPinningState = useMemo(() => {
+    if (!enableRowPinning) {
+      return {top: [], bottom: []}
+    }
+
+    return {
+      top: (rowPinningParam?.top ?? []).filter((id) =>
+        availableRowIds.has(id),
+      ),
+      bottom: [],
+    }
+  }, [availableRowIds, enableRowPinning, rowPinningParam])
 
   const selectOn = useMemo(() => selectModeParam === 'true', [selectModeParam])
 
@@ -222,6 +287,27 @@ function DataTableContent<T>({
     loadedCountParamKey,
     loading,
     setLoadedCountParam,
+  ])
+
+  useEffect(() => {
+    if (!enableRowPinning || loading || tableData.length === 0) {
+      return
+    }
+
+    const currentTop = rowPinningParam?.top ?? []
+    const sanitizedTop = rowPinning.top ?? []
+    if (currentTop.join(',') === sanitizedTop.join(',')) {
+      return
+    }
+
+    void setRowPinningParam({top: sanitizedTop, bottom: []})
+  }, [
+    enableRowPinning,
+    loading,
+    rowPinning,
+    rowPinningParam,
+    setRowPinningParam,
+    tableData.length,
   ])
 
   const handleFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -296,6 +382,26 @@ function DataTableContent<T>({
     [rowSelection, setRowSelectionParam],
   )
 
+  const handleRowPinningChange = useCallback(
+    (
+      updater:
+        | RowPinningState
+        | ((old: RowPinningState) => RowPinningState),
+    ) => {
+      const nextPinning =
+        typeof updater === 'function' ? updater(rowPinning) : updater
+      const nextTop = (nextPinning.top ?? []).filter((id) =>
+        availableRowIds.has(id),
+      )
+
+      void setRowPinningParam({
+        top: nextTop,
+        bottom: [],
+      })
+    },
+    [availableRowIds, rowPinning, setRowPinningParam],
+  )
+
   const selectToggle = useCallback(() => {
     const nextSelectOn = !selectOn
     setSelectModeParam(nextSelectOn ? 'true' : 'false')
@@ -315,13 +421,21 @@ function DataTableContent<T>({
   // };
 
   const columns = useMemo(
-    () => createColumns(columnConfigs, actionConfig, selectOn),
-    [columnConfigs, actionConfig, selectOn],
+    () =>
+      createColumns(
+        columnConfigs,
+        actionConfig,
+        selectOn,
+        enableRowPinning,
+        rowPinningParamKey,
+      ),
+    [columnConfigs, actionConfig, selectOn, enableRowPinning, rowPinningParamKey],
   )
 
   const table = useReactTable({
     data: tableData,
     columns,
+    getRowId: getTableRowId,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: handleSortingChange,
@@ -331,6 +445,9 @@ function DataTableContent<T>({
     onColumnFiltersChange: handleColumnFiltersChange,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: handleRowSelectionChange,
+    onRowPinningChange: handleRowPinningChange,
+    enableRowPinning,
+    keepPinnedRows: true,
     getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     globalFilterFn: globalFilterFn,
@@ -341,6 +458,7 @@ function DataTableContent<T>({
       globalFilter: globalFilter ?? '',
       columnVisibility,
       rowSelection,
+      rowPinning,
     },
   })
 
@@ -435,7 +553,9 @@ function DataTableContent<T>({
     },
   }
 
-  const tableRows = table.getRowModel().rows
+  const tableRows = enableRowPinning
+    ? [...table.getTopRows(), ...table.getCenterRows()]
+    : table.getRowModel().rows
   const selectedRowModel = table.getSelectedRowModel().rows
   const selectedRows = selectedRowModel
   const selectedRowData = useMemo(
@@ -475,7 +595,9 @@ function DataTableContent<T>({
       } else {
         const selectedRowIds = new Set(selectedRows.map((row) => row.id))
         setTableData((current) =>
-          current.filter((_, index) => !selectedRowIds.has(String(index))),
+          current.filter(
+            (item, index) => !selectedRowIds.has(getTableRowId(item, index)),
+          ),
         )
       }
 
@@ -487,6 +609,7 @@ function DataTableContent<T>({
     bulkAction,
     clearSelection,
     getSelectionIds,
+    getTableRowId,
     onDeleteSelected,
     selectedRows,
   ])
@@ -514,7 +637,7 @@ function DataTableContent<T>({
           const selectedRowIds = new Set(selectedRows.map((row) => row.id))
           setTableData((current) =>
             current.map((item, index) => {
-              if (!selectedRowIds.has(String(index))) {
+              if (!selectedRowIds.has(getTableRowId(item, index))) {
                 return item
               }
 
@@ -532,6 +655,7 @@ function DataTableContent<T>({
     [
       bulkAction,
       getSelectionIds,
+      getTableRowId,
       onBulkUpdateSelected,
       selectedRowData,
       selectedRows,

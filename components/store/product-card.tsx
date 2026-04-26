@@ -26,6 +26,7 @@ type PriceOption = {
   denominationValue: number
   originalPrice?: string
   isOnSale: boolean
+  isPopular: boolean
 }
 
 const EMPTY_PRICE_OPTIONS: PriceOption[] = []
@@ -108,6 +109,7 @@ const priceOptionsFromDenomination = (
       denominationValue: denomination,
       originalPrice: hasSalePrice ? formatPrice(cents) : undefined,
       isOnSale: hasSalePrice,
+      isPopular: false,
     }
   })
 }
@@ -188,7 +190,8 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   areStringArraysEqual(left.brand, right.brand) &&
   arePriceMapsEqual(left.stockByDenomination, right.stockByDenomination) &&
   arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination) &&
-  arePriceMapsEqual(left.salePriceByDenomination, right.salePriceByDenomination)
+  arePriceMapsEqual(left.salePriceByDenomination, right.salePriceByDenomination) &&
+  areNumberArraysEqual(left.popularDenomination, right.popularDenomination)
 
 const isRenderableImageSrc = (value: string | null | undefined) =>
   typeof value === 'string' &&
@@ -267,7 +270,7 @@ const ProductCardComponent = ({
     const brandLabel = product.brand
       ? product.brand.map((brand) => brand.split('-').join(' ')).join(', ')
       : ''
-    const firstFourOptions =
+    const allPriceOptions =
       priceOptionsFromDenomination(
         product.priceByDenomination,
         product.salePriceByDenomination,
@@ -275,7 +278,31 @@ const ProductCardComponent = ({
         product.priceCents,
         product.unit,
         product.onSale,
-      )?.slice(0, 4) ?? EMPTY_PRICE_OPTIONS
+      ) ?? EMPTY_PRICE_OPTIONS
+
+    const popularDenomSet = new Set(product.popularDenomination ?? [])
+    const candidateFour = allPriceOptions.slice(0, 4)
+
+    if (popularDenomSet.size > 0 && candidateFour.length > 0) {
+      const candidateValues = new Set(candidateFour.map((o) => o.denominationValue))
+      const popularOutside = allPriceOptions.find(
+        (o) => popularDenomSet.has(o.denominationValue) && !candidateValues.has(o.denominationValue),
+      )
+      if (popularOutside) {
+        let smallestIdx = 0
+        for (let i = 1; i < candidateFour.length; i += 1) {
+          if (candidateFour[i].denominationValue < candidateFour[smallestIdx].denominationValue) {
+            smallestIdx = i
+          }
+        }
+        candidateFour[smallestIdx] = popularOutside
+      }
+    }
+
+    const firstFourOptions = candidateFour.map((o) => ({
+      ...o,
+      isPopular: popularDenomSet.has(o.denominationValue),
+    }))
 
     return {
       brandLabel,
@@ -306,6 +333,7 @@ const ProductCardComponent = ({
     product.slug,
     product.subcategory,
     product.unit,
+    product.popularDenomination,
   ])
 
   const selectedOption =
@@ -499,7 +527,18 @@ const ProductCardComponent = ({
                       event.stopPropagation()
                       setSelectedIndex(index)
                     }}>
-                    {option.denom}
+                    {option.isPopular ? (
+                      <div
+                        title='Popular'
+                        className='absolute -right-2 -top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
+                        <Icon
+                          name='hot'
+                          className='absolute w-5 h-4 translate-y-[0.33px] text-dark-table rotate-25'
+                        />
+                        <Icon name='hot' className='size-3.5 rotate-25' />
+                      </div>
+                    ) : null}
+                    <span>{option.denom}</span>
                   </button>
                 ))}
               </div>
@@ -671,7 +710,18 @@ const ProductCardComponent = ({
                     event.stopPropagation()
                     setSelectedIndex(index)
                   }}>
-                  {option.denom}
+                  {option.isPopular ? (
+                    <div
+                      title='Popular'
+                      className='absolute -right-2 -top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
+                      <Icon
+                        name='hot'
+                        className='absolute w-5 h-4 translate-y-[0.33px] text-dark-table rotate-25'
+                      />
+                      <Icon name='hot' className='size-3.5 rotate-25' />
+                    </div>
+                  ) : null}
+                  <span>{option.denom}</span>
                 </button>
               ))}
             </div>

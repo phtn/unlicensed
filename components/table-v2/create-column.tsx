@@ -7,6 +7,7 @@ import {
   type ColumnDef,
   type FilterFn,
   type Row,
+  type RowPinningState,
   type RowSelectionState,
   type Table,
 } from '@tanstack/react-table'
@@ -19,7 +20,7 @@ import {
   groupFilter,
   multiSelectFilterFn,
 } from './filter-fns'
-import {createRowSelectionParser} from './parsers-v2'
+import {createRowPinningParser, createRowSelectionParser} from './parsers-v2'
 import {RowActions} from './row-actions'
 export {filterFn, globalFilterFn, groupFilter, multiSelectFilterFn}
 
@@ -135,6 +136,8 @@ export const createColumns = <T,>(
   columnConfigs: ColumnConfig<T>[],
   actionConfig?: ActionConfig<T>,
   showSelectColumn: boolean = false,
+  showPinColumn: boolean = false,
+  rowPinningParamKey: string = 'pinnedRows',
 ): ColumnDef<T>[] => {
   const columns: ColumnDef<T>[] = []
 
@@ -154,6 +157,50 @@ export const createColumns = <T,>(
       isVisible: showSelectColumn,
     },
   })
+
+  if (showPinColumn) {
+    columns.push({
+      id: 'pin-row',
+      header: ({table}) => {
+        const pinnedCount = table.getState().rowPinning.top?.length ?? 0
+
+        return (
+          <button
+            type='button'
+            aria-label={
+              pinnedCount > 0
+                ? `Clear ${pinnedCount} pinned rows`
+                : 'Pinned rows'
+            }
+            title={
+              pinnedCount > 0
+                ? `Clear ${pinnedCount} pinned rows`
+                : 'Pinned rows'
+            }
+            disabled={pinnedCount === 0}
+            onClick={(event) => {
+              event.stopPropagation()
+              table.resetRowPinning(true)
+            }}
+            className={cn(
+              'flex size-7 items-center justify-center rounded-md transition-colors',
+              pinnedCount > 0
+                ? 'text-brand hover:bg-brand/10 dark:text-light-brand'
+                : 'text-muted-foreground/40',
+            )}>
+            <Icon name='pin-fill' className='size-4' />
+          </button>
+        )
+      },
+      cell: ({row}) => (
+        <PinRowButton row={row} pinParamKey={rowPinningParamKey} />
+      ),
+      size: 42,
+      enableHiding: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+    })
+  }
 
   // Add data columns based on configuration
   columnConfigs.forEach((config) => {
@@ -209,6 +256,46 @@ export const createColumns = <T,>(
   }
 
   return columns
+}
+
+const PinRowButton = <T,>({
+  row,
+  pinParamKey,
+}: {
+  row: Row<T>
+  pinParamKey: string
+}) => {
+  const rowPinningParser = useMemo(() => createRowPinningParser(), [])
+  const [rowPinningParam] = useQueryState(pinParamKey, rowPinningParser)
+  const isPinned = ((rowPinningParam as RowPinningState | null)?.top ?? []).includes(row.id)
+  const canPin = row.getCanPin()
+
+  return (
+    <button
+      type='button'
+      aria-label={isPinned ? 'Unpin row' : 'Pin row to top'}
+      aria-pressed={isPinned}
+      title={isPinned ? 'Unpin row' : 'Pin row to top'}
+      disabled={!canPin}
+      onClick={(event) => {
+        event.stopPropagation()
+        row.pin(isPinned ? false : 'top')
+      }}
+      className={cn(
+        'flex size-7 items-center justify-center rounded-md transition-colors',
+        isPinned
+          ? 'bg-brand/5 text-brand dark:bg-cyan-100/5 dark:text-light-brand'
+          : 'text-muted-foreground hover:bg-sidebar hover:text-foreground',
+        !canPin && 'cursor-not-allowed opacity-40',
+      )}>
+      <Icon
+        name={'pin-fill'}
+        className={cn('size-4 dark:text-dark-table opacity-80', {
+          'dark:text-white opacity-100': isPinned,
+        })}
+      />
+    </button>
+  )
 }
 
 // Fake change event for TanStack table toggle handlers (expect e.target.checked)

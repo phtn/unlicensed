@@ -651,6 +651,9 @@ export const VisitorData = () => {
         defaultPageSize={50}
         defaultLoadedCount={500}
         loadedCountParamKey='visitorsLoadedCount'
+        enableRowPinning
+        rowIdAccessor='visitorId'
+        rowPinningParamKey='visitorsPinnedRows'
       />
     </div>
   )

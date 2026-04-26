@@ -2,6 +2,7 @@ import {parseAsInteger, parseAsString, parseAsStringEnum} from 'nuqs'
 
 import type {
   ColumnFiltersState,
+  RowPinningState,
   RowSelectionState,
   SortingState,
   VisibilityState,
@@ -182,6 +183,31 @@ export const createRowSelectionParser = () => ({
     return selectedIds.join(',')
   },
   defaultValue: {} as RowSelectionState,
+})
+
+// Row pinning parser - format: "id1,id2,id3" for top-pinned rows.
+export const createRowPinningParser = () => ({
+  parse: (value: string | null): RowPinningState => {
+    if (!value) {
+      return {top: [], bottom: []}
+    }
+    try {
+      return {
+        top: value.split(',').filter(Boolean),
+        bottom: [],
+      }
+    } catch {
+      return {top: [], bottom: []}
+    }
+  },
+  serialize: (value: RowPinningState): string => {
+    if (!value?.top?.length) {
+      return ''
+    }
+
+    return value.top.join(',')
+  },
+  defaultValue: {top: [], bottom: []} as RowPinningState,
 })
 
 // Select mode parser (boolean)
