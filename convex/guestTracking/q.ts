@@ -1,7 +1,15 @@
 import {ConvexError, v} from 'convex/values'
+import type {Doc} from '../_generated/dataModel'
 import type {QueryCtx} from '../_generated/server'
 import {query} from '../_generated/server'
+import {
+  getChatParticipantDisplayName,
+  getChatParticipantFid,
+  isGuestParticipant,
+  type ChatParticipantDoc,
+} from '../messages/participants'
 import {findStaffByEmail, hasAdminAccessRole} from '../staff/lib'
+import {getCanonicalUserByFid} from '../users/lib'
 import {guestTrackingEventTypeSchema} from './d'
 
 const DEFAULT_LIMIT = 100
@@ -25,6 +33,43 @@ async function requireAdminAccess(ctx: QueryCtx) {
 const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT)
 
+const findGuestForVisitor = async (
+  ctx: QueryCtx,
+  visitor: Doc<'guestVisitors'>,
+) => {
+  if (visitor.deviceFingerprintId) {
+    const guest = await ctx.db
+      .query('guests')
+      .withIndex('by_device_fingerprint_id', (q) =>
+        q.eq('deviceFingerprintId', visitor.deviceFingerprintId),
+      )
+      .first()
+
+    if (guest) {
+      return guest
+    }
+  }
+
+  return await ctx.db
+    .query('guests')
+    .withIndex('by_visitor_id', (q) => q.eq('visitorId', visitor.visitorId))
+    .first()
+}
+
+const resolveVisitorChatParticipant = async (
+  ctx: QueryCtx,
+  visitor: Doc<'guestVisitors'>,
+): Promise<ChatParticipantDoc | null> => {
+  if (visitor.linkedUserFid) {
+    const user = await getCanonicalUserByFid(ctx, visitor.linkedUserFid)
+    if (user) {
+      return user
+    }
+  }
+
+  return await findGuestForVisitor(ctx, visitor)
+}
+
 export const getRecentVisitors = query({
   args: {
     limit: v.optional(v.number()),
@@ -32,11 +77,34 @@ export const getRecentVisitors = query({
   handler: async (ctx, args) => {
     await requireAdminAccess(ctx)
 
-    return await ctx.db
+    const visitors = await ctx.db
       .query('guestVisitors')
       .withIndex('by_last_seen_at')
       .order('desc')
       .take(clampLimit(args.limit))
+
+    return await Promise.all(
+      visitors.map(async (visitor) => {
+        const participant = await resolveVisitorChatParticipant(ctx, visitor)
+        const participantFid = participant
+          ? getChatParticipantFid(participant)
+          : null
+
+        return {
+          ...visitor,
+          chatParticipantId: participant?._id ?? null,
+          chatParticipantFid: participantFid || null,
+          chatParticipantType: participant
+            ? isGuestParticipant(participant)
+              ? 'guest'
+              : 'user'
+            : null,
+          chatDisplayName: participant
+            ? getChatParticipantDisplayName(participant)
+            : null,
+        }
+      }),
+    )
   },
 })
 

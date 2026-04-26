@@ -6,7 +6,6 @@ import {api} from '@/convex/_generated/api'
 import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {useApiCall} from '@/hooks/use-api-call'
 import {Button, Card} from '@heroui/react'
-import {useStore} from '@tanstack/react-store'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {z} from 'zod'
@@ -234,13 +233,13 @@ export const AffiliateAccountForm = ({
           </form.AppField>
 
           {errorMessage && (
-            <div className='rounded-lg bg-danger/10 border border-danger/20 p-3 text-sm text-danger'>
+            <div className='rounded-lg bg-danger/10 border border-danger-soft-hover p-3 text-sm text-danger'>
               {errorMessage}
             </div>
           )}
 
           {status === 'success' && (
-            <div className='rounded-lg bg-success/10 border border-success/20 p-3 text-sm text-success'>
+            <div className='rounded-lg bg-success/10 border border-success-soft-hover p-3 text-sm text-success'>
               {isEditMode
                 ? 'Affiliate account updated successfully!'
                 : 'Affiliate account created successfully!'}
@@ -248,9 +247,7 @@ export const AffiliateAccountForm = ({
           )}
 
           <div className='flex items-center gap-3'>
-            <Button
-              type='submit'
-              className='min-w-32'>
+            <Button type='submit' className='min-w-32'>
               {isEditMode ? 'Update Affiliate' : 'Create Affiliate'}
             </Button>
 

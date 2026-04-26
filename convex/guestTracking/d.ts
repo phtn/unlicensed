@@ -36,6 +36,7 @@ export const guestTrackingMetadataSchema = v.record(
 
 export const guestVisitorSchema = v.object({
   visitorId: v.string(),
+  deviceFingerprintId: v.optional(v.string()),
   firstSeenAt: v.number(),
   lastSeenAt: v.number(),
   pageViewCount: v.number(),
@@ -53,6 +54,7 @@ export const guestVisitorSchema = v.object({
   utmContent: v.optional(v.string()),
   deviceType: v.optional(guestTrackingDeviceTypeSchema),
   browser: v.optional(v.string()),
+  browsers: v.optional(v.array(v.string())),
   os: v.optional(v.string()),
   screenWidth: v.optional(v.number()),
   screenHeight: v.optional(v.number()),
@@ -73,6 +75,7 @@ export const guestVisitorSchema = v.object({
 
 export const guestVisitorEventSchema = v.object({
   visitorId: v.string(),
+  deviceFingerprintId: v.optional(v.string()),
   type: guestTrackingEventTypeSchema,
   path: v.string(),
   fullPath: v.optional(v.string()),

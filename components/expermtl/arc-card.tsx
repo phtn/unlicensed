@@ -104,7 +104,7 @@ interface ArcButtonProps {
   icon?: IconName
 }
 
-const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => {
+const ArcButtonLeft = ({label, fn}: ArcButtonProps) => {
   return fn ? (
     <Button
       size='lg'
@@ -116,7 +116,7 @@ const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => {
   ) : null
 }
 
-const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => {
+const ArcButtonRight = ({label, fn}: ArcButtonProps) => {
   return fn ? (
     <Button
       size='lg'
@@ -127,7 +127,7 @@ const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => {
     </Button>
   ) : null
 }
-const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => {
+const ArcButtonFull = ({label, fn}: ArcButtonProps) => {
   return fn ? (
     <Button
       onPress={fn}

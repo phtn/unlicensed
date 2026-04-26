@@ -1,5 +1,3 @@
-import {ConvexHttpClient} from 'convex/browser'
-import {api} from './convex/_generated/api.js'
 import * as dotenv from 'dotenv'
 import {writeFileSync, mkdirSync} from 'fs'
 import {join} from 'path'

@@ -9,12 +9,15 @@ import {
 
 const MAX_STRING_LENGTH = 1000
 const DEDUPE_WINDOW_MS = 2500
+const MAX_TRACKED_BROWSERS = 12
 
 const stringArg = v.optional(v.string())
 
-const normalizeVisitorId = (visitorId: string) => {
-  const normalized = visitorId.trim()
-  return normalized.length >= 12 && normalized.length <= 128 ? normalized : null
+const normalizeVisitorId = (visitorId: string | undefined) => {
+  const normalized = visitorId?.trim()
+  return normalized && normalized.length >= 12 && normalized.length <= 128
+    ? normalized
+    : null
 }
 
 const trimValue = (
@@ -25,9 +28,37 @@ const trimValue = (
   return trimmed ? trimmed.slice(0, maxLength) : undefined
 }
 
+const appendUniqueBrowser = (
+  existingBrowsers: string[] | undefined,
+  legacyBrowser: string | undefined,
+  nextBrowser: string | undefined,
+) => {
+  const browsers: string[] = []
+  const seen = new Set<string>()
+
+  for (const browser of [
+    legacyBrowser,
+    ...(existingBrowsers ?? []),
+    nextBrowser,
+  ]) {
+    const normalized = trimValue(browser, 120)
+    const key = normalized?.toLowerCase()
+
+    if (!normalized || !key || seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    browsers.push(normalized)
+  }
+
+  return browsers.slice(-MAX_TRACKED_BROWSERS)
+}
+
 export const recordEvent = mutation({
   args: {
     visitorId: v.string(),
+    deviceFingerprintId: stringArg,
     type: guestTrackingEventTypeSchema,
     path: v.string(),
     fullPath: stringArg,
@@ -56,8 +87,8 @@ export const recordEvent = mutation({
     metadata: v.optional(guestTrackingMetadataSchema),
   },
   handler: async (ctx, args) => {
-    const visitorId = normalizeVisitorId(args.visitorId)
-    if (!visitorId) {
+    const submittedVisitorId = normalizeVisitorId(args.visitorId)
+    if (!submittedVisitorId) {
       throw new ConvexError('Invalid guest visitor identifier.')
     }
 
@@ -65,6 +96,31 @@ export const recordEvent = mutation({
     const path = trimValue(args.path, 500) ?? '/'
     const fullPath = trimValue(args.fullPath)
     const linkedUserFid = trimValue(args.linkedUserFid, 256)
+    const deviceFingerprintId = normalizeVisitorId(args.deviceFingerprintId)
+    const browser = trimValue(args.browser, 120)
+
+    const deviceVisitors = deviceFingerprintId
+      ? await ctx.db
+          .query('guestVisitors')
+          .withIndex('by_device_fingerprint_id', (q) =>
+            q.eq('deviceFingerprintId', deviceFingerprintId),
+          )
+          .order('desc')
+          .take(1)
+      : []
+
+    const existingVisitor =
+      deviceVisitors[0] ??
+      (await ctx.db
+        .query('guestVisitors')
+        .withIndex('by_visitor_id', (q) => q.eq('visitorId', submittedVisitorId))
+        .unique())
+    const visitorId = existingVisitor?.visitorId ?? submittedVisitorId
+    const browsers = appendUniqueBrowser(
+      existingVisitor?.browsers,
+      existingVisitor?.browser,
+      browser,
+    )
 
     const latestEvents = await ctx.db
       .query('guestVisitorEvents')
@@ -80,15 +136,11 @@ export const recordEvent = mutation({
       latestEvent.path === path &&
       now - latestEvent.createdAt < DEDUPE_WINDOW_MS
 
-    const existingVisitor = await ctx.db
-      .query('guestVisitors')
-      .withIndex('by_visitor_id', (q) => q.eq('visitorId', visitorId))
-      .unique()
-
     const visitorPatch = {
       lastSeenAt: now,
       updatedAt: now,
       lastPath: path,
+      ...(deviceFingerprintId ? {deviceFingerprintId} : {}),
       ...(fullPath ? {lastUrl: fullPath} : {}),
       ...(trimValue(args.referrer)
         ? {lastReferrer: trimValue(args.referrer)}
@@ -109,9 +161,7 @@ export const recordEvent = mutation({
         ? {utmContent: trimValue(args.utmContent, 200)}
         : {}),
       ...(args.deviceType ? {deviceType: args.deviceType} : {}),
-      ...(trimValue(args.browser, 120)
-        ? {browser: trimValue(args.browser, 120)}
-        : {}),
+      ...(browser ? {browser, browsers} : {}),
       ...(trimValue(args.os, 120) ? {os: trimValue(args.os, 120)} : {}),
       ...(args.screenWidth !== undefined
         ? {screenWidth: args.screenWidth}
@@ -187,6 +237,7 @@ export const recordEvent = mutation({
 
     const eventDocumentId = await ctx.db.insert('guestVisitorEvents', {
       visitorId,
+      ...(deviceFingerprintId ? {deviceFingerprintId} : {}),
       type: args.type,
       path,
       ...(fullPath ? {fullPath} : {}),
@@ -210,9 +261,7 @@ export const recordEvent = mutation({
         ? {utmContent: trimValue(args.utmContent, 200)}
         : {}),
       ...(args.deviceType ? {deviceType: args.deviceType} : {}),
-      ...(trimValue(args.browser, 120)
-        ? {browser: trimValue(args.browser, 120)}
-        : {}),
+      ...(browser ? {browser} : {}),
       ...(trimValue(args.os, 120) ? {os: trimValue(args.os, 120)} : {}),
       ...(args.screenWidth !== undefined
         ? {screenWidth: args.screenWidth}

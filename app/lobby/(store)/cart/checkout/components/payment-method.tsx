@@ -224,23 +224,6 @@ export const PaymentMethods = memo(function PaymentMethods({
   )
 })
 
-interface TxnSpeedProps {
-  method: PaymentMethod
-  selected?: boolean
-}
-
-const TxnSpeed_ = ({method, selected = false}: TxnSpeedProps) => {
-  return method === 'crypto_commerce' ? (
-    <span
-      className={cn(
-        'text-brand dark:text-white text-[8px] italic uppercase font-semibold tracking-normal opacity-100 mt-1',
-        {'text-brand dark:text-brand': selected},
-      )}>
-      Fastest
-    </span>
-  ) : null
-}
-
 const PctFee = ({method}: {method: PaymentMethod}) => {
   const fmap: Record<PaymentMethod, string | null> = {
     crypto_commerce: '3% OFF',

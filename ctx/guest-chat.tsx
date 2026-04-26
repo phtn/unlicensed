@@ -9,6 +9,7 @@ import {
   getGuestChatIdCookie,
   setGuestChatIdCookie,
 } from '@/lib/guest-chat'
+import {trackGuestPageView} from '@/lib/guest-tracking-client'
 import {useMutation} from 'convex/react'
 import {
   createContext,
@@ -183,7 +184,21 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
       setError(null)
 
       try {
-        const result = await ensureGuestConversation({guestId: nextGuestId})
+        const trackingResult = await trackGuestPageView({
+          awaitPersistence: true,
+        })
+
+        if (!trackingResult.tracked) {
+          throw new Error('Unable to save guest visitor before starting chat.')
+        }
+
+        const result = await ensureGuestConversation({
+          guestId: nextGuestId,
+          visitorId: trackingResult.visitorId,
+          ...(trackingResult.deviceFingerprintId
+            ? {deviceFingerprintId: trackingResult.deviceFingerprintId}
+            : {}),
+        })
 
         setGuestId(result.guestId)
         setGuestFid(result.guestFid)

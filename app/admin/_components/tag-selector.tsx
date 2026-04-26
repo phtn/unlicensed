@@ -15,7 +15,6 @@ interface TagSelectorProps {
 
 export const TagSelector = ({
   selectedKeys,
-  onSelectionChange,
   type,
   label,
   placeholder,
@@ -34,14 +33,6 @@ export const TagSelector = ({
     const category = categoryMap[type]
     return ITEMS.filter((item) => item.category === category)
   }, [type])
-
-  const handleSelectionChange = (keys: Set<React.Key> | 'all') => {
-    if (keys === 'all') {
-      onSelectionChange(items.map((i) => i.id))
-    } else {
-      onSelectionChange(Array.from(keys) as string[])
-    }
-  }
 
   return (
     <Select

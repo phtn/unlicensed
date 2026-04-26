@@ -27,7 +27,6 @@ import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 
-
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 type Area = {x: number; y: number; width: number; height: number}
@@ -306,7 +305,7 @@ export const ImageOptimizer = () => {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [loadingReport, setLoadingReport] = useState(false)
-  const [generating, setGenerating] = useState(false)
+  const [, setGenerating] = useState(false)
 
   const persistedUploadedPreviewSizes = useQuery(
     api.files.upload.existingPreviewSizes,
@@ -896,9 +895,9 @@ export const ImageOptimizer = () => {
           onDragLeave={onDropZoneDragLeave}
           onDrop={onDropZoneDrop}>
           {!sourceImageUrl ? (
-              <div className='h-160 bg-sidebar flex items-center justify-center flex-col text-base opacity-70'>
+            <div className='h-160 bg-sidebar flex items-center justify-center flex-col text-base opacity-70'>
               <Icon name='chute' className='size-20' />
-                <p>Dropzone</p>
+              <p>Dropzone</p>
             </div>
           ) : (
             <div className='space-y-4'>

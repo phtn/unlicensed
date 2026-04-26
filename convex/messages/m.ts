@@ -209,9 +209,61 @@ const resolveOtherUserId = async (
   throw new Error('Other user not found')
 }
 
+const normalizeTrackedVisitorId = (value?: string | null) => {
+  const normalized = value?.trim()
+  return normalized && normalized.length >= 12 && normalized.length <= 128
+    ? normalized
+    : null
+}
+
+const getTrackedGuestVisitor = async (
+  ctx: MutationCtx,
+  visitorId: string,
+  deviceFingerprintId?: string | null,
+) => {
+  const normalizedDeviceFingerprintId =
+    normalizeTrackedVisitorId(deviceFingerprintId)
+
+  if (normalizedDeviceFingerprintId) {
+    const deviceVisitors = await ctx.db
+      .query('guestVisitors')
+      .withIndex('by_device_fingerprint_id', (q) =>
+        q.eq('deviceFingerprintId', normalizedDeviceFingerprintId),
+      )
+      .order('desc')
+      .take(1)
+
+    if (deviceVisitors[0]) {
+      return deviceVisitors[0]
+    }
+  }
+
+  return await ctx.db
+    .query('guestVisitors')
+    .withIndex('by_visitor_id', (q) => q.eq('visitorId', visitorId))
+    .first()
+}
+
+const normalizeGuestNamePart = (value?: string | null) => {
+  const normalized = value?.trim().replace(/\s+/g, ' ')
+  return normalized ? normalized.slice(0, 24) : null
+}
+
+const buildGuestPlaceholderName = (visitor: Doc<'guestVisitors'>) => {
+  const country = normalizeGuestNamePart(visitor.country)
+  const os =
+    normalizeGuestNamePart(visitor.os) ??
+    normalizeGuestNamePart(visitor.deviceType)
+  const suffix = [country, os].filter(Boolean).join(' ')
+
+  return suffix ? `${GUEST_DISPLAY_NAME} ${suffix}` : GUEST_DISPLAY_NAME
+}
+
 export const ensureGuestConversation = mutation({
   args: {
     guestId: v.string(),
+    visitorId: v.string(),
+    deviceFingerprintId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const guestId = normalizeGuestId(args.guestId)
@@ -220,7 +272,26 @@ export const ensureGuestConversation = mutation({
       throw new Error('Guest id is required')
     }
 
-    let guestUser = await getOrCreateGuestUser(ctx, guestId)
+    const visitorId = normalizeTrackedVisitorId(args.visitorId)
+    if (!visitorId) {
+      throw new Error('Tracked guest visitor id is required')
+    }
+
+    const guestVisitor = await getTrackedGuestVisitor(
+      ctx,
+      visitorId,
+      args.deviceFingerprintId,
+    )
+    if (!guestVisitor) {
+      throw new Error('Guest visitor must be saved before starting chat')
+    }
+
+    let guestUser = await getOrCreateGuestUser(ctx, guestId, {
+      displayName: buildGuestPlaceholderName(guestVisitor),
+      visitorId: guestVisitor.visitorId,
+      deviceFingerprintId:
+        guestVisitor.deviceFingerprintId ?? args.deviceFingerprintId,
+    })
     const representative = await getGuestRepresentative(ctx, guestUser)
 
     if (guestUser.representativeId !== representative.user._id) {

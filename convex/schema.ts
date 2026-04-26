@@ -59,9 +59,12 @@ export default defineSchema({
   guests: defineTable(guestSchema)
     .index('by_fid', ['fid'])
     .index('by_guestId', ['guestId'])
+    .index('by_visitor_id', ['visitorId'])
+    .index('by_device_fingerprint_id', ['deviceFingerprintId'])
     .index('by_email', ['email']),
   guestVisitors: defineTable(guestVisitorSchema)
     .index('by_visitor_id', ['visitorId'])
+    .index('by_device_fingerprint_id', ['deviceFingerprintId'])
     .index('by_last_seen_at', ['lastSeenAt'])
     .index('by_ip_network_hash_and_user_agent_hash', [
       'ipNetworkHash',

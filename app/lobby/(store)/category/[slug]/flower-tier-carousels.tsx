@@ -81,7 +81,7 @@ export const FlowerTierCarousels = ({
   category,
   brand,
 }: FlowerTierCarouselsProps) => {
-  const tiers = category?.tiers ?? []
+  const tiers = useMemo(() => category?.tiers ?? [], [category])
 
   const tierSlugs = useMemo(
     () => tiers.map((t) => t.slug ?? '').filter(Boolean),

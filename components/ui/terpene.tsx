@@ -10,22 +10,19 @@ interface TerpeneChipProps {
   ghost?: boolean
 }
 
-export const TerpeneChip = ({
-  id,
-  name,
-  label,
-  ghost = false,
-}: TerpeneChipProps) => {
+export const TerpeneChip = ({name, label, ghost = false}: TerpeneChipProps) => {
   return (
     <Chip
       className={`flex justify-between px-0 h-10 bg-background/80 shadow-pink-100/30 ${ghost ? 'bg-transparent' : ' border-small border-white'}`}>
       <Icon name={name} className='text-slate-100 size-8 aspect-square' />
-      <span className='drop-shadow-xs shadow-black text-foreground capitalize'>{label}</span>
+      <span className='drop-shadow-xs shadow-black text-foreground capitalize'>
+        {label}
+      </span>
     </Chip>
   )
 }
 
-export const TerpeneGray = ({id, name, ghost = false}: TerpeneChipProps) => {
+export const TerpeneGray = ({name, ghost = false}: TerpeneChipProps) => {
   return (
     <Chip
       className={`flex justify-between px-0 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-slate-600/2 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`}
@@ -34,7 +31,9 @@ export const TerpeneGray = ({id, name, ghost = false}: TerpeneChipProps) => {
         name={name}
         className='text-[#FF9F1C] dark:text-[#FF9F1C] size-7 aspect-square'
       />
-      <span className='font-light text-foreground capitalize text-sm'>{name}</span>
+      <span className='font-light text-foreground capitalize text-sm'>
+        {name}
+      </span>
     </Chip>
   )
 }

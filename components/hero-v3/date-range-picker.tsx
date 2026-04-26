@@ -16,7 +16,6 @@ interface DateRangePickerProps {
 export const DateRangePickerComponent = ({
   endName,
   startName,
-  label,
   startDate,
   endDate,
   onStartDateChange,

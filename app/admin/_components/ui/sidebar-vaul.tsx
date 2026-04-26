@@ -4,7 +4,7 @@ import {ScrollArea} from '@/components/ui/scroll-area'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Separator, Skeleton, Tooltip} from '@heroui/react'
+import {Input, Separator, Skeleton, Tooltip} from '@heroui/react'
 import {Slot} from '@radix-ui/react-slot'
 import {cva, VariantProps} from 'class-variance-authority'
 import {
@@ -225,8 +225,8 @@ function Sidebar({
         className={cn(
           'duration-300 fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] ease-in-out md:flex',
           side === 'left'
-            ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
-            : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
+            ? 'left-0 group-data-[collapsible=offcanvas]:left-(--sidebar-width)*-1)'
+            : 'right-0 group-data-[collapsible=offcanvas]:right-(--sidebar-width)*-1)',
           variant === 'floating' || variant === 'inset'
             ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
             : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l',
@@ -336,7 +336,9 @@ function SidebarFooter({className, ...props}: ComponentProps<'div'>) {
 }
 
 function SidebarSeparator({className}: ComponentProps<typeof Separator>) {
-  return <Separator className={cn('mx-2 w-auto bg-sidebar-border', className)} />
+  return (
+    <Separator className={cn('mx-2 w-auto bg-sidebar-border', className)} />
+  )
 }
 
 function SidebarContent({

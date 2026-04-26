@@ -18,7 +18,7 @@ export function PayGateSettings() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>(
     'idle',
   )
-  const [validationError, setValidationError] = useState<string | null>(null)
+  const [, setValidationError] = useState<string | null>(null)
 
   const saveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -196,8 +196,7 @@ export function PayGateSettings() {
             isDisabled={
               (enabled && (!usdcWallet || usdcWallet.trim() === '')) ||
               (!enabled && !usdcWallet)
-            }
-          >
+            }>
             Save Settings
           </Button>
         </div>

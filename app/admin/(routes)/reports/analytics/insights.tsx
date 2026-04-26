@@ -744,8 +744,8 @@ export const GeoPage = () => {
         <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl'>
             <div>
-              <h2 className='text-2xl font-polysans-wide text-white md:text-3xl'>
-                World Visitor Map
+              <h2 className='text-lg font-polysans text-white md:text-2xl'>
+                Visitor World Map
               </h2>
               <p className='mt-2 text-sm text-white/70'>
                 Mapbox choropleth of U.S. traffic from visitor logs, recorded
@@ -756,10 +756,10 @@ export const GeoPage = () => {
 
           <div className='grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:w-auto xl:grid-cols-4'>
             <div className=''>
-              <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
                 Visits
               </p>
-              <p className='mt-2 text-2xl font-space font-semibold text-white'>
+              <p className='mt-2 text-lg font-okxs font-semibold text-white'>
                 {totalUnitedStatesVisits.toLocaleString()}
               </p>
               <p className='mt-1 text-xs text-white/55'>
@@ -768,20 +768,20 @@ export const GeoPage = () => {
             </div>
 
             <div className=''>
-              <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
                 With Data
               </p>
-              <p className='mt-2 text-2xl font-space font-semibold text-white'>
+              <p className='mt-2 text-lg font-okxs font-semibold text-white'>
                 {statesWithData.toLocaleString()}
               </p>
               <p className='mt-1 text-xs text-white/55'>Mapped to a state</p>
             </div>
 
             <div className=''>
-              <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
                 Coverage
               </p>
-              <p className='mt-2 text-2xl font-okxs font-semibold text-white'>
+              <p className='mt-2 text-lg font-okxs font-semibold text-white'>
                 {coverage}%
               </p>
               <p className='mt-1 text-xs text-white/55'>
@@ -790,10 +790,10 @@ export const GeoPage = () => {
             </div>
 
             <div className=''>
-              <p className='text-xs uppercase tracking-[0.28em] text-white/45'>
+              <p className='text-[8px] uppercase tracking-[0.28em] text-white/45'>
                 Top State
               </p>
-              <p className='mt-3 text-lg font-clash font-semibold text-white'>
+              <p className='mt-2 text-lg font-clash font-semibold text-white'>
                 {topState?.name ?? 'Waiting for data'}
               </p>
               <p className='mt-1 text-xs text-white/55'>

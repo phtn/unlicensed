@@ -13,7 +13,6 @@ import {
   TableRow,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {useMemo} from 'react'
 import {dateCell} from './ui/cells'
 
 type UserDoc = Doc<'users'>
@@ -65,27 +64,10 @@ export const PersonnelTable = () => {
     }
   }
 
-  const classNames = useMemo(
-    () => ({
-      wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      th: ['bg-transparent', 'text-gray-400', 'border-b', 'border-divider'],
-      td: [
-        'group-data-[first=true]:first:before:rounded-none',
-        'group-data-[first=true]:last:before:rounded-none',
-        'group-data-[middle=true]:before:rounded-none',
-        'group-data-[last=true]:first:before:rounded-none',
-        'group-data-[last=true]:last:before:rounded-none',
-      ],
-    }),
-    [],
-  )
+
 
   return (
     <Card className='p-4'>
-      {/*<div className='flex items-center justify-between mb-4'>
-        <h2 className='text-lg font-semibold font-space'>Personnel</h2>
-        <p className='text-sm text-gray-400'>{users?.length} users</p>
-      </div>*/}
       <Table aria-label='Personnel table'>
         <TableHeader columns={columns}>
           {(column) => (

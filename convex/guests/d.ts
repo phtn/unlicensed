@@ -3,6 +3,8 @@ import {contactSchema} from '../users/d'
 
 export const guestSchema = v.object({
   guestId: v.string(),
+  visitorId: v.optional(v.string()),
+  deviceFingerprintId: v.optional(v.string()),
   fid: v.string(),
   email: v.string(),
   name: v.string(),

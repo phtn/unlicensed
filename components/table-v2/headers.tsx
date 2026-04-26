@@ -21,7 +21,7 @@ export const ColHeader = ({
   className,
 }: HeaderProps) => (
   <Tooltip>
-    <Tooltip.Content className='font-brk font-normal text-sm'>
+    <Tooltip.Content className='font-ios font-normal text-sm'>
       {tip}
     </Tooltip.Content>
     <div

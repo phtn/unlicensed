@@ -6,11 +6,14 @@ const GUEST_FID_PREFIX = 'guest:'
 const GUEST_EMAIL_DOMAIN = 'guest-chat.rapidfire.local'
 
 export const GUEST_DISPLAY_NAME = 'Guest'
+const GUEST_DISPLAY_NAME_PREFIX = `${GUEST_DISPLAY_NAME} `
 
 export type GuestProfileInput = {
   displayName?: string | null
   contactEmail?: string | null
   contactPhone?: string | null
+  visitorId?: string | null
+  deviceFingerprintId?: string | null
 }
 
 export const normalizeGuestId = (value: string) => value.trim()
@@ -47,11 +50,17 @@ const getGuestDisplayName = (
   currentName?: string | null,
 ) => {
   const explicitName = trimOptionalValue(profile.displayName)
-  if (explicitName) {
+  const existingName = trimOptionalValue(currentName)
+
+  if (
+    explicitName &&
+    (!existingName ||
+      existingName === GUEST_DISPLAY_NAME ||
+      existingName.startsWith(GUEST_DISPLAY_NAME_PREFIX))
+  ) {
     return explicitName
   }
 
-  const existingName = trimOptionalValue(currentName)
   if (existingName && existingName !== GUEST_DISPLAY_NAME) {
     return existingName
   }
@@ -70,6 +79,8 @@ export const getOrCreateGuestUser = async (
   const guestEmail = buildGuestEmail(normalizedGuestId)
   const contactEmail = trimOptionalValue(profile.contactEmail)
   const contactPhone = trimOptionalValue(profile.contactPhone)
+  const visitorId = trimOptionalValue(profile.visitorId)
+  const deviceFingerprintId = trimOptionalValue(profile.deviceFingerprintId)
   let guestUser =
     (await getGuestByGuestId(ctx, normalizedGuestId)) ??
     (await getGuestByFid(ctx, guestFid))
@@ -88,6 +99,17 @@ export const getOrCreateGuestUser = async (
 
     if (guestUser.email !== guestEmail) {
       updates.email = guestEmail
+    }
+
+    if (visitorId && guestUser.visitorId !== visitorId) {
+      updates.visitorId = visitorId
+    }
+
+    if (
+      deviceFingerprintId &&
+      guestUser.deviceFingerprintId !== deviceFingerprintId
+    ) {
+      updates.deviceFingerprintId = deviceFingerprintId
     }
 
     if (guestUser.name !== nextName) {
@@ -125,6 +147,8 @@ export const getOrCreateGuestUser = async (
     name: getGuestDisplayName(profile),
     fid: guestFid,
     guestId: normalizedGuestId,
+    ...(visitorId ? {visitorId} : {}),
+    ...(deviceFingerprintId ? {deviceFingerprintId} : {}),
     ...(contactEmail || contactPhone
       ? {
           contact: {

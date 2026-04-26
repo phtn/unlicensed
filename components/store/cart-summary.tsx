@@ -4,7 +4,6 @@ import {CashBackRedemption} from '@/app/lobby/(store)/cart/checkout/components/c
 import {useCashBackRedemption} from '@/app/lobby/(store)/cart/hooks/use-cash-back-redemption'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -94,7 +93,9 @@ export const CartSummary = memo(function CartSummary({
                 ${formatPrice(regularSubtotal)}
               </span>
             ) : null}
-            <span className='font-medium text-lg'>${formatPrice(subtotal)}</span>
+            <span className='font-medium text-lg'>
+              ${formatPrice(subtotal)}
+            </span>
           </span>
         </div>
         {saleSavingsCents > 0 ? (
@@ -117,7 +118,9 @@ export const CartSummary = memo(function CartSummary({
           />
         )}
         <CashBackAppliedRow amountCents={appliedCashBackCents} />
-        <ViewTransition update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION} default='none'>
+        <ViewTransition
+          update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+          default='none'>
           <div className='flex justify-between font-clash px-2'>
             <span className='text-lg font-medium'>
               {appliedCashBackCents > 0 ? 'Due today' : 'Current total'}
@@ -127,15 +130,21 @@ export const CartSummary = memo(function CartSummary({
             </span>
           </div>
         </ViewTransition>
-        <ViewTransition update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION} default='none'>
+        <ViewTransition
+          update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+          default='none'>
           <div className='flex justify-between font-clash px-2'>
             <span className='text-lg font-medium'>Total Items</span>
-            <span className='font-medium text-lg'>{optimisticCartItemCount}</span>
+            <span className='font-medium text-lg'>
+              {optimisticCartItemCount}
+            </span>
           </div>
         </ViewTransition>
       </div>
 
-      <ViewTransition update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION} default='none'>
+      <ViewTransition
+        update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+        default='none'>
         <div className='mx-auto mb-3 px-4'>
           <Button
             size='lg'
@@ -147,7 +156,9 @@ export const CartSummary = memo(function CartSummary({
           </Button>
         </div>
       </ViewTransition>
-      <ViewTransition update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION} default='none'>
+      <ViewTransition
+        update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+        default='none'>
         <button
           type='button'
           onClick={onClose}

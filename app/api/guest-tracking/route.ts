@@ -17,6 +17,7 @@ const metadataValueSchema = z.union([
 
 const trackingPayloadSchema = z.object({
   visitorId: z.string().min(12).max(128),
+  deviceFingerprintId: z.string().min(12).max(128).optional(),
   type: z.enum([
     'page_view',
     'identify',
@@ -255,6 +256,9 @@ export async function POST(request: NextRequest) {
   try {
     await getConvexClient().mutation(api.guestTracking.m.recordEvent, {
       visitorId: payload.visitorId,
+      ...(payload.deviceFingerprintId
+        ? {deviceFingerprintId: payload.deviceFingerprintId}
+        : {}),
       type: payload.type,
       path: payload.path,
       ...(payload.fullPath ? {fullPath: payload.fullPath} : {}),
