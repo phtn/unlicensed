@@ -87,12 +87,12 @@ export const DialogWindow = ({
                 )}
               </div>
 
-              <div className='flex shrink-0 items-center gap-1'>
+              <div className='flex shrink-0 items-center gap-3'>
                 {actions}
                 <button
                   type='button'
                   onClick={close}
-                  className='rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground'
+                  className='rounded-full p-2 text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground'
                   aria-label='Close chat window'>
                   <Icon name='x' className='size-4' />
                 </button>

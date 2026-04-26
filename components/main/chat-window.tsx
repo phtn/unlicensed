@@ -16,6 +16,10 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useGuestChatCtx} from '@/ctx/guest-chat'
 import {Icon} from '@/lib/icons'
+import {
+  resolveActiveConversationFid,
+  shouldShowConversationSelector,
+} from '@/lib/chat-window-conversations'
 import {cn} from '@/lib/utils'
 import {getInitials} from '@/utils/initials'
 import {Avatar, ListBox, Select} from '@heroui/react'
@@ -72,61 +76,11 @@ export function ChatWindow({
 
   const isGuestFlow = !user?.uid || guestChat.isMerging
   const guestConversationFid = guestChat.representativeFid
-  const activeConversationFid = useMemo(() => {
-    if (isGuestFlow) {
-      return guestConversationFid
-    }
-
-    const shouldUseRequestedConversation =
-      Boolean(conversationFid) &&
-      conversationSelectionKey > selectedConversation.requestKey
-
-    if (shouldUseRequestedConversation) {
-      return conversationFid
-    }
-
-    return selectedConversation.fid === undefined
-      ? conversationFid
-      : selectedConversation.fid
-  }, [
-    conversationFid,
-    conversationSelectionKey,
-    guestConversationFid,
-    isGuestFlow,
-    selectedConversation,
-  ])
-  const isConversationMode = Boolean(activeConversationFid)
   const activeChatFid = guestChat.activeChatFid
-  const assistantChat = useAssistantChat({
-    enabled: open && !isConversationMode && !isGuestFlow,
-  })
-  const markAsRead = useMutation(api.messages.m.markAsRead)
-
-  useEffect(() => {
-    if (!open || !isGuestFlow) {
-      return
-    }
-
-    void guestChat.ensureSession()
-  }, [guestChat, isGuestFlow, open])
-
   const conversations = useQuery(
     api.messages.q.getConversations,
     open && activeChatFid ? {fid: activeChatFid} : 'skip',
   )
-  const conversationMessages = useQuery(
-    api.messages.q.getMessages,
-    open && activeConversationFid && activeChatFid
-      ? {
-          currentUserId: activeChatFid,
-          otherUserId: activeConversationFid,
-        }
-      : 'skip',
-  )
-
-  const lastConversationMessageId =
-    conversationMessages?.[conversationMessages.length - 1]?._id
-
   const conversationItems = useMemo<ConversationItem[]>(() => {
     const items = (conversations ?? []).flatMap((conversation) => {
       const fid = conversation?.otherUser?.proId ?? conversation?.otherUser?.fid
@@ -169,7 +123,49 @@ export function ChatWindow({
 
     return items
   }, [conversations, guestChat.representative, guestChat.representativeFid])
+  const activeConversationFid = useMemo(() => {
+    return resolveActiveConversationFid({
+      conversationFid,
+      conversationItems,
+      conversationSelectionKey,
+      guestConversationFid,
+      isGuestFlow,
+      selectedConversation,
+    })
+  }, [
+    conversationItems,
+    conversationFid,
+    conversationSelectionKey,
+    guestConversationFid,
+    isGuestFlow,
+    selectedConversation,
+  ])
+  const isConversationMode = Boolean(activeConversationFid)
+  const assistantChat = useAssistantChat({
+    enabled: open && !isConversationMode && !isGuestFlow,
+  })
+  const markAsRead = useMutation(api.messages.m.markAsRead)
 
+  useEffect(() => {
+    if (!open || !isGuestFlow) {
+      return
+    }
+
+    void guestChat.ensureSession()
+  }, [guestChat, isGuestFlow, open])
+
+  const conversationMessages = useQuery(
+    api.messages.q.getMessages,
+    open && activeConversationFid && activeChatFid
+      ? {
+          currentUserId: activeChatFid,
+          otherUserId: activeConversationFid,
+        }
+      : 'skip',
+  )
+
+  const lastConversationMessageId =
+    conversationMessages?.[conversationMessages.length - 1]?._id
   const activeConversationItem = useMemo(
     () =>
       conversationItems.find(
@@ -177,6 +173,10 @@ export function ChatWindow({
       ) ?? null,
     [activeConversationFid, conversationItems],
   )
+  const showConversationSelector = shouldShowConversationSelector({
+    conversationCount: conversationItems.length,
+    isGuestFlow,
+  })
 
   const handleWindowOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -296,24 +296,34 @@ export function ChatWindow({
     isGuestFlow,
   ])
 
-  const conversationSelectValue = isConversationMode
+  const conversationSelectValue = isGuestFlow
     ? (activeConversationFid ?? '')
-    : ASSISTANT_VALUE
+    : isConversationMode
+      ? (activeConversationFid ?? '')
+      : ASSISTANT_VALUE
 
   const selectItems = useMemo(
-    (): ChatSelectItem[] => [
-      {
-        id: ASSISTANT_VALUE,
-        label: ASSISTANT_NAME,
-        avatarUrl: ASSISTANT_AVATAR,
-      },
-      ...conversationItems.map((conversation) => ({
+    (): ChatSelectItem[] => {
+      const conversationSelectItems = conversationItems.map((conversation) => ({
         id: conversation.fid,
         label: conversation.displayName,
         avatarUrl: conversation.avatarUrl,
-      })),
-    ],
-    [conversationItems],
+      }))
+
+      if (isGuestFlow) {
+        return conversationSelectItems
+      }
+
+      return [
+        {
+          id: ASSISTANT_VALUE,
+          label: ASSISTANT_NAME,
+          avatarUrl: ASSISTANT_AVATAR,
+        },
+        ...conversationSelectItems,
+      ]
+    },
+    [conversationItems, isGuestFlow],
   )
 
   const isConversationReady = Boolean(activeChatFid && activeConversationFid)
@@ -384,9 +394,7 @@ export function ChatWindow({
         'max-h-[600.1px] min-h-48',
       )}
       title={
-        isGuestFlow ? (
-          guestHeader
-        ) : (
+        showConversationSelector ? (
           <div className='w-1/2 min-w-0'>
             <Select
               selectedKey={conversationSelectValue}
@@ -399,7 +407,10 @@ export function ChatWindow({
                       : String(key)
 
                 setSelectedConversation({
-                  fid: nextFid === ASSISTANT_VALUE || !nextFid ? null : nextFid,
+                  fid:
+                    !nextFid || (!isGuestFlow && nextFid === ASSISTANT_VALUE)
+                      ? null
+                      : nextFid,
                   requestKey: conversationSelectionKey,
                 })
               }}
@@ -431,7 +442,9 @@ export function ChatWindow({
               </Select.Popover>
             </Select>
           </div>
-        )
+        ) : isGuestFlow ? (
+          guestHeader
+        ) : null
       }
       description={windowDescription}
       descriptionStyle='mt-1.5 ps-2 font-pixel-grid font-medium tracking-wide'
@@ -507,7 +520,7 @@ const ChatParticipantAvatar = ({
   return (
     <Avatar className='shrink-0 bg-sidebar dark:bg-dark-table' size='sm'>
       {avatarUrl ? <HeroAvatarImage alt={label} src={avatarUrl} /> : null}
-      <Avatar.Fallback className='font-polysans font-semibold text-sm text-brand'>
+      <Avatar.Fallback className='font-clash font-semibold text-sm text-brand dark:bg-white'>
         {getInitials(label)}
       </Avatar.Fallback>
     </Avatar>

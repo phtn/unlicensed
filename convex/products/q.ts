@@ -1,5 +1,6 @@
 import {paginationOptsValidator, type PaginationResult} from 'convex/server'
 import {v} from 'convex/values'
+import {normalizeComparableAttributeValue} from '../../lib/product-attribute-normalization'
 import {getStockDisplayUnit, getTotalStock} from '../../lib/productStock'
 import type {Doc, Id} from '../_generated/dataModel'
 import {query, type QueryCtx} from '../_generated/server'
@@ -343,37 +344,18 @@ export const listCategoryProductsPaginated = query({
 
     const categoriesBySlug = buildCategoriesBySlug(category ? [category] : [])
 
-    const buildProductsQuery = () => {
-      let productsQuery = ctx.db
+    const buildProductsQuery = () =>
+      ctx.db
         .query('products')
-        .withIndex('by_category', (q) =>
-          q.eq('categorySlug', args.categorySlug),
-        )
+        .withIndex('by_category', (q) => q.eq('categorySlug', args.categorySlug))
         .order('desc')
         .filter((q) => q.neq(q.field('archived'), true))
 
-      if (args.productType) {
-        productsQuery = productsQuery.filter((q) =>
-          q.eq(q.field('productType'), args.productType),
-        )
-      }
+    const hasManualFilters = Boolean(
+      args.brand || args.productType || args.tier || args.subcategory,
+    )
 
-      if (args.tier) {
-        productsQuery = productsQuery.filter((q) =>
-          q.eq(q.field('tier'), args.tier),
-        )
-      }
-
-      if (args.subcategory) {
-        productsQuery = productsQuery.filter((q) =>
-          q.eq(q.field('subcategory'), args.subcategory),
-        )
-      }
-
-      return productsQuery
-    }
-
-    if (!args.brand) {
+    if (!hasManualFilters) {
       const result = await buildProductsQuery().paginate(args.paginationOpts)
       return {
         ...result,
@@ -385,14 +367,49 @@ export const listCategoryProductsPaginated = query({
       }
     }
 
-    const normalizedBrand = normalizeBrandValue(args.brand)
+    const normalizedBrand = args.brand
+      ? normalizeBrandValue(args.brand)
+      : undefined
     const startOffset = decodeBrandPaginationCursor(args.paginationOpts.cursor)
     const page: Doc<'products'>[] = []
     let matchingOffset = 0
     let hasMore = false
 
     for await (const product of buildProductsQuery()) {
-      if (!normalizeBrandValues(product.brand).includes(normalizedBrand)) {
+      if (
+        normalizedBrand &&
+        !normalizeBrandValues(product.brand).includes(normalizedBrand)
+      ) {
+        continue
+      }
+
+      if (
+        !matchesCategoryAttribute(
+          product.productType,
+          args.productType,
+          undefined,
+        )
+      ) {
+        continue
+      }
+
+      if (
+        !matchesCategoryAttribute(
+          product.tier,
+          args.tier,
+          category?.tiers,
+        )
+      ) {
+        continue
+      }
+
+      if (
+        !matchesCategoryAttribute(
+          product.subcategory,
+          args.subcategory,
+          category?.subcategories,
+        )
+      ) {
         continue
       }
 
@@ -600,31 +617,42 @@ export const countCategoryProductsByTiers = query({
   },
   handler: async (ctx, args): Promise<Record<string, number>> => {
     const counts: Record<string, number> = {}
+    const category = await ctx.db
+      .query('categories')
+      .withIndex('by_slug', (q) => q.eq('slug', args.categorySlug))
+      .unique()
+    const normalizedBrand = args.brand
+      ? normalizeBrandValue(args.brand)
+      : undefined
+    const buildProductsQuery = () =>
+      ctx.db
+        .query('products')
+        .withIndex('by_category', (q) => q.eq('categorySlug', args.categorySlug))
+        .filter((q) => q.neq(q.field('archived'), true))
 
     for (const tierSlug of args.tierSlugs) {
       let count = 0
+      const normalizedTier = normalizeComparableAttributeValue(
+        tierSlug,
+        category?.tiers,
+      )
 
-      const iter = ctx.db
-        .query('products')
-        .withIndex('by_category', (q) => q.eq('categorySlug', args.categorySlug))
-        .filter((q) =>
-          q.and(
-            q.neq(q.field('archived'), true),
-            q.eq(q.field('tier'), tierSlug),
-          ),
-        )
+      for await (const product of buildProductsQuery()) {
+        if (
+          normalizedBrand &&
+          !normalizeBrandValues(product.brand).includes(normalizedBrand)
+        ) {
+          continue
+        }
 
-      if (args.brand) {
-        const normalizedBrand = normalizeBrandValue(args.brand)
-        for await (const product of iter) {
-          if (normalizeBrandValues(product.brand).includes(normalizedBrand)) {
-            count++
-          }
+        if (
+          normalizeComparableAttributeValue(product.tier, category?.tiers) !==
+          normalizedTier
+        ) {
+          continue
         }
-      } else {
-        for await (const _product of iter) {
-          count++
-        }
+
+        count++
       }
 
       counts[tierSlug] = count
@@ -641,6 +669,31 @@ const normalizeBrandValues = (brands?: string | string[]) =>
   (Array.isArray(brands) ? brands : brands ? [brands] : [])
     .map(normalizeBrandValue)
     .filter((brand) => brand.length > 0)
+
+const matchesCategoryAttribute = (
+  productValue: string | undefined,
+  filterValue: string | undefined,
+  options?: Array<string | {name?: string; slug?: string}>,
+) => {
+  if (!filterValue) {
+    return true
+  }
+
+  const normalizedFilter = normalizeComparableAttributeValue(
+    filterValue,
+    options,
+  )
+  const normalizedProductValue = normalizeComparableAttributeValue(
+    productValue,
+    options,
+  )
+
+  return (
+    normalizedFilter !== undefined &&
+    normalizedProductValue !== undefined &&
+    normalizedFilter === normalizedProductValue
+  )
+}
 
 const decodeBrandPaginationCursor = (cursor: string | null): number => {
   if (!cursor) {

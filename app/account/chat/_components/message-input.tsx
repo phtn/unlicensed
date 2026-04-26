@@ -459,7 +459,7 @@ export function MessageInput({
                 key={i}
                 className='w-1 bg-red-500 rounded-full animate-pulse'
                 style={{
-                  height: `${20 + Math.sin(Date.now() / 200 + i) * 15}px`,
+                  height: `${6.9 + (Math.sin(Date.now() / 69 + i) * 69) / 6.9}px`,
                   animationDelay: `${i * 50}ms`,
                 }}
               />
@@ -467,25 +467,24 @@ export function MessageInput({
           </div>
         </div>
 
-        <div className='grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between'>
+        <div className='grid grid-cols-3 sm:flex sm:items-center sm:justify-center gap-8'>
           {/* Cancel Button */}
           <button
             type='button'
             onClick={handleCancelRecording}
-            className='flex h-11 items-center justify-center rounded-2xl hover:bg-accent transition-colors active:scale-95 touch-manipulation sm:h-auto sm:w-auto sm:rounded-full sm:p-2'>
-            <Icon name='x' className='size-5 text-muted-foreground' />
+            className='flex h-11 items-center text-muted-foreground justify-center rounded-2xl hover:bg-red-100 hover:text-red-500 transition-colors active:scale-95 touch-manipulation sm:h-auto sm:w-auto sm:rounded-full sm:p-2'>
+            <Icon name='x' className='size-5' />
           </button>
 
           {/* Pause/Resume Button */}
           <button
             type='button'
             onClick={isPaused ? resumeRecording : pauseRecording}
-            className='flex h-11 items-center justify-center rounded-2xl bg-muted px-3 transition-colors active:scale-95 touch-manipulation hover:bg-muted/80 sm:h-auto sm:rounded-full sm:p-3'>
-            {isPaused ? (
-              <Icon name='play-solid' className='size-6 text-foreground' />
-            ) : (
-              <Icon name='pause-solid' className='size-6 text-foreground' />
-            )}
+            className='flex h-11 items-center justify-center text-foreground rounded-rounded bg-sidebar px-3 transition-colors active:scale-95 touch-manipulation hover:bg-sidebar/50 sm:h-auto sm:rounded-full sm:p-3'>
+            <Icon
+              name={isPaused ? 'play-solid' : 'pause-solid'}
+              className='size-6'
+            />
           </button>
 
           {/* Stop & Preview Button */}
@@ -511,7 +510,7 @@ export function MessageInput({
     return (
       <div className='space-y-2'>
         {/* Audio Preview */}
-        <div className='flex items-center gap-2 overflow-hidden rounded-2xl border border-border/40 bg-muted/50 px-3 py-3 sm:gap-3'>
+        <div className='flex items-center gap-2 overflow-hidden rounded-2xl border border-border/40 bg-muted/50 px-3 py-2 sm:gap-3'>
           <audio ref={previewAudioRef} src={audioUrl} className='hidden' />
 
           {/* Play preview button */}
@@ -580,11 +579,10 @@ export function MessageInput({
             onClick={handleSendAudio}
             disabled={isSending}
             className='flex h-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-colors active:scale-95 touch-manipulation shadow-md hover:bg-primary/90 disabled:opacity-50 sm:h-auto sm:w-auto sm:rounded-full sm:p-2'>
-            {isSending ? (
-              <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
-            ) : (
-              <Icon name='arrow-up' className='size-5' />
-            )}
+            <Icon
+              name={isSending ? 'spinners-ring' : 'arrow-up'}
+              className='size-5'
+            />
           </button>
         </div>
       </div>
@@ -627,7 +625,7 @@ export function MessageInput({
       )}
 
       {/* Input Area */}
-      <div className='flex items-end gap-1.5 sm:gap-2'>
+      <div className='flex items-end gap-1'>
         {/* File Upload Button */}
         <input
           ref={fileInputRef}
@@ -641,20 +639,16 @@ export function MessageInput({
           type='button'
           onClick={() => fileInputRef.current?.click()}
           disabled={isSending || uploading}
-          className='flex size-11 shrink-0 items-center justify-center rounded-2xl hover:bg-accent transition-colors active:scale-95 touch-manipulation disabled:opacity-50 sm:size-10 sm:rounded-full'>
-          {uploading ? (
-            <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
-          ) : (
-            <Icon
-              name='add-circle'
-              className='size-7 text-muted-foreground sm:size-8'
-            />
-          )}
+          className='flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-sidebar transition-colors active:scale-95 touch-manipulation disabled:opacity-50 sm:size-10 sm:rounded-full'>
+          <Icon
+            name={uploading ? 'spinners-ring' : 'add-circle'}
+            className='size-7 text-foreground sm:size-8'
+          />
         </button>
 
         {/* Text Input Area */}
         <div className='flex-1 relative'>
-          <div className='relative flex items-end rounded-2xl bg-muted/50 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20'>
+          <div className='relative flex items-end rounded-lg dark:bg-dark-table transition-all focus-within:border-primary/5 focus-within:ring-1 focus-within:ring-primary/2'>
             <TextArea
               ref={textareaRef}
               value={message}
@@ -675,10 +669,10 @@ export function MessageInput({
             type='button'
             onClick={handleStartRecording}
             disabled={isSending || uploading}
-            className='flex size-11 shrink-0 items-center justify-center rounded-2xl hover:bg-accent transition-colors active:scale-95 touch-manipulation disabled:opacity-50 sm:size-10 sm:rounded-full'>
+            className='flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-sidebar transition-colors active:scale-95 touch-manipulation disabled:opacity-50 sm:size-10 sm:rounded-full'>
             <Icon
-              name='wave-circle'
-              className='size-7 text-muted-foreground sm:size-8'
+              name={isSending || uploading ? 'spinners-ring' : 'wave-circle'}
+              className='size-7 text-foreground sm:size-8'
             />
           </button>
         )}
@@ -694,18 +688,17 @@ export function MessageInput({
               uploading
             }
             className={cn(
-              'flex size-11 shrink-0 items-center justify-center rounded-2xl transition-all touch-manipulation active:scale-95 sm:size-10 sm:rounded-full',
+              'flex size-10 shrink-0 items-center justify-center rounded-full transition-all touch-manipulation active:scale-95 sm:size-10 sm:rounded-full',
               (message.trim() || attachments.length > 0) &&
                 !isSending &&
                 !uploading
                 ? 'bg-dark-gray text-primary-foreground dark:bg-white dark:text-dark-table hover:bg-brand/90'
                 : 'bg-sidebar text-foreground/30 cursor-not-allowed',
             )}>
-            {isSending ? (
-              <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
-            ) : (
-              <Icon name='arrow-up-fat' className='size-5' />
-            )}
+            <Icon
+              name={isSending ? 'spinners-ring' : 'arrow-up-fat'}
+              className='size-5'
+            />
           </button>
         )}
       </div>
@@ -717,4 +710,4 @@ export const searchInputClassName =
   'min-h-14 w-full overflow-hidden rounded-xl border border-dark-table/40 bg-alum/10 p-2 pl-8 pr-10 text-base font-medium font-okxs text-blue-500 shadow-none outline-none transition-colors placeholder:font-normal placeholder:text-slate-500/60 selection:bg-blue-400 selection:text-white hover:bg-sidebar focus-visible:border-dark-table focus-visible:bg-sidebar md:min-h-16 dark:border-white/20 dark:bg-black/60 dark:text-white dark:placeholder:text-white/40 dark:hover:border-dark-table/50 dark:focus-visible:bg-background'
 
 export const chatTextAreaClassName =
-  'min-h-14 w-full resize-none rounded-xl border border-dark-table/40 bg-sidebar p-2 ps-2 text-base font-medium font-okxs text-blue-500 shadow-none outline-none transition-colors placeholder:font-normal placeholder:text-dark-table/60 selection:bg-blue-400 selection:text-white hover:bg-sidebar focus-visible:border-dark-table md:min-h-16 dark:border-black/10 dark:bg-black/60 dark:text-white dark:placeholder:text-slate-500 dark:hover:bg-black/40 disabled:cursor-not-allowed disabled:opacity-50'
+  'min-h-14 w-full resize-none rounded-lg border border-dark-table/40 bg-sidebar p-2 ps-2 text-base font-medium font-okxs text-blue-500 shadow-none outline-none transition-colors placeholder:font-normal placeholder:text-dark-table/60 selection:bg-blue-400 selection:text-white hover:bg-sidebar focus-visible:border-dark-table md:min-h-16 dark:border-black/10 dark:bg-black/60 dark:text-white dark:placeholder:text-slate-500 dark:hover:bg-black/40 disabled:cursor-not-allowed disabled:opacity-50'

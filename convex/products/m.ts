@@ -3,6 +3,10 @@ import {
   mergeDefinedCsvImportFields,
   sortProductCsvImportRowsForProcessing,
 } from '../../lib/product-csv-import'
+import {
+  resolveAttributeSlug,
+  resolveAttributeSlugs,
+} from '../../lib/product-attribute-normalization'
 import {ensureSlug} from '../../lib/slug'
 import {internal} from '../_generated/api'
 import type {Id} from '../_generated/dataModel'
@@ -41,6 +45,11 @@ const EXTRACT_AND_EDIBLE_BASES = new Set([
 const PRE_ROLL_BASES = new Set(['Flower', 'Infused'])
 
 type AttributeEntry = {name: string; slug: string}
+
+const trimToUndefined = (value: string | undefined) => {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : undefined
+}
 
 function allowedSetFromAttributeEntries(
   entries: AttributeEntry[] | undefined,
@@ -99,12 +108,21 @@ const validateTierForCategory = (
   }
 
   const fromEntries = allowedSetFromAttributeEntries(categoryTiers)
-  const allowedTierSet =
-    fromEntries ?? getAllowedTierSetForCategory(categorySlug)
-  if (allowedTierSet.has(tier.trim())) {
+  if (fromEntries?.has(tier.trim())) {
     return
   }
 
+  if (
+    fromEntries == null &&
+    resolveAttributeSlug(
+      tier,
+      Array.from(getAllowedTierSetForCategory(categorySlug)),
+    ) != null
+  ) {
+    return
+  }
+
+  const allowedTierSet = fromEntries ?? getAllowedTierSetForCategory(categorySlug)
   const allowedTiers = Array.from(allowedTierSet).join(', ')
   throw new Error(
     `Tier "${tier}" is invalid for category "${categorySlug ?? 'unknown'}". Allowed tiers: ${allowedTiers}.`,
@@ -142,6 +160,10 @@ const validateBaseForCategory = (
     return
   }
 
+  if (resolveAttributeSlug(base, Array.from(allowedBaseSet)) != null) {
+    return
+  }
+
   const allowedBases = Array.from(allowedBaseSet).join(', ')
   throw new Error(
     `Base "${base}" is invalid for category "${categorySlug ?? 'unknown'}". Allowed base values: ${allowedBases}.`,
@@ -176,6 +198,44 @@ const sanitizeArray = (values: Array<string> | undefined) =>
 
 const numericArray = (values?: Array<number>) =>
   values?.filter((value) => Number.isFinite(value)) ?? undefined
+
+const normalizeTierValue = (
+  tier: string | undefined,
+  categorySlug?: string,
+  categoryTiers?: AttributeEntry[],
+) =>
+  resolveAttributeSlug(tier, categoryTiers) ??
+  resolveAttributeSlug(tier, Array.from(getAllowedTierSetForCategory(categorySlug))) ??
+  trimToUndefined(tier)
+
+const normalizeBaseValue = (
+  base: string | undefined,
+  categorySlug?: string,
+  categoryBases?: AttributeEntry[],
+) => {
+  const derivedAllowedBases = getAllowedBaseSetForCategory(categorySlug)
+  return (
+    resolveAttributeSlug(base, categoryBases) ??
+    resolveAttributeSlug(
+      base,
+      derivedAllowedBases ? Array.from(derivedAllowedBases) : undefined,
+    ) ??
+    trimToUndefined(base)
+  )
+}
+
+const normalizeCategoryAttributeValue = (
+  value: string | undefined,
+  entries?: AttributeEntry[],
+) => resolveAttributeSlug(value, entries) ?? trimToUndefined(value)
+
+const normalizeBrandsForCategory = (
+  brands: string[] | undefined,
+  categoryBrands?: AttributeEntry[],
+) => {
+  const sanitized = sanitizeArray(brands)
+  return resolveAttributeSlugs(sanitized, categoryBrands) ?? sanitized
+}
 
 const ARCHIVED_SLUG_SUFFIX_PATTERN = /--archived-\d+(?:-\d+)?$/
 
@@ -240,19 +300,38 @@ async function buildProductDoc(
     throw new Error(`Category "${args.categorySlug}" not found.`)
   }
 
-  const base = args.base?.trim() || undefined
+  const categorySlugForNormalization = category.slug ?? args.categorySlug
+  const tier = normalizeTierValue(
+    args.tier,
+    categorySlugForNormalization,
+    category.tiers,
+  )
+  const base = normalizeBaseValue(
+    args.base,
+    categorySlugForNormalization,
+    category.bases,
+  )
+  const brand = normalizeBrandsForCategory(args.brand, category.brands)
+  const strainType = normalizeCategoryAttributeValue(
+    args.strainType,
+    category.strainTypes,
+  )
+  const subcategory = normalizeCategoryAttributeValue(
+    args.subcategory,
+    category.subcategories,
+  )
 
   validateTierForCategory(
-    args.tier,
-    category.slug ?? args.categorySlug,
+    tier,
+    categorySlugForNormalization,
     category.tiers,
   )
   validateBaseForCategory(
     base,
-    category.slug ?? args.categorySlug,
+    categorySlugForNormalization,
     category.bases,
   )
-  validateBrandForCategory(sanitizeArray(args.brand), category.brands)
+  validateBrandForCategory(brand, category.brands)
 
   const doc = {
     name: args.name ?? '',
@@ -292,9 +371,9 @@ async function buildProductDoc(
     potencyLevel: args.potencyLevel,
     potencyProfile: args.potencyProfile?.trim() || undefined,
     lineage: args.lineage?.trim() || undefined,
-    brand: sanitizeArray(args.brand),
-    strainType: args.strainType?.trim() || undefined,
-    subcategory: args.subcategory?.trim() || undefined,
+    brand,
+    strainType,
+    subcategory,
     productType: args.productType?.trim() || undefined,
     noseRating: args.noseRating,
     weightGrams: args.weightGrams,
@@ -316,7 +395,7 @@ async function buildProductDoc(
       args.eligibleDenominationForDeals,
     ),
     dealType: args.dealType,
-    tier: args.tier,
+    tier,
     eligibleForUpgrade: args.eligibleForUpgrade,
     upgradePrice: args.upgradePrice,
     highMargins: sanitizeArray(args.highMargins),
@@ -407,7 +486,47 @@ export const updateProduct = mutation({
       updates.categorySlug = nextCategorySlug
       categoryChanged = nextCategorySlug !== product.categorySlug
     }
-    const nextBaseFromFields = fields.base?.trim() || undefined
+    const categoryForValidation = nextCategorySlug
+      ? await ctx.db
+          .query('categories')
+          .withIndex('by_slug', (q) => q.eq('slug', nextCategorySlug))
+          .unique()
+      : null
+
+    const nextBaseFromFields =
+      fields.base !== undefined
+        ? normalizeBaseValue(
+            fields.base,
+            nextCategorySlug,
+            categoryForValidation?.bases,
+          )
+        : undefined
+    const nextTierFromFields =
+      fields.tier !== undefined
+        ? normalizeTierValue(
+            fields.tier,
+            nextCategorySlug,
+            categoryForValidation?.tiers,
+          )
+        : undefined
+    const nextBrandFromFields =
+      fields.brand !== undefined && fields.brand !== null
+        ? normalizeBrandsForCategory(fields.brand, categoryForValidation?.brands)
+        : undefined
+    const nextSubcategoryFromFields =
+      fields.subcategory !== undefined
+        ? normalizeCategoryAttributeValue(
+            fields.subcategory,
+            categoryForValidation?.subcategories,
+          )
+        : undefined
+    const nextStrainTypeFromFields =
+      fields.strainType !== undefined
+        ? normalizeCategoryAttributeValue(
+            fields.strainType,
+            categoryForValidation?.strainTypes,
+          )
+        : undefined
     const baseChanged =
       fields.base !== undefined && nextBaseFromFields !== product.base
     if (fields.base !== undefined) {
@@ -522,13 +641,34 @@ export const updateProduct = mutation({
       updates.lineage = fields.lineage.trim() || undefined
     }
     if (fields.strainType !== undefined) {
-      updates.strainType = fields.strainType.trim() || undefined
+      updates.strainType = nextStrainTypeFromFields
+    }
+    if (
+      categoryChanged &&
+      fields.strainType === undefined &&
+      product.strainType !== undefined
+    ) {
+      updates.strainType = undefined
     }
     if (fields.brand !== undefined && fields.brand !== null) {
-      updates.brand = sanitizeArray(fields.brand)
+      updates.brand = nextBrandFromFields
+    }
+    if (
+      categoryChanged &&
+      fields.brand === undefined &&
+      product.brand !== undefined
+    ) {
+      updates.brand = undefined
     }
     if (fields.subcategory !== undefined) {
-      updates.subcategory = fields.subcategory.trim() || undefined
+      updates.subcategory = nextSubcategoryFromFields
+    }
+    if (
+      categoryChanged &&
+      fields.subcategory === undefined &&
+      product.subcategory !== undefined
+    ) {
+      updates.subcategory = undefined
     }
     if (fields.productType !== undefined) {
       updates.productType = fields.productType.trim() || undefined
@@ -543,9 +683,9 @@ export const updateProduct = mutation({
       updates.priceByDenomination = fields.priceByDenomination
     }
     const tierChanged =
-      fields.tier !== undefined && fields.tier !== product.tier
+      fields.tier !== undefined && nextTierFromFields !== product.tier
     if (fields.tier !== undefined) {
-      updates.tier = fields.tier
+      updates.tier = nextTierFromFields
     }
 
     if (
@@ -556,17 +696,10 @@ export const updateProduct = mutation({
       updates.tier = undefined
     }
 
-    const categoryForValidation = nextCategorySlug
-      ? await ctx.db
-          .query('categories')
-          .withIndex('by_slug', (q) => q.eq('slug', nextCategorySlug))
-          .unique()
-      : null
-
     if (tierChanged || categoryChanged) {
       const nextTier =
         fields.tier !== undefined
-          ? fields.tier
+          ? nextTierFromFields
           : categoryChanged
             ? undefined
             : product.tier
@@ -599,7 +732,7 @@ export const updateProduct = mutation({
     }
     if (fields.brand !== undefined && fields.brand !== null) {
       validateBrandForCategory(
-        sanitizeArray(fields.brand),
+        nextBrandFromFields,
         categoryForValidation?.brands,
       )
     }
