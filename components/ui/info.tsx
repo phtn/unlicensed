@@ -11,14 +11,14 @@ interface CompactInfoProps {
 export const CompactInfo = ({data}: CompactInfoProps) => {
   return (
     <div className='mx-auto flex w-full max-w-lg flex-col'>
-      <div className='bg-background overflow-hidden rounded-md border'>
+      <div className='bg-background overflow-hidden rounded-md border border-light-gray/60'>
         <Table>
           <TableBody>
             {data.map((info) => (
               <TableRow
                 key={info.key}
-                className='*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r'>
-                <TableCell className='bg-alum/12 w-40 py-2 text-xs font-ios uppercase tracking-[0.12em] text-foreground/45'>
+                className='*:border-light-gray/50 hover:bg-transparent [&>:not(:last-child)]:border-r'>
+                <TableCell className='bg-alum/12 w-32 py-2 text-xs font-ios uppercase tracking-[0.12em] text-foreground/65'>
                   {info.key}
                 </TableCell>
                 <TableCell className='py-2 break-all font-mono tracking-wide text-xs text-foreground/80'>

@@ -32,16 +32,16 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
         variant='tertiary'
         onPress={handleToggle}
         className={cn(
-          'group w-40 items-center justify-start rounded-sm bg-transparent py-2 ps-3 text-sm',
+          'group w-40 items-center justify-start rounded-sm bg-transparent pb-1 ps-3.25 text-sm',
         )}>
         <Icon
           name='toggle-theme'
           className={cn(
-            ' group:active:scale-90 transition-transform duration-200 ease-out size-4',
+            ' group:active:scale-90 transition-transform duration-200 ease-out size-4.5',
           )}
         />
-        <span className='text-sm font-okxs font-normal tracking-tight'>
-          {isDark ? 'Light Mode' : 'Dark Mode'}
+        <span className='text-sm font-okxs font-normal tracking-tight px-1'>
+          {isDark ? 'Light' : 'Dark'}
         </span>
       </Button>
     )

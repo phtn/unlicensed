@@ -275,17 +275,17 @@ export const ProductGalleryManager = () => {
             </div>
           </aside>
 
-          <section className='flex min-h-0 md:max-h-[82vh] flex-col rounded-none border border-mac-blue bg-background/80 p-2 backdrop-blur-sm'>
+          <section className='flex min-h-0 md:max-h-[82vh] flex-col rounded-none border border-slate-400 dark:border-dark-table bg-background/80 p-2 backdrop-blur-sm'>
             {activeGroup ? (
               <>
-                <div className='mb-2 flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='mb-1 -mt-0.5 h-5 flex gap-2 px-1 flex-row items-start justify-between'>
                   <div>
-                    <h3 className='text-base font-semibold text-foreground'>
+                    <h3 className='font-normal text-foreground text-sm tracking-wide'>
                       {titleCaseTag(activeGroup.tag)}
                     </h3>
                   </div>
 
-                  <p className='text-sm text-foreground/60'>
+                  <p className='font-clash text-mac-blue text-xs tracking-wide'>
                     {activeGroup.total} image
                     {activeGroup.total === 1 ? '' : 's'}
                   </p>
@@ -328,15 +328,19 @@ export const ProductGalleryManager = () => {
                           )}
 
                           <div className='absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/45 to-transparent px-1.5 pt-10 pb-1 text-white'>
-                            <div className='truncate text-xs font-medium capitalize'>
-                              {extractImageDetails(displayTitle).name}
+                            <div className='font-semibold text-xs capitalize truncate'>
+                              {extractImageDetails(
+                                displayTitle,
+                              ).name.replaceAll('_', ' ')}
                             </div>
-                            <div className='flex items-end justify-between text-[8px] text-white/75'>
-                              <span>
-                                {extractImageDetails(displayTitle).size}
-                                <span className='text-[10px]'>²</span>
+                            <div className='flex items-end justify-between text-white/75'>
+                              <span className='font-semibold text-[7px] leading-none'>
+                                {extractImageDetails(displayTitle)
+                                  .size.split('x')
+                                  .shift()}
+                                <span className='text-[8px]'>²</span>
                               </span>
-                              <span className='text-[7px] uppercase font-semibold opacity-80 tracking-wide'>
+                              <span className='font-semibold text-[7px] tracking-wide uppercase leading-none opacity-80'>
                                 {extractImageDetails(displayTitle).type}
                               </span>
                             </div>
@@ -383,36 +387,37 @@ export const ProductGalleryManager = () => {
 
                 <div className='min-h-0 space-y-4 overflow-y-auto pr-1'>
                   <div className='space-y-1'>
-                    <h3 className='text-base font-normal text-foreground capitalize'>
-                      {(selectedItem.caption?.trim() &&
-                        extractImageDetails(selectedItem.caption?.trim())
-                          .name) ||
+                    <h3 className='text-lg font-clash font-medium text-foreground capitalize'>
+                      {(
+                        selectedItem.caption?.trim() &&
+                        extractImageDetails(selectedItem.caption?.trim()).name
+                      )?.replaceAll('_', ' ') ||
                         summarizeStorageId(selectedItem.storageId)}
                     </h3>
                   </div>
 
                   <CompactInfo data={info} />
 
-                  <div className='rounded-2xl border border-amber-500/20 bg-amber-500/8 py-3 text-sm text-foreground/70 text-center text-balance'>
+                  <div className='rounded-md border border-orange-400/20 bg-amber-500/8 py-3 text-sm text-foreground/70 text-center text-balance'>
                     Deleting this image removes it from any product lead image,
                     product gallery slot, and category hero image that still
                     references this storage ID.
                   </div>
                 </div>
 
-                <div className='grid gap-2 sm:grid-cols-2'>
+                <div className='grid gap-2 sm:grid-cols-2 h-full flex-1 place-items-end'>
                   {selectedItem.url ? (
-                    <button
+                    <Button
+                      size='sm'
+                      fullWidth
+                      variant='ghost'
                       key={selectedItem.url}
                       type='button'
                       onClick={(e) => {
                         e.stopPropagation()
                         openImageModal()
                       }}
-                      className={cn(
-                        'relative overflow-hidden rounded-lg border border-border/40 transition-colors',
-                        'bg-background hover:bg-background/60',
-                      )}>
+                      className={cn('relative overflow-hidden rounded-sm')}>
                       {selectedItem.url ? (
                         <span>Open Image</span>
                       ) : (
@@ -423,7 +428,7 @@ export const ProductGalleryManager = () => {
                           />
                         </div>
                       )}
-                    </button>
+                    </Button>
                   ) : (
                     <div className='inline-flex h-10 items-center justify-center rounded-xl border border-dashed border-foreground/15 px-4 text-sm text-foreground/45'>
                       Preview unavailable
@@ -431,8 +436,10 @@ export const ProductGalleryManager = () => {
                   )}
 
                   <Button
+                    size='sm'
+                    fullWidth
                     variant='danger'
-                    className='h-10 rounded-xl'
+                    className='rounded-sm'
                     onPress={() => setIsDeleteModalOpen(true)}
                     isDisabled={deletingStorageId !== null}>
                     Delete image

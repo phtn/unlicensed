@@ -235,7 +235,7 @@ const MenuContent = memo(function MenuContent(item: NavItem) {
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
       className='group/menu-content hover:bg-foreground/5 flex items-center px-3 h-8 relative w-full rounded-lg'>
-      <Icon name={item.icon as IconName} className='mr-2.5 size-4' />
+      <Icon name={item.icon as IconName} className='mr-2.5 size-4.5' />
       <span className='font-okxs font-normal tracking-normal text-sm md:text-sm capitalize dark:text-white/90 w-full'>
         {item.title}
       </span>
@@ -335,7 +335,7 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Sales',
           url: '/admin/reports/sales',
-          icon: 'tag-light',
+          icon: 'hand-card-fill',
         },
         {
           title: 'Analytics',

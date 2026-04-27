@@ -7,6 +7,7 @@ import {parseAsString, useQueryState} from 'nuqs'
 import {ReactNode, useCallback, useMemo} from 'react'
 import {FireCollectionManager} from './fire-collection-manager'
 import {ImageOptimizer} from './image-optimizer'
+import {ProductCards} from './product-cards'
 import {ProductCsvUpload} from './product-csv-upload'
 import {ProductDocs} from './product-docs'
 import {ProductGalleryManager} from './product-gallery-manager'
@@ -25,6 +26,7 @@ export const Content = () => {
         {id: 'csv', label: 'Product CSV Import'},
         {id: 'col', label: 'Fire Collection'},
         {id: 'doc', label: 'Docs'},
+        {id: 'crd', label: 'Product Cards'},
       ] as Array<ToolTabs>,
     [],
   )
@@ -48,11 +50,12 @@ export const Content = () => {
       csv: <ProductCsvUpload />,
       col: <FireCollectionManager />,
       doc: <ProductDocs />,
+      crd: <ProductCards />,
     } as Record<ToolTabs['id'], ReactNode>
   }, [])
 
   return (
-    <MainWrapper className='min-w-0 overflow-x-hidden px-2 pt-2 pb-20 md:h-[92lvh] md:overflow-y-scroll md:p-4 md:border-t-0'>
+    <MainWrapper className='min-w-0 overflow-x-hidden px-1 pt-0 pb-10 md:h-[90lvh] md:overflow-y-scroll md:p-1 md:border-t-0'>
       <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
         <div className='flex min-h-0 flex-col gap-2'>
           <div className='-mx-2 overflow-x-auto px-2 pb-1 md:mx-0 md:px-0'>
