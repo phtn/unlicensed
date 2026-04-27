@@ -92,7 +92,7 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
 Wrapper.displayName = 'Wrapper'
 
 export const Container = ({children}: {children: ReactNode}) => (
-  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-[100svh] md:h-screen overflow-hidden'>
+  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-svh md:h-screen overflow-hidden'>
     {children}
   </div>
 )
