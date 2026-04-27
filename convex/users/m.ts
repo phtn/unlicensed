@@ -667,6 +667,26 @@ export const updateNotes = mutation({
   },
 })
 
+export const updateAvatar = mutation({
+  args: {
+    fid: v.string(),
+    storageId: v.id('_storage'),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCanonicalUserByFid(ctx, args.fid)
+    if (!user) throw new Error('User not found')
+
+    const url = await ctx.storage.getUrl(args.storageId)
+    if (!url) throw new Error('Storage URL not found')
+
+    await ctx.db.patch(user._id, {
+      photoUrl: url,
+      updatedAt: Date.now(),
+    })
+    return user._id
+  },
+})
+
 export const setWholesale = mutation({
   args: {
     userId: v.id('users'),
