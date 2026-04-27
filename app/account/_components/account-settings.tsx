@@ -79,7 +79,10 @@ export const AccountSettings = ({user}: AccountSettingsProps) => {
       })
       if (!res.ok) throw new Error('Upload failed')
       const {storageId} = (await res.json()) as {storageId: string}
-      await updateAvatar({fid: user.fid, storageId: storageId as Id<'_storage'>})
+      await updateAvatar({
+        fid: user.fid,
+        storageId: storageId as Id<'_storage'>,
+      })
       onSuccess('Avatar updated')
     } catch (err) {
       console.error('Failed to upload avatar:', err)
@@ -93,7 +96,9 @@ export const AccountSettings = ({user}: AccountSettingsProps) => {
   // ── Display name ─────────────────────────────────────
   const [isEditingName, setIsEditingName] = useState(false)
   const [displayName, setDisplayName] = useState('')
-  const [nameStatus, setNameStatus] = useState<'idle' | 'saving' | 'error'>('idle')
+  const [nameStatus, setNameStatus] = useState<'idle' | 'saving' | 'error'>(
+    'idle',
+  )
   const nameInputRef = useRef<HTMLInputElement>(null)
   const savedName = user?.name ?? ''
 
@@ -137,7 +142,9 @@ export const AccountSettings = ({user}: AccountSettingsProps) => {
   // ── Phone ────────────────────────────────────────────
   const [isEditingPhone, setIsEditingPhone] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [phoneStatus, setPhoneStatus] = useState<'idle' | 'saving' | 'error'>('idle')
+  const [phoneStatus, setPhoneStatus] = useState<'idle' | 'saving' | 'error'>(
+    'idle',
+  )
   const phoneInputRef = useRef<HTMLInputElement>(null)
   const savedPhoneNumber = user?.contact?.phone ?? ''
 
@@ -304,278 +311,358 @@ export const AccountSettings = ({user}: AccountSettingsProps) => {
   const initial = (user?.name ?? '').charAt(0).toUpperCase()
 
   return (
-    <div className='px-4 py-12 xl:px-6 2xl:px-0 space-y-12'>
-      {/* ── Profile ─────────────────────────────────────── */}
-      <div className='max-w-xl space-y-6'>
-        <div>
-          <h2 className='font-clash text-xl tracking-tight'>Profile</h2>
-          <p className='mt-1 font-okxs text-xs opacity-60'>
-            Update your avatar and display name.
-          </p>
-        </div>
-
-        <div className='space-y-2'>
-          {/* Avatar */}
-          <div className='flex h-14 items-center gap-4 rounded-xs border border-foreground/10 bg-background px-3 dark:bg-dark-table/30'>
-            <button
-              type='button'
-              onClick={() => avatarFileRef.current?.click()}
-              disabled={avatarUploading}
-              aria-label='Change avatar'
-              className='relative size-9 shrink-0 overflow-hidden rounded-full ring-1 ring-foreground/10 transition-opacity hover:opacity-75 disabled:cursor-wait'>
-              {user?.photoUrl ? (
-                <img
-                  src={user.photoUrl}
-                  alt='Avatar'
-                  className='size-full object-cover'
-                />
-              ) : (
-                <div className='flex size-full items-center justify-center bg-linear-to-br from-indigo-100 to-pink-100 text-sm font-medium text-foreground/60 dark:from-indigo-900/30 dark:to-pink-900/30'>
-                  {initial}
-                </div>
-              )}
-              {avatarUploading && (
-                <div className='absolute inset-0 flex items-center justify-center rounded-full bg-black/50'>
-                  <Icon name='spinners-ring' className='size-4 text-white' />
-                </div>
-              )}
-            </button>
-            <span className='flex-1 font-okxs text-sm text-default-500'>
-              {avatarUploading ? 'Uploading…' : 'Click to change photo'}
-            </span>
-            <span className='font-okxs text-[10px] uppercase tracking-widest text-default-300'>
-              Avatar
-            </span>
-            <input
-              ref={avatarFileRef}
-              type='file'
-              accept='image/*'
-              className='hidden'
-              onChange={(e) => void handleAvatarChange(e)}
-            />
-          </div>
-
-          {/* Display name */}
-          <div className='space-y-1'>
-            <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-background px-3 transition-colors focus-within:border-foreground/30 dark:bg-dark-table/30'>
-              <Icon name='user' className='size-4 shrink-0 text-default-400' />
-              {isEditingName ? (
-                <input
-                  ref={nameInputRef}
-                  type='text'
-                  value={displayName}
-                  onChange={(e) => {
-                    setDisplayName(e.target.value)
-                    if (nameStatus !== 'idle') setNameStatus('idle')
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      void saveDisplayName()
-                    }
-                    if (e.key === 'Escape') {
-                      e.preventDefault()
-                      cancelNameEditing()
-                    }
-                  }}
-                  placeholder='Display name'
-                  disabled={nameStatus === 'saving'}
-                  className='min-w-0 flex-1 bg-transparent font-okxs text-sm outline-none placeholder:text-foreground/30 disabled:cursor-wait'
-                />
-              ) : (
-                <span className='flex-1 truncate font-okxs text-sm text-default-600'>
-                  {savedName || (
-                    <span className='text-default-300'>Display name</span>
-                  )}
-                </span>
-              )}
-              <div className='flex shrink-0 items-center gap-2'>
-                {nameStatus === 'saving' && (
-                  <span className='font-okxs text-[10px] uppercase tracking-widest text-default-400'>
-                    Saving…
-                  </span>
-                )}
-                {isEditingName && nameStatus !== 'saving' && (
-                  <button
-                    type='button'
-                    onClick={cancelNameEditing}
-                    aria-label='Cancel'
-                    className='text-brand transition-colors hover:text-foreground'>
-                    <Icon name='x' className='size-4' />
-                  </button>
-                )}
-                {nameStatus !== 'saving' && (
-                  <button
-                    type='button'
-                    onClick={() => {
-                      if (isEditingName) {
-                        void saveDisplayName()
-                        return
-                      }
-                      startNameEditing()
-                    }}
-                    aria-label={isEditingName ? 'Save' : 'Edit name'}
-                    className='text-default-400 transition-colors hover:text-foreground'>
-                    <Icon
-                      name={isEditingName ? 'check' : 'pen'}
-                      className={cn('size-4 opacity-60', {
-                        'opacity-100': isEditingName,
-                      })}
-                    />
-                  </button>
-                )}
-              </div>
-            </div>
-            {nameStatus === 'error' && (
-              <p className='px-1 font-okxs text-xs text-rose-400'>
-                Unable to save. Try again.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Contact ─────────────────────────────────────── */}
-      <div className='max-w-xl space-y-6'>
-        <div>
-          <h2 className='font-clash text-xl tracking-tight'>Account Settings</h2>
-          <p className='mt-1 font-okxs text-xs opacity-60'>
-            Manage your contact information and preferences.
-          </p>
-        </div>
-
-        <div className='space-y-2'>
-          {user?.email && (
-            <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
-              <Icon name='email' className='size-4 shrink-0 text-default-400' />
-              <span className='font-okxs text-sm text-default-600'>
-                {user.email}
-              </span>
-              <span className='ml-auto font-okxs text-[10px] uppercase tracking-widest text-default-300'>
-                Email
-              </span>
-            </div>
-          )}
-
-          <div className='space-y-1'>
-            <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-background px-3 transition-colors focus-within:border-foreground/30 dark:bg-dark-table/30'>
-              <Icon name='phone' className='size-4 shrink-0 text-default-400' />
-              {isEditingPhone ? (
-                <input
-                  ref={phoneInputRef}
-                  type='tel'
-                  value={phoneNumber}
-                  onChange={(e) => {
-                    setPhoneNumber(e.target.value)
-                    if (phoneStatus !== 'idle') setPhoneStatus('idle')
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      void savePhoneNumber()
-                    }
-                    if (e.key === 'Escape') {
-                      e.preventDefault()
-                      cancelPhoneEditing()
-                    }
-                  }}
-                  placeholder='Add phone number'
-                  autoComplete='tel'
-                  spellCheck='false'
-                  aria-label='Phone number'
-                  disabled={phoneStatus === 'saving'}
-                  className='min-w-0 flex-1 bg-transparent font-okxs text-sm outline-none placeholder:text-foreground/30 disabled:cursor-wait'
-                />
-              ) : (
-                <span className='flex-1 truncate font-okxs text-sm text-default-600'>
-                  {savedPhoneNumber || (
-                    <span className='text-default-300'>Add phone number</span>
-                  )}
-                </span>
-              )}
-
-              <div className='flex shrink-0 items-center gap-2'>
-                {phoneStatus === 'saving' && (
-                  <span className='font-okxs text-[10px] uppercase tracking-widest text-default-400'>
-                    Saving…
-                  </span>
-                )}
-                {isEditingPhone && phoneStatus !== 'saving' && (
-                  <button
-                    type='button'
-                    onClick={cancelPhoneEditing}
-                    aria-label='Cancel'
-                    className='text-brand transition-colors hover:text-foreground'>
-                    <Icon name='x' className='size-4' />
-                  </button>
-                )}
-                {phoneStatus !== 'saving' && (
-                  <button
-                    type='button'
-                    onClick={() => {
-                      if (isEditingPhone) {
-                        void savePhoneNumber()
-                        return
-                      }
-                      startPhoneEditing()
-                    }}
-                    aria-label={isEditingPhone ? 'Save' : 'Edit phone number'}
-                    className='text-default-400 transition-colors hover:text-foreground'>
-                    <Icon
-                      name={isEditingPhone ? 'check' : 'pen'}
-                      className={cn('size-4 opacity-60', {
-                        'opacity-100': isEditingPhone,
-                      })}
-                    />
-                  </button>
-                )}
-              </div>
-            </div>
-            {phoneStatus === 'error' && (
-              <p className='font-okxs text-xs text-rose-400 px-1'>
-                Unable to save. Try again.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Shipping Addresses ──────────────────────────── */}
-      <div className='max-w-xl space-y-6'>
-        <div className='flex items-end justify-between'>
+    <div className='px-4 py-12 xl:px-6 2xl:px-0 grid md:grid-cols-2 gap-12 md:gap-0'>
+      <div className=' space-y-12'>
+        {/* ── Profile ─────────────────────────────────────── */}
+        <div className='max-w-xl space-y-6'>
           <div>
-            <h2 className='font-clash text-xl tracking-tight'>
-              Shipping Addresses
-            </h2>
+            <h2 className='font-clash text-xl tracking-tight'>Profile</h2>
             <p className='mt-1 font-okxs text-xs opacity-60'>
-              Manage your saved shipping addresses.
+              Update your avatar and display name.
             </p>
           </div>
-          {addressMode === 'idle' && (
-            <button
-              type='button'
-              onClick={openAddressForm}
-              className='flex items-center gap-1.5 font-okxs text-xs text-default-400 transition-colors hover:text-foreground'>
-              <Icon name='plus' className='size-3.5' />
-              Add
-            </button>
-          )}
+
+          <div className='space-y-2'>
+            {/* Avatar */}
+            <div className='flex h-14 items-center gap-4 rounded-xs border border-foreground/10 bg-background px-3 dark:bg-dark-table/30'>
+              <button
+                type='button'
+                onClick={() => avatarFileRef.current?.click()}
+                disabled={avatarUploading}
+                aria-label='Change avatar'
+                className='relative size-9 shrink-0 overflow-hidden rounded-full ring-1 ring-foreground/10 transition-opacity hover:opacity-75 disabled:cursor-wait'>
+                {user?.photoUrl ? (
+                  <img
+                    src={user.photoUrl}
+                    alt='Avatar'
+                    className='size-full object-cover'
+                  />
+                ) : (
+                  <div className='flex size-full items-center justify-center bg-linear-to-br from-indigo-100 to-pink-100 text-sm font-medium text-foreground/60 dark:from-indigo-900/30 dark:to-pink-900/30'>
+                    {initial}
+                  </div>
+                )}
+                {avatarUploading && (
+                  <div className='absolute inset-0 flex items-center justify-center rounded-full bg-black/50'>
+                    <Icon name='spinners-ring' className='size-4 text-white' />
+                  </div>
+                )}
+              </button>
+              <span className='flex-1 font-okxs text-sm text-default-500'>
+                {avatarUploading ? 'Uploading…' : 'Click to change photo'}
+              </span>
+              <span className='font-okxs text-[10px] uppercase tracking-widest text-default-300'>
+                Avatar
+              </span>
+              <input
+                ref={avatarFileRef}
+                type='file'
+                accept='image/*'
+                className='hidden'
+                onChange={(e) => void handleAvatarChange(e)}
+              />
+            </div>
+
+            {/* Display name */}
+            <div className='space-y-1'>
+              <div className='flex h-12 items-center gap-3 rounded-xs border border-foreground/10 bg-background px-3 transition-colors focus-within:border-foreground/30 dark:bg-dark-table/30'>
+                <Icon
+                  name='user'
+                  className='size-4 shrink-0 text-default-400'
+                />
+                {isEditingName ? (
+                  <input
+                    ref={nameInputRef}
+                    type='text'
+                    value={displayName}
+                    onChange={(e) => {
+                      setDisplayName(e.target.value)
+                      if (nameStatus !== 'idle') setNameStatus('idle')
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        void saveDisplayName()
+                      }
+                      if (e.key === 'Escape') {
+                        e.preventDefault()
+                        cancelNameEditing()
+                      }
+                    }}
+                    placeholder='Display name'
+                    disabled={nameStatus === 'saving'}
+                    className='min-w-0 flex-1 bg-transparent font-okxs text-sm outline-none placeholder:text-foreground/30 disabled:cursor-wait'
+                  />
+                ) : (
+                  <span className='flex-1 truncate font-okxs text-sm text-default-600'>
+                    {savedName || (
+                      <span className='text-default-300'>Display name</span>
+                    )}
+                  </span>
+                )}
+                <div className='flex shrink-0 items-center gap-2'>
+                  {nameStatus === 'saving' && (
+                    <span className='font-okxs text-[10px] uppercase tracking-widest text-default-400'>
+                      Saving…
+                    </span>
+                  )}
+                  {isEditingName && nameStatus !== 'saving' && (
+                    <button
+                      type='button'
+                      onClick={cancelNameEditing}
+                      aria-label='Cancel'
+                      className='text-brand transition-colors hover:text-foreground'>
+                      <Icon name='x' className='size-4' />
+                    </button>
+                  )}
+                  {nameStatus !== 'saving' && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        if (isEditingName) {
+                          void saveDisplayName()
+                          return
+                        }
+                        startNameEditing()
+                      }}
+                      aria-label={isEditingName ? 'Save' : 'Edit name'}
+                      className='text-default-400 transition-colors hover:text-foreground'>
+                      <Icon
+                        name={isEditingName ? 'check' : 'pen'}
+                        className={cn('size-4 opacity-60', {
+                          'opacity-100': isEditingName,
+                        })}
+                      />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {nameStatus === 'error' && (
+                <p className='px-1 font-okxs text-xs text-rose-400'>
+                  Unable to save. Try again.
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className='space-y-2'>
-          {addresses.length === 0 && addressMode === 'idle' && (
-            <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
-              <Icon name='home' className='size-4 shrink-0 text-default-400' />
-              <span className='font-okxs text-sm text-default-400'>
-                No shipping addresses saved.
-              </span>
-            </div>
-          )}
+        {/* ── Contact ─────────────────────────────────────── */}
+        <div className='max-w-xl space-y-6'>
+          <div>
+            <h2 className='font-clash text-xl tracking-tight'>
+              Account Settings
+            </h2>
+            <p className='mt-1 font-okxs text-xs opacity-60'>
+              Manage your contact information and preferences.
+            </p>
+          </div>
 
-          {addresses.map((address) =>
-            addressMode === address.id ? (
+          <div className='space-y-2'>
+            {user?.email && (
+              <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
+                <Icon
+                  name='email'
+                  className='size-4 shrink-0 text-default-400'
+                />
+                <span className='font-okxs text-sm text-default-600'>
+                  {user.email}
+                </span>
+                <span className='ml-auto font-okxs text-[10px] uppercase tracking-widest text-default-300'>
+                  Email
+                </span>
+              </div>
+            )}
+
+            <div className='space-y-1'>
+              <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-background px-3 transition-colors focus-within:border-foreground/30 dark:bg-dark-table/30'>
+                <Icon
+                  name='phone'
+                  className='size-4 shrink-0 text-default-400'
+                />
+                {isEditingPhone ? (
+                  <input
+                    ref={phoneInputRef}
+                    type='tel'
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      setPhoneNumber(e.target.value)
+                      if (phoneStatus !== 'idle') setPhoneStatus('idle')
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        void savePhoneNumber()
+                      }
+                      if (e.key === 'Escape') {
+                        e.preventDefault()
+                        cancelPhoneEditing()
+                      }
+                    }}
+                    placeholder='Add phone number'
+                    autoComplete='tel'
+                    spellCheck='false'
+                    aria-label='Phone number'
+                    disabled={phoneStatus === 'saving'}
+                    className='min-w-0 flex-1 bg-transparent font-okxs text-sm outline-none placeholder:text-foreground/30 disabled:cursor-wait'
+                  />
+                ) : (
+                  <span className='flex-1 truncate font-okxs text-sm text-default-600'>
+                    {savedPhoneNumber || (
+                      <span className='text-default-300'>Add phone number</span>
+                    )}
+                  </span>
+                )}
+
+                <div className='flex shrink-0 items-center gap-2'>
+                  {phoneStatus === 'saving' && (
+                    <span className='font-okxs text-[10px] uppercase tracking-widest text-default-400'>
+                      Saving…
+                    </span>
+                  )}
+                  {isEditingPhone && phoneStatus !== 'saving' && (
+                    <button
+                      type='button'
+                      onClick={cancelPhoneEditing}
+                      aria-label='Cancel'
+                      className='text-brand transition-colors hover:text-foreground'>
+                      <Icon name='x' className='size-4' />
+                    </button>
+                  )}
+                  {phoneStatus !== 'saving' && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        if (isEditingPhone) {
+                          void savePhoneNumber()
+                          return
+                        }
+                        startPhoneEditing()
+                      }}
+                      aria-label={isEditingPhone ? 'Save' : 'Edit phone number'}
+                      className='text-default-400 transition-colors hover:text-foreground'>
+                      <Icon
+                        name={isEditingPhone ? 'check' : 'pen'}
+                        className={cn('size-4 opacity-60', {
+                          'opacity-100': isEditingPhone,
+                        })}
+                      />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {phoneStatus === 'error' && (
+                <p className='font-okxs text-xs text-rose-400 px-1'>
+                  Unable to save. Try again.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className=' space-y-12'>
+        {/* ── Shipping Addresses ──────────────────────────── */}
+        <div className='max-w-xl space-y-6'>
+          <div className='flex items-end justify-between'>
+            <div>
+              <h2 className='font-clash text-xl tracking-tight'>
+                Shipping Addresses
+              </h2>
+              <p className='mt-1 font-okxs text-xs opacity-60'>
+                Manage your saved shipping addresses.
+              </p>
+            </div>
+            {addressMode === 'idle' && (
+              <button
+                type='button'
+                onClick={openAddressForm}
+                className='flex items-center gap-1.5 font-okxs text-xs text-default-400 transition-colors hover:text-foreground'>
+                <Icon name='plus' className='size-3.5' />
+                Add
+              </button>
+            )}
+          </div>
+
+          <div className='space-y-2'>
+            {addresses.length === 0 && addressMode === 'idle' && (
+              <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
+                <Icon
+                  name='home'
+                  className='size-4 shrink-0 text-default-400'
+                />
+                <span className='font-okxs text-sm text-default-400'>
+                  No shipping addresses saved.
+                </span>
+              </div>
+            )}
+
+            {addresses.map((address) =>
+              addressMode === address.id ? (
+                <AddressForm
+                  key={address.id}
+                  form={addressForm}
+                  onChange={(updates) =>
+                    setAddressForm((prev) => ({...prev, ...updates}))
+                  }
+                  onSave={() => void saveAddress()}
+                  onCancel={closeAddressForm}
+                  saving={addressSaving}
+                  mode='edit'
+                />
+              ) : (
+                <div
+                  key={address.id}
+                  className='flex items-start gap-3 rounded-xs border border-foreground/10 bg-background p-3 dark:bg-dark-table/30 min-h-28'>
+                  <Icon
+                    name='home'
+                    className='mt-0.5 size-4 shrink-0 text-default-400'
+                  />
+                  <div className='min-w-0 flex-1'>
+                    <p className='font-okxs text-sm text-default-700'>
+                      {address.firstName} {address.lastName}
+                      {address.isDefault && (
+                        <span className='ml-2 font-okxs text-[10px] uppercase tracking-widest text-brand'>
+                          Default
+                        </span>
+                      )}
+                    </p>
+                    <p className='truncate font-okxs text-sm text-default-400'>
+                      {address.addressLine1}
+                      {address.addressLine2 ? `, ${address.addressLine2}` : ''}
+                    </p>
+                    <p className='font-okxs text-sm text-default-400'>
+                      {address.city}, {address.state} {address.zipCode},{' '}
+                      {address.country}
+                    </p>
+                  </div>
+                  <div className='mt-0.5 flex shrink-0 items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => openEditAddress(address)}
+                      aria-label='Edit address'
+                      disabled={!!deletingId}
+                      className='text-default-400 transition-colors hover:text-foreground disabled:opacity-40'>
+                      <Icon name='pen' className='size-3.5' />
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => void deleteAddress(address.id)}
+                      aria-label='Delete address'
+                      disabled={deletingId === address.id}
+                      className='text-default-400 transition-colors hover:text-rose-400 disabled:opacity-40'>
+                      <Icon
+                        name={
+                          deletingId === address.id ? 'spinners-ring' : 'trash'
+                        }
+                        className='size-3.5'
+                      />
+                    </button>
+                  </div>
+                </div>
+              ),
+            )}
+
+            {addressMode === 'adding' && (
               <AddressForm
-                key={address.id}
                 form={addressForm}
                 onChange={(updates) =>
                   setAddressForm((prev) => ({...prev, ...updates}))
@@ -583,140 +670,83 @@ export const AccountSettings = ({user}: AccountSettingsProps) => {
                 onSave={() => void saveAddress()}
                 onCancel={closeAddressForm}
                 saving={addressSaving}
-                mode='edit'
+                mode='add'
               />
-            ) : (
-              <div
-                key={address.id}
-                className='flex items-start gap-3 rounded-xs border border-foreground/10 bg-background px-3 py-2.5 dark:bg-dark-table/30'>
+            )}
+          </div>
+        </div>
+
+        {/* ── Security ────────────────────────────────────── */}
+        <div className='max-w-xl space-y-6'>
+          <div>
+            <h2 className='font-clash text-xl tracking-tight'>Security</h2>
+            <p className='mt-1 font-okxs text-xs opacity-60'>
+              Manage your account password.
+            </p>
+          </div>
+
+          {hasPasswordProvider ? (
+            <div className='space-y-2'>
+              <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
                 <Icon
-                  name='home'
-                  className='mt-0.5 size-4 shrink-0 text-default-400'
+                  name='lock'
+                  className='size-4 shrink-0 text-default-400'
                 />
-                <div className='min-w-0 flex-1'>
-                  <p className='font-okxs text-sm text-default-700'>
-                    {address.firstName} {address.lastName}
-                    {address.isDefault && (
-                      <span className='ml-2 font-okxs text-[10px] uppercase tracking-widest text-brand'>
-                        Default
-                      </span>
-                    )}
-                  </p>
-                  <p className='truncate font-okxs text-xs text-default-400'>
-                    {address.addressLine1}
-                    {address.addressLine2 ? `, ${address.addressLine2}` : ''}
-                  </p>
-                  <p className='font-okxs text-xs text-default-400'>
-                    {address.city}, {address.state} {address.zipCode},{' '}
-                    {address.country}
-                  </p>
-                </div>
-                <div className='mt-0.5 flex shrink-0 items-center gap-2'>
-                  <button
-                    type='button'
-                    onClick={() => openEditAddress(address)}
-                    aria-label='Edit address'
-                    disabled={!!deletingId}
-                    className='text-default-400 transition-colors hover:text-foreground disabled:opacity-40'>
-                    <Icon name='pen' className='size-3.5' />
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => void deleteAddress(address.id)}
-                    aria-label='Delete address'
-                    disabled={deletingId === address.id}
-                    className='text-default-400 transition-colors hover:text-rose-400 disabled:opacity-40'>
-                    <Icon
-                      name={
-                        deletingId === address.id ? 'spinners-ring' : 'trash'
-                      }
-                      className='size-3.5'
-                    />
-                  </button>
-                </div>
+                <span className='flex-1 font-okxs text-sm text-default-600'>
+                  Password
+                </span>
+                <button
+                  type='button'
+                  disabled={resetStatus === 'sending' || resetStatus === 'sent'}
+                  onClick={() => void handlePasswordReset()}
+                  className={cn(
+                    'font-okxs text-xs transition-colors',
+                    resetStatus === 'sent'
+                      ? 'text-emerald-500 cursor-default'
+                      : resetStatus === 'error'
+                        ? 'text-rose-400 hover:text-rose-300'
+                        : resetStatus === 'sending'
+                          ? 'text-default-300 cursor-wait'
+                          : 'text-default-400 hover:text-foreground',
+                  )}>
+                  {resetStatus === 'sending' && 'Sending…'}
+                  {resetStatus === 'sent' && (
+                    <span className='flex items-center gap-1.5'>
+                      <Icon name='check' className='size-3.5' />
+                      Email sent
+                    </span>
+                  )}
+                  {resetStatus === 'error' && 'Retry'}
+                  {resetStatus === 'idle' && 'Send reset email'}
+                </button>
               </div>
-            ),
-          )}
-
-          {addressMode === 'adding' && (
-            <AddressForm
-              form={addressForm}
-              onChange={(updates) =>
-                setAddressForm((prev) => ({...prev, ...updates}))
-              }
-              onSave={() => void saveAddress()}
-              onCancel={closeAddressForm}
-              saving={addressSaving}
-              mode='add'
-            />
-          )}
-        </div>
-      </div>
-
-      {/* ── Security ────────────────────────────────────── */}
-      <div className='max-w-xl space-y-6'>
-        <div>
-          <h2 className='font-clash text-xl tracking-tight'>Security</h2>
-          <p className='mt-1 font-okxs text-xs opacity-60'>
-            Manage your account password.
-          </p>
-        </div>
-
-        {hasPasswordProvider ? (
-          <div className='space-y-2'>
-            <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
-              <Icon name='lock' className='size-4 shrink-0 text-default-400' />
-              <span className='flex-1 font-okxs text-sm text-default-600'>
-                Password
-              </span>
-              <button
-                type='button'
-                disabled={resetStatus === 'sending' || resetStatus === 'sent'}
-                onClick={() => void handlePasswordReset()}
-                className={cn(
-                  'font-okxs text-xs transition-colors',
-                  resetStatus === 'sent'
-                    ? 'text-emerald-500 cursor-default'
-                    : resetStatus === 'error'
-                      ? 'text-rose-400 hover:text-rose-300'
-                      : resetStatus === 'sending'
-                        ? 'text-default-300 cursor-wait'
-                        : 'text-default-400 hover:text-foreground',
-                )}>
-                {resetStatus === 'sending' && 'Sending…'}
-                {resetStatus === 'sent' && (
-                  <span className='flex items-center gap-1.5'>
-                    <Icon name='check' className='size-3.5' />
-                    Email sent
-                  </span>
-                )}
-                {resetStatus === 'error' && 'Retry'}
-                {resetStatus === 'idle' && 'Send reset email'}
-              </button>
+              {resetStatus === 'sent' && (
+                <p className='px-1 font-okxs text-xs text-default-400'>
+                  Check{' '}
+                  <span className='font-medium text-foreground'>
+                    {firebaseUser?.email}
+                  </span>{' '}
+                  for a link to reset your password.
+                </p>
+              )}
+              {resetStatus === 'error' && (
+                <p className='px-1 font-okxs text-xs text-rose-400'>
+                  Unable to send reset email. Try again.
+                </p>
+              )}
             </div>
-            {resetStatus === 'sent' && (
-              <p className='px-1 font-okxs text-xs text-default-400'>
-                Check{' '}
-                <span className='font-medium text-foreground'>
-                  {firebaseUser?.email}
-                </span>{' '}
-                for a link to reset your password.
-              </p>
-            )}
-            {resetStatus === 'error' && (
-              <p className='px-1 font-okxs text-xs text-rose-400'>
-                Unable to send reset email. Try again.
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
-            <Icon name='google' className='size-4 shrink-0 text-default-400' />
-            <span className='font-okxs text-sm text-default-500'>
-              Signed in with Google — no password to manage.
-            </span>
-          </div>
-        )}
+          ) : (
+            <div className='flex h-11 items-center gap-3 rounded-xs border border-foreground/10 bg-default-50/50 px-3 dark:bg-dark-table/30'>
+              <Icon
+                name='google'
+                className='size-4 shrink-0 text-default-400'
+              />
+              <span className='font-okxs text-sm text-default-500'>
+                Signed in with Google — no password to manage.
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

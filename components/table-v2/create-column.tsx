@@ -185,10 +185,10 @@ export const createColumns = <T,>(
             className={cn(
               'flex size-7 items-center justify-center rounded-md transition-colors',
               pinnedCount > 0
-                ? 'text-brand hover:bg-brand/10 dark:text-light-brand'
-                : 'text-muted-foreground/40',
+                ? 'text-orange-400 hover:bg-brand/10 dark:text-light-brand'
+                : 'text-foreground/40',
             )}>
-            <Icon name='pin-fill' className='size-4' />
+            <Icon name={'fill-push-pin'} className='size-4' />
           </button>
         )
       },
@@ -290,7 +290,10 @@ const PinRowButton = <T,>({
           : 'text-muted-foreground hover:bg-sidebar hover:text-foreground',
         !canPin && 'cursor-not-allowed opacity-40',
       )}>
-      <Icon name={'pin-fill'} className={cn('size-4')} />
+      <Icon
+        name={isPinned ? 'fill-push-pin' : 'outline-push-pin'}
+        className={cn('size-5', {'rotate-30': !isPinned})}
+      />
     </button>
   )
 }

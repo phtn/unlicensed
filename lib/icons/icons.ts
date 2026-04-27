@@ -1590,6 +1590,24 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'ic',
   },
+  'play-arrow': {
+    symbol:
+      '<path fill="currentColor" d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18a1 1 0 0 0 0-1.69L9.54 5.98A.998.998 0 0 0 8 6.82"/>',
+    viewBox: '0 0 24 24',
+    set: 'ic',
+  },
+  'outline-push-pin': {
+    symbol:
+      '<path fill="currentColor" d="M14 4v5c0 1.12.37 2.16 1 3H9c.65-.86 1-1.9 1-3V4zm3-2H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1l1-1v-7H19v-2c-1.66 0-3-1.34-3-3V4h1c.55 0 1-.45 1-1s-.45-1-1-1"/>',
+    viewBox: '0 0 24 24',
+    set: 'ic',
+  },
+  'fill-push-pin': {
+    symbol:
+      '<path fill="currentColor" fill-rule="evenodd" d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1l1-1v-7H19v-2c-1.66 0-3-1.34-3-3"/>',
+    viewBox: '0 0 24 24',
+    set: 'ic',
+  },
 }
 /*
 

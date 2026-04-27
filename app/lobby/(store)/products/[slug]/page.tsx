@@ -63,7 +63,7 @@ export async function generateMetadata({
     `/lobby/products/${encodeURIComponent(product.slug || slug)}`,
     getSiteUrl(),
   )
-  const title = `${product.name} ・ Rapid Fire`
+  const title = `${product.name}`
   const productHighlights = [
     product.strainType,
     product.productTierLabel,

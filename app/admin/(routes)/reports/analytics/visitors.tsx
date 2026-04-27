@@ -13,9 +13,9 @@ import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
+import {formatDate, formatTimestamp} from '@/utils/date'
 import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {formatDistanceToNow} from 'date-fns'
 import {useCallback, useMemo, useState} from 'react'
 
 type GuestVisitorRow = Doc<'guestVisitors'> & {
@@ -33,19 +33,6 @@ const COMPACT_MUTED_TEXT_CLASS =
 const COMPACT_MONO_CLASS =
   'block truncate font-mono text-[10px] leading-4 text-muted-foreground uppercase'
 const ACTIVITY_PREVIEW_LIMIT = 6
-
-const visitorTimestampFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-})
-
-const formatVisitorTimestamp = (timestamp?: number | null) =>
-  timestamp ? visitorTimestampFormatter.format(timestamp) : EMPTY_VALUE
-
-const formatVisitorRelativeTime = (timestamp?: number | null) =>
-  timestamp ? formatDistanceToNow(timestamp, {addSuffix: true}) : EMPTY_VALUE
 
 const formatActivityType = (type: GuestVisitorEventRow['type']) =>
   type
@@ -212,8 +199,8 @@ function ActivityList({
 }) {
   return (
     <section className='min-w-0'>
-      <div className='mb-1.5 flex items-center justify-between gap-3'>
-        <p className='font-brk text-[10px] uppercase tracking-wide text-muted-foreground'>
+      <div className='mb-1.5 flex items-center gap-3'>
+        <p className='font-okxs text-[10px] uppercase tracking-wide text-muted-foreground'>
           {title}
         </p>
         <span className='font-mono text-[10px] text-muted-foreground'>
@@ -228,33 +215,52 @@ function ActivityList({
             const metadata = formatEventMetadata(event)
 
             return (
-              <div
-                key={event._id}
-                className='rounded-md border border-foreground/10 bg-background/70 px-2 py-1.5'>
-                <div className='flex min-w-0 items-start justify-between gap-2'>
+              <div className='flex items-center '>
+                <div
+                  key={event._id}
+                  className='flex flex-col rounded-sm border border-foreground/15 bg-background/70 px-2 py-2 w-full'>
+                  <div className='flex min-w-0 items-start justify-between gap-1'>
+                    <p
+                      className='min-w-0 truncate text-[11px] font-medium leading-4 max-w-[30ch]'
+                      title={formatEventTitle(event)}>
+                      {formatEventTitle(event).replaceAll(' ', '')}
+                    </p>
+                  </div>
                   <p
-                    className='min-w-0 truncate text-[11px] font-medium leading-4'
-                    title={formatEventTitle(event)}>
-                    {formatEventTitle(event)}
+                    className='truncate font-mono text-[10px] leading-4 text-muted-foreground text-balance'
+                    title={formatEventPath(event)}>
+                    {formatEventPath(event)
+                      .replaceAll('/lobby', 'L')
+                      .replaceAll('/category', '/C')
+                      .replaceAll('/products', '/P')
+                      .replaceAll('/account', 'A')
+                      .replaceAll('/chat', '/C')}
                   </p>
-                  <span
-                    className='shrink-0 whitespace-nowrap font-mono text-[9px] text-muted-foreground'
-                    title={formatVisitorTimestamp(event.createdAt)}>
-                    {formatVisitorRelativeTime(event.createdAt)}
-                  </span>
                 </div>
-                <p
-                  className='truncate font-mono text-[10px] leading-4 text-muted-foreground'
-                  title={formatEventPath(event)}>
-                  {formatEventPath(event)}
-                </p>
-                {metadata ? (
+
+                <div className='flex-1 min-w-8 text-right'>
                   <p
-                    className='truncate text-[10px] leading-4 text-muted-foreground'
-                    title={metadata}>
-                    {metadata}
+                    className='shrink-0 whitespace-nowrap font-okxs font-medium text-[9px] text-foreground/70'
+                    title={
+                      event.createdAt
+                        ? formatDate(event.createdAt)
+                        : EMPTY_VALUE
+                    }>
+                    {formatTimestamp(event.createdAt)?.replaceAll(' ago', '') ??
+                      EMPTY_VALUE}
                   </p>
-                ) : null}
+                  {metadata ? (
+                    <p
+                      className='font-mono text-foreground/50 text-[8px] leading-4 whitespace-nowrap uppercase text-right'
+                      title={metadata}>
+                      {metadata
+                        .replaceAll('browserFingerprintId:', '')
+                        .replaceAll('returningVisitor: true', 'RV')
+                        .replaceAll('returningVisitor: false', 'NV')
+                        .slice(0, 5)}
+                    </p>
+                  ) : null}
+                </div>
               </div>
             )
           })}
@@ -275,11 +281,11 @@ function VisitorActivityHoverCard({visitor}: {visitor: GuestVisitorRow}) {
     events?.filter((event) => event.type !== 'page_view') ?? []
 
   return (
-    <HoverCard open={open} onOpenChange={setOpen} openDelay={150}>
+    <HoverCard open={open} onOpenChange={setOpen} openDelay={100}>
       <HoverCardTrigger asChild>
         <button
           type='button'
-          className='rounded px-1 py-0.5 text-center font-okxs text-xs leading-4 transition-colors hover:bg-brand/10 hover:text-brand focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand dark:hover:text-light-brand'
+          className='rounded px-1 py-0.5 text-center font-okxs text-xs leading-4 transition-colors hover:bg-sidebar hover:text-mac-blue focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-mac-blue dark:hover:text-mac-blue'
           aria-label={`Show stored pages and events for ${formatChatLabel(visitor)}`}>
           {visitor.pageViewCount.toLocaleString('en-US')}/
           {visitor.eventCount.toLocaleString('en-US')}
@@ -289,14 +295,14 @@ function VisitorActivityHoverCard({visitor}: {visitor: GuestVisitorRow}) {
         align='start'
         side='top'
         sideOffset={8}
-        className='w-90 max-w-[calc(100vw-2rem)] space-y-3 p-3 bg-sidebar dark:bg-dark-table'>
+        className='w-96 max-w-[calc(100vw-2rem)] space-y-3 p-3 bg-sidebar dark:bg-dark-table border-foreground/30'>
         <div className='min-w-0'>
           <p className='truncate text-xs font-semibold'>
             {formatChatLabel(visitor)}
           </p>
-          <p className='text-[11px] text-muted-foreground'>
-            {visitor.pageViewCount.toLocaleString('en-US')} visits ·{' '}
-            {visitor.eventCount.toLocaleString('en-US')} events stored
+          <p className='text-[10px] text-muted-foreground'>
+            {visitor.pageViewCount.toLocaleString('en-US')} Visits ·{' '}
+            {visitor.eventCount.toLocaleString('en-US')} Events
           </p>
         </div>
         {events === undefined ? (
@@ -474,10 +480,12 @@ export const VisitorData = () => {
           cell: ({row}) => (
             <span
               className={COMPACT_MUTED_TEXT_CLASS}
-              title={formatVisitorTimestamp(row.original.lastSeenAt)}>
-              {formatVisitorRelativeTime(row.original.lastSeenAt)
-                .replace('about ', '')
-                .replaceAll('less than ', '')}
+              title={
+                row.original.lastSeenAt
+                  ? formatDate(row.original.lastSeenAt)
+                  : EMPTY_VALUE
+              }>
+              {formatTimestamp(row.original.lastSeenAt) ?? EMPTY_VALUE}
             </span>
           ),
         },
@@ -623,7 +631,9 @@ export const VisitorData = () => {
           size: 120,
           cell: ({row}) => (
             <span className={COMPACT_MUTED_TEXT_CLASS}>
-              {formatVisitorTimestamp(row.original.firstSeenAt)}
+              {row.original.firstSeenAt
+                ? formatDate(row.original.firstSeenAt)
+                : EMPTY_VALUE}
             </span>
           ),
         },

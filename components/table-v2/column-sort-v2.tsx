@@ -59,14 +59,14 @@ export const ColumnSort = <TData, TValue>({
       {sorted === 'asc' ? (
         <Icon
           aria-hidden='true'
-          name='arrow-down'
-          className='absolute size-4 shrink-0 text-teal-500 rotate-90 dark:opacity-90'
+          name='play-arrow'
+          className='absolute -rotate-45 size-4 shrink-0 text-teal-500 dark:opacity-90'
         />
       ) : sorted === 'desc' ? (
         <Icon
           aria-hidden='true'
-          name='arrow-down'
-          className='absolute left-2 size-4 shrink-0 text-amber-500 dark:opacity-90'
+          name='play-arrow'
+          className='absolute rotate-45 left-2 size-4 shrink-0 text-amber-500 dark:opacity-90'
         />
       ) : null}
     </div>
