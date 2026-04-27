@@ -10,9 +10,9 @@ import {cn} from '@/lib/utils'
 import {Avatar} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
-import {ASSISTANT_NAME, type AssistantMessage} from './assistant'
-import {AssistantMarkdown} from './assistant-markdown'
-import {ScrollToBottomButton} from './scroll-to-bottom-button'
+import {ScrollToBottomButton} from '../scroll-to-bottom-button'
+import {AssistantMarkdown} from './markdown'
+import {ASSISTANT_NAME, type AssistantMessage} from './types'
 
 const AssistantAvatar = ({className}: {className?: string}) => (
   <Avatar className={className}>
@@ -197,12 +197,12 @@ export function AssistantMessageList({
                       'rounded-2xl px-3 md:px-4 py-2',
                       isUser
                         ? 'bg-sidebar dark:bg-dark-table dark:text-white rounded-tr-sm'
-                        : 'bg-dark-table dark:bg-white dark:text-dark-table text-white rounded-tl-sm',
+                        : 'bg-foreground dark:bg-white dark:text-dark-table text-white rounded-tl-sm',
                       isLastInGroup &&
                         (isUser ? 'rounded-br-2xl' : 'rounded-bl-2xl'),
                     )}>
                     {isUser ? (
-                      <p className='text-sm md:text-base leading-relaxed whitespace-pre-wrap wrap-break-words'>
+                      <p className='text-sm md:text-base leading-relaxed whitespace-pre-wrap wrap-break-word'>
                         {message.content}
                       </p>
                     ) : message.content ? (
@@ -227,7 +227,7 @@ export function AssistantMessageList({
                   </div>
 
                   {/* Timestamp */}
-                  <span className='text-[8px] font-brk text-muted-foreground px-2'>
+                  <span className='text-[8px] font-okxs text-foreground/60 tracking-wide px-4'>
                     {formatTime(message.createdAt)}
                   </span>
                 </div>

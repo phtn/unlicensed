@@ -26,10 +26,11 @@ import {
 import {
   ASSISTANT_NAME,
   ASSISTANT_PRO_ID,
+  AssistantMessageInput,
+  AssistantMessageList,
   isAssistantConversation,
+  useAssistantChat,
 } from './_components/assistant'
-import {AssistantMessageInput} from './_components/assistant-message-input'
-import {AssistantMessageList} from './_components/assistant-message-list'
 import {
   ALL_CONVERSATIONS_FOLDER,
   ConversationFolderToolbar,
@@ -40,7 +41,6 @@ import {ConversationList} from './_components/conversation-list'
 import {ConversationSearch} from './_components/conversation-search'
 import {MessageInput} from './_components/message-input'
 import {MessageList} from './_components/message-list'
-import {useAssistantChat} from './_components/use-assistant-chat'
 
 interface ChatContentProps {
   initialConversationId?: string
@@ -613,8 +613,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
               ? 'w-full'
               : 'hidden'
             : 'w-88 shrink-0 lg:w-[24rem]',
-        )}
-      >
+        )}>
         <div className='z-10 shrink-0 bg-background/95 supports-backdrop-filter:backdrop-blur-xl'>
           <ConversationSearch
             onSearch={setSearchQuery}
@@ -646,8 +645,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                     'touch-manipulation hover:bg-sidebar/70',
                     isAssistant &&
                       'border-l-2 border-l-brand bg-sidebar/80 md:border-l-4',
-                  )}
-                >
+                  )}>
                   <div className='flex items-start gap-2 md:gap-3'>
                     <div className='relative shrink-0'>
                       <ChatAvatar
@@ -701,8 +699,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
         className={cn(
           'flex min-h-0 flex-1 flex-col bg-background transition-all duration-300',
           isMobile && !showChatArea && 'hidden',
-        )}
-      >
+        )}>
         {isAssistant ? (
           <>
             {/* Assistant Chat Header */}
@@ -711,8 +708,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 {isMobile && (
                   <button
                     onClick={handleBackToConversations}
-                    className='p-2 -ml-2 rounded-full hover:bg-sidebar transition-colors shrink-0 active:scale-95'
-                  >
+                    className='p-2 -ml-2 rounded-full hover:bg-sidebar transition-colors shrink-0 active:scale-95'>
                     <Icon
                       name='chevron-left'
                       className='size-4 text-foreground'
@@ -746,8 +742,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   <button
                     onClick={assistantChat.clearMessages}
                     className='p-2 rounded-full hover:bg-accent transition-colors active:scale-95'
-                    title='Clear conversation'
-                  >
+                    title='Clear conversation'>
                     <Icon name='x' className='size-5 text-muted-foreground' />
                   </button>
                 )}
@@ -780,8 +775,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
               className='sticky bottom-0 z-20 shrink-0 border-t border-border/40 bg-background/95 px-3 py-3 shadow-[0_-12px_32px_rgba(15,23,42,0.04)] supports-backdrop-filter:backdrop-blur-xl md:px-5 md:py-4'
               style={{
                 paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-              }}
-            >
+              }}>
               <AssistantMessageInput
                 onSendMessage={assistantChat.sendMessage}
                 isLoading={assistantChat.isLoading}
@@ -805,8 +799,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 {isMobile && (
                   <button
                     onClick={handleBackToConversations}
-                    className='p-2 -ml-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95'
-                  >
+                    className='p-2 -ml-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95'>
                     <Icon
                       name='chevron-left'
                       className='size-4 text-foreground'
@@ -905,8 +898,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
               className='sticky bottom-0 z-20 shrink-0 border-t border-border/40 bg-background/95 px-3 py-3 shadow-[0_-12px_32px_rgba(15,23,42,0.04)] supports-backdrop-filter:backdrop-blur-xl md:px-5 md:py-4'
               style={{
                 paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-              }}
-            >
+              }}>
               <MessageInput
                 receiverProId={selectedConversationFid ?? ''}
                 senderProId={user?.uid ?? ''}

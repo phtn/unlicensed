@@ -594,7 +594,7 @@ export function MessageInput({
     <div className='space-y-2'>
       {/* Attachments Preview */}
       {attachments.length > 0 && (
-        <div className='flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+        <div className='flex gap-2 overflow-x-auto pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
           {attachments.map((attachment, index) => (
             <div
               key={index}
@@ -648,13 +648,13 @@ export function MessageInput({
 
         {/* Text Input Area */}
         <div className='flex-1 relative'>
-          <div className='relative flex items-end rounded-lg dark:bg-dark-table transition-all focus-within:border-primary/5 focus-within:ring-1 focus-within:ring-primary/2'>
+          <div className='relative flex items-end rounded-lg dark:bg-dark-table transition-all focus-within:border-primary/2 focus-within:ring-0 focus-within:ring-primary/2'>
             <TextArea
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder='Type a message...'
+              placeholder='type message'
               disabled={isSending || uploading}
               rows={isMobile ? 2 : 3}
               variant='secondary'
@@ -710,4 +710,4 @@ export const searchInputClassName =
   'min-h-14 w-full overflow-hidden rounded-xl border border-dark-table/40 bg-alum/10 p-2 pl-8 pr-10 text-base font-medium font-okxs text-blue-500 shadow-none outline-none transition-colors placeholder:font-normal placeholder:text-slate-500/60 selection:bg-blue-400 selection:text-white hover:bg-sidebar focus-visible:border-dark-table focus-visible:bg-sidebar md:min-h-16 dark:border-white/20 dark:bg-black/60 dark:text-white dark:placeholder:text-white/40 dark:hover:border-dark-table/50 dark:focus-visible:bg-background'
 
 export const chatTextAreaClassName =
-  'min-h-14 w-full resize-none rounded-lg border border-dark-table/40 bg-sidebar p-2 ps-2 text-base font-medium font-okxs text-blue-500 shadow-none outline-none transition-colors placeholder:font-normal placeholder:text-dark-table/60 selection:bg-blue-400 selection:text-white hover:bg-sidebar focus-visible:border-dark-table md:min-h-16 dark:border-black/10 dark:bg-black/60 dark:text-white dark:placeholder:text-slate-500 dark:hover:bg-black/40 disabled:cursor-not-allowed disabled:opacity-50'
+  'min-h-14 w-full resize-none rounded-lg border border-dark-table/0 bg-sidebar/5 p-2 ps-2 font-clash font-medium text-foreground outline-none ring-0 dark:text-mac-blue text-base shadow-none outline-none placeholder:font-normal placeholder:text-dark-table/60 selection:text-white hover:bg-sidebar dark:border-dark-table/10 dark:bg-black/60 dark:text-white dark:placeholder:text-foreground/40 dark:hover:bg-black/40 disabled:cursor-not-allowed disabled:opacity-50'

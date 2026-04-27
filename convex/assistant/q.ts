@@ -1,7 +1,7 @@
 import {v} from 'convex/values'
 import {parseAssistantConfig} from '../../lib/assistant/config'
 import {query} from '../_generated/server'
-import type {Doc} from '../_generated/dataModel'
+import type {Doc, Id} from '../_generated/dataModel'
 import {ASSISTANT_PRO_ID} from './d'
 
 function compareCategoriesByOrderThenName(
@@ -280,5 +280,57 @@ export const getLastAssistantMessage = query({
       createdAt: lastMessage.createdAt,
       isFromAssistant: lastMessage.senderId === assistant._id,
     }
+  },
+})
+
+/**
+ * Get a pre-built slug → thumbnail URL index for the product thumbnail tool.
+ * Storage IDs are resolved to signed URLs at query time.
+ */
+export const getProductThumbnails = query({
+  args: {},
+  handler: async (ctx) => {
+    const products = await ctx.db.query('products').collect()
+
+    const resolved = await Promise.all(
+      products
+        .filter(
+          (p) =>
+            p.archived !== true &&
+            typeof p.slug === 'string' &&
+            p.slug.length > 0 &&
+            typeof p.name === 'string' &&
+            p.name.length > 0 &&
+            p.image != null,
+        )
+        .map(async (p) => {
+          const raw = p.image as string
+          let imageUrl: string | null = null
+
+          if (
+            raw.startsWith('http://') ||
+            raw.startsWith('https://') ||
+            raw.startsWith('/')
+          ) {
+            imageUrl = raw
+          } else {
+            try {
+              imageUrl = await ctx.storage.getUrl(raw as Id<'_storage'>)
+            } catch {
+              imageUrl = null
+            }
+          }
+
+          if (!imageUrl) return null
+
+          return {
+            slug: p.slug as string,
+            name: p.name as string,
+            imageUrl,
+          }
+        }),
+    )
+
+    return resolved.filter((r): r is NonNullable<typeof r> => r !== null)
   },
 })

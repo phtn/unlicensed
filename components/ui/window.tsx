@@ -92,9 +92,9 @@ export const DialogWindow = ({
                 <button
                   type='button'
                   onClick={close}
-                  className='rounded-full p-2 text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground'
+                  className='rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground'
                   aria-label='Close chat window'>
-                  <Icon name='x' className='size-4' />
+                  <Icon name='x' className='size-4 md:size-5.5' />
                 </button>
               </div>
             </header>

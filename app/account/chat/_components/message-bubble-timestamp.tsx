@@ -44,7 +44,7 @@ export function MessageBubbleTimestamp({
             {isVisible ? (
               <span
                 key='timestamp'
-                className='font-brk whitespace-nowrap px-1'>
+                className='font-okxs whitespace-nowrap px-1'>
                 {formatTimeCompact(createdAt)}
               </span>
             ) : null}
@@ -76,7 +76,7 @@ export function MessageBubbleTimestamp({
               enter='vt-enter'
               exit='vt-exit'>
               {isVisible ? (
-                <span key='timestamp' className='font-space whitespace-nowrap'>
+                <span key='timestamp' className='font-okxs whitespace-nowrap'>
                   {formatTimeCompact(createdAt)}
                 </span>
               ) : null}

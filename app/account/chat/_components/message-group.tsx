@@ -42,7 +42,7 @@ export function MessageGroup({
     <div className='space-y-3 md:space-y-4'>
       {/* Date Separator */}
       <div className='flex items-center justify-center'>
-        <div className='px-2 md:px-3 py-1 rounded-full bg-sidebar/50 text-[8px] font-brk text-muted-foreground'>
+        <div className='px-2 md:px-3 py-1 rounded-full bg-sidebar/50 text-[8px] font-okxs text-muted-foreground tracking-wide'>
           {formatDateFn(group.date)}
         </div>
       </div>

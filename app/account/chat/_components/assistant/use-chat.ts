@@ -5,7 +5,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useMutation, useQuery} from 'convex/react'
 import type {FunctionReturnType} from 'convex/server'
 import {useCallback, useEffect, useRef, useState} from 'react'
-import type {AssistantMessage} from './assistant'
+import type {AssistantMessage} from './types'
 
 interface UseAssistantChatReturn {
   messages: AssistantMessage[]

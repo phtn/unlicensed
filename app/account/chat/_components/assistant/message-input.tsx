@@ -5,7 +5,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {TextArea} from '@heroui/react'
 import {KeyboardEvent, useCallback, useEffect, useRef, useState} from 'react'
-import {chatTextAreaClassName} from './message-input'
+import {chatTextAreaClassName} from '../message-input'
 
 interface AssistantMessageInputProps {
   onSendMessage: (content: string) => Promise<void>
@@ -94,7 +94,7 @@ export function AssistantMessageInput({
     <div className='flex items-end gap-1.5 sm:gap-2'>
       {/* Text Input Area */}
       <div className='flex-1 relative'>
-        <div className='relative flex items-end rounded-2xl transition-all focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:ring-primary/5'>
+        <div className='relative flex items-end rounded-2xl transition-all focus-within:ring-0 focus-within:ring-primary/10 dark:focus-within:ring-primary/5'>
           <TextArea
             ref={textareaRef}
             value={currentValue}
@@ -123,16 +123,15 @@ export function AssistantMessageInput({
         onClick={handleSend}
         disabled={!currentValue.trim() || isLoading}
         className={cn(
-          'flex size-11 shrink-0 items-center justify-center rounded-2xl transition-all touch-manipulation active:scale-95 sm:size-10 sm:rounded-full',
+          'flex size-10 shrink-0 items-center justify-center rounded-2xl transition-all touch-manipulation active:scale-95 sm:size-10 sm:rounded-full',
           currentValue.trim() && !isLoading
             ? 'bg-dark-gray text-primary-foreground dark:bg-white dark:text-dark-table hover:bg-brand/90'
             : 'bg-sidebar text-foreground/30 cursor-not-allowed',
         )}>
-        {isLoading ? (
-          <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
-        ) : (
-          <Icon name='arrow-up-fat' className='size-5' />
-        )}
+        <Icon
+          name={isLoading ? 'spinners-ring' : 'arrow-up-fat'}
+          className='size-5'
+        />
       </button>
     </div>
   )

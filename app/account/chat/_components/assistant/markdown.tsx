@@ -7,6 +7,7 @@ import {
 } from '@/lib/assistant/catalog'
 import {cn} from '@/lib/utils'
 import {marked, type Token, type Tokens} from 'marked'
+import Image from 'next/image'
 import Link from 'next/link'
 import {Fragment, useMemo, type ReactNode} from 'react'
 
@@ -80,7 +81,7 @@ function renderAssistantAnchor({
 
   const internalHref = getInternalAssistantHref(safeHref)
   const className =
-    'text-brand font-semibold hover:underline decoration-1 decoration-dotted underline-offset-4 transition-opacity hover:opacity-80'
+    'font-semibold text-pink-300 dark:text-brand hover:text-pink-300 dark:hover:text-light-brand hover:underline decoration-1 decoration-dotted underline-offset-4'
 
   if (internalHref && !internalHref.startsWith('#')) {
     return (
@@ -210,16 +211,25 @@ function renderInlineTokens(
       case 'html':
         nextNodes = [<Fragment key={key}>{token.text}</Fragment>]
         break
-      case 'image':
-        nextNodes = [
-          renderAssistantAnchor({
-            children: token.text || token.href,
-            href: token.href,
-            key,
-            title: token.title,
-          }),
-        ]
+      case 'image': {
+        // Strip surrounding quotes the model sometimes adds around the URL
+        const rawSrc = token.href.replace(/^["']|["']$/g, '').trim()
+        const safeSrc = getSafeAssistantHref(rawSrc)
+        nextNodes = safeSrc
+          ? [
+              <Image
+                key={key}
+                src={safeSrc}
+                alt={token.text}
+                width={1000}
+                height={1000}
+                title={token.title ?? undefined}
+                className='max-w-full h-auto rounded-xl my-2 object-cover'
+              />,
+            ]
+          : [<Fragment key={key}>{token.text || token.href}</Fragment>]
         break
+      }
       case 'link':
         nextNodes = [
           renderAssistantAnchor({

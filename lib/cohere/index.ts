@@ -3,6 +3,7 @@ import {CohereClientV2} from 'cohere-ai'
 
 export type ChatMessage = Cohere.ChatMessageV2
 export type Content = Cohere.Content
+export type Tool = Cohere.ToolV2
 
 let client: CohereClientV2 | null = null
 

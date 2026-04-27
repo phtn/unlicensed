@@ -306,7 +306,19 @@ function scoreProduct(
   score += scoreAgainstTokens(product.tierLabel ?? product.tier, tokens)
 
   for (const brand of product.brand) {
-    score += scoreAgainstTokens(brand, tokens) * 2
+    const normalizedBrand = normalizeText(brand)
+    // Full-phrase brand matching mirrors the product name boost
+    if (normalizedSearch && normalizedBrand) {
+      if (normalizedBrand === normalizedSearch) {
+        score += 120
+      } else if (
+        normalizedBrand.includes(normalizedSearch) ||
+        normalizedSearch.includes(normalizedBrand)
+      ) {
+        score += 60
+      }
+    }
+    score += scoreAgainstTokens(brand, tokens) * 3
   }
 
   if (product.available) score += 2
@@ -319,6 +331,38 @@ function isBroadCatalogQuery(searchText: string): boolean {
   return /\b(available|browse|catalog|categories|carry|have|menu|products|selection|sell|stock)\b/i.test(
     searchText,
   )
+}
+
+// Returns the normalized brand name if a single brand dominates the top scored results.
+function findDominantBrand(
+  scoredProducts: Array<{product: AssistantCatalogProduct; score: number}>,
+  tokens: string[],
+): string | null {
+  if (tokens.length === 0) return null
+
+  const top = scoredProducts.filter(({score}) => score > 0).slice(0, 12)
+  if (top.length === 0) return null
+
+  const brandHits = new Map<string, number>()
+  for (const {product} of top) {
+    const seen = new Set<string>()
+    for (const brand of product.brand) {
+      const nb = normalizeText(brand)
+      if (seen.has(nb)) continue
+      seen.add(nb)
+      // Only count brands that actually match a query token
+      const matches = tokens.some((t) => nb.includes(t) || t.includes(nb))
+      if (matches) brandHits.set(nb, (brandHits.get(nb) ?? 0) + 1)
+    }
+  }
+
+  // Brand must appear in at least half of the top results to be considered dominant
+  const threshold = Math.max(2, Math.ceil(top.length * 0.5))
+  for (const [brand, hits] of brandHits) {
+    if (hits >= threshold) return brand
+  }
+
+  return null
 }
 
 export function buildAssistantCatalogPrompt(
@@ -360,13 +404,35 @@ export function buildAssistantCatalogPrompt(
       left.name.localeCompare(right.name),
     )
   } else {
-    selectedProducts = scoredProducts
-      .filter(({score}) => broadCatalogQuery || score > 0)
-      .slice(0, broadCatalogQuery ? 40 : 24)
-      .map(({product}) => product)
+    const dominantBrand = !broadCatalogQuery
+      ? findDominantBrand(scoredProducts, searchTokens)
+      : null
 
-    if (selectedProducts.length === 0 && broadCatalogQuery) {
-      selectedProducts = scoredProducts.slice(0, 24).map(({product}) => product)
+    if (dominantBrand) {
+      // Include all products from the matched brand, then fill with other high-scorers
+      const brandProducts = scoredProducts
+        .filter(({product}) =>
+          product.brand.some((b) => normalizeText(b) === dominantBrand),
+        )
+        .map(({product}) => product)
+      const otherTopProducts = scoredProducts
+        .filter(
+          ({product, score}) =>
+            score > 0 &&
+            !product.brand.some((b) => normalizeText(b) === dominantBrand),
+        )
+        .slice(0, 8)
+        .map(({product}) => product)
+      selectedProducts = [...brandProducts, ...otherTopProducts]
+    } else {
+      selectedProducts = scoredProducts
+        .filter(({score}) => broadCatalogQuery || score > 0)
+        .slice(0, broadCatalogQuery ? 40 : 24)
+        .map(({product}) => product)
+
+      if (selectedProducts.length === 0 && broadCatalogQuery) {
+        selectedProducts = scoredProducts.slice(0, 24).map(({product}) => product)
+      }
     }
   }
 

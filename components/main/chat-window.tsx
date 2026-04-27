@@ -3,23 +3,23 @@
 import {
   ASSISTANT_AVATAR,
   ASSISTANT_NAME,
+  AssistantMessageInput,
+  AssistantMessageList,
+  useAssistantChat,
 } from '@/app/account/chat/_components/assistant'
-import {AssistantMessageInput} from '@/app/account/chat/_components/assistant-message-input'
-import {AssistantMessageList} from '@/app/account/chat/_components/assistant-message-list'
 import {MessageInput} from '@/app/account/chat/_components/message-input'
 import {MessageList} from '@/app/account/chat/_components/message-list'
-import {useAssistantChat} from '@/app/account/chat/_components/use-assistant-chat'
 import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {ScrollArea} from '@/components/ui/scroll-area'
 import {DialogWindow} from '@/components/ui/window'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useGuestChatCtx} from '@/ctx/guest-chat'
-import {Icon} from '@/lib/icons'
 import {
   resolveActiveConversationFid,
   shouldShowConversationSelector,
 } from '@/lib/chat-window-conversations'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {getInitials} from '@/utils/initials'
 import {Avatar, ListBox, Select} from '@heroui/react'
@@ -302,29 +302,26 @@ export function ChatWindow({
       ? (activeConversationFid ?? '')
       : ASSISTANT_VALUE
 
-  const selectItems = useMemo(
-    (): ChatSelectItem[] => {
-      const conversationSelectItems = conversationItems.map((conversation) => ({
-        id: conversation.fid,
-        label: conversation.displayName,
-        avatarUrl: conversation.avatarUrl,
-      }))
+  const selectItems = useMemo((): ChatSelectItem[] => {
+    const conversationSelectItems = conversationItems.map((conversation) => ({
+      id: conversation.fid,
+      label: conversation.displayName,
+      avatarUrl: conversation.avatarUrl,
+    }))
 
-      if (isGuestFlow) {
-        return conversationSelectItems
-      }
+    if (isGuestFlow) {
+      return conversationSelectItems
+    }
 
-      return [
-        {
-          id: ASSISTANT_VALUE,
-          label: ASSISTANT_NAME,
-          avatarUrl: ASSISTANT_AVATAR,
-        },
-        ...conversationSelectItems,
-      ]
-    },
-    [conversationItems, isGuestFlow],
-  )
+    return [
+      {
+        id: ASSISTANT_VALUE,
+        label: ASSISTANT_NAME,
+        avatarUrl: ASSISTANT_AVATAR,
+      },
+      ...conversationSelectItems,
+    ]
+  }, [conversationItems, isGuestFlow])
 
   const isConversationReady = Boolean(activeChatFid && activeConversationFid)
   const showGuestStatusPanel = isGuestFlow && !isConversationReady
@@ -362,7 +359,7 @@ export function ChatWindow({
         <Link
           href={`/account/chat/${activeConversationFid}`}
           className='rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground'>
-          <Icon name='external-link-line' className='size-4' />
+          <Icon name='square-line' className='size-4 md:size-5' />
         </Link>
       )
     }
@@ -372,7 +369,7 @@ export function ChatWindow({
         <button
           type='button'
           onClick={assistantChat.clearMessages}
-          className='rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground font-okxs'>
+          className='rounded-md px-2 py-1 tex-xs md:text-sm text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground font-okxs'>
           Clear
         </button>
       )
@@ -417,18 +414,18 @@ export function ChatWindow({
               variant='secondary'
               className='w-full'
               aria-label='Select conversation'>
-              <Select.Trigger className='min-h-8 h-8 w-full bg-sidebar/40 shadow-none data-[hover=true]:bg-sidebar'>
+              <Select.Trigger className='min-h-8 h-10 w-full bg-sidebar/50 dark:bg-dark-table/50 shadow-none data-[hover=true]:bg-sidebar p-1 rounded-full'>
                 <Select.Value className='text-sm md:text-base font-medium font-clash ring-brand outline-brand' />
                 <Select.Indicator />
               </Select.Trigger>
-              <Select.Popover className='-mt-1'>
-                <ListBox className='px-2'>
+              <Select.Popover className='-mt-2 rounded-2xl'>
+                <ListBox className='px-2 space-y-1 max-h-[50vh] overflow-scroll'>
                   {selectItems.map((item) => (
                     <ListBox.Item
                       id={item.id}
                       key={item.id}
                       textValue={item.label}
-                      className='hover:bg-sidebar!'>
+                      className='hover:bg-sidebar! px-0'>
                       <div className='flex items-center gap-2'>
                         <ChatParticipantAvatar
                           label={item.label}
@@ -447,7 +444,7 @@ export function ChatWindow({
         ) : null
       }
       description={windowDescription}
-      descriptionStyle='mt-1.5 ps-2 font-pixel-grid font-medium tracking-wide'
+      descriptionStyle='mt-0.5 ps-2 font-okxs tracking-wide'
       actions={windowActions}>
       <div className='flex h-full min-h-0 flex-col border-t border-foreground/20 dark:border-dark-table w-full bg-sidebar'>
         <ScrollArea className='min-h-0 flex-1 relative'>
