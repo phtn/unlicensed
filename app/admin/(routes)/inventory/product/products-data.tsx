@@ -735,10 +735,11 @@ export const ProductsData = ({
               <span className='hidden sm:inline'>Export CSV</span>
               <Icon name='chevron-down' className='size-4 md:flex hidden' />
             </Button>
-            <Dropdown.Popover>
+            <Dropdown.Popover className='rounded-lg'>
               <Dropdown.Menu aria-label='Export CSV options'>
                 <Dropdown.Item
                   id='all'
+                  className='rounded-lg'
                   onPress={() =>
                     exportProductsToCsv(safeData, exportFilePrefix)
                   }>
@@ -748,6 +749,7 @@ export const ProductsData = ({
                 </Dropdown.Item>
                 <Dropdown.Item
                   id='current'
+                  className='rounded-lg'
                   onPress={() =>
                     exportProductsToCsv(
                       context.getFilteredData(),

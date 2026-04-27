@@ -317,7 +317,7 @@ export const OrdersTable = () => {
           <Button
             size='sm'
             variant='tertiary'
-            className='h-9 min-w-0 rounded-md px-3'
+            className='h-10 min-w-0 rounded-lg px-3'
             onPress={clearDateRange}>
             Clear
           </Button>

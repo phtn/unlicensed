@@ -49,7 +49,7 @@ export const DateRangeFilter = ({
       {label ? <Label>{label}</Label> : null}
       <DateField.Group
         fullWidth
-        className='h-8 min-h-8 rounded-sm border border-foreground/10 bg-background text-foreground/80 shadow-none'>
+        className='h-8 min-h-8 rounded-sm border border-foreground/10 bg-background/60 text-foreground/80 shadow-none -translate-y-px'>
         <DateField.InputContainer className='min-w-0 flex-1'>
           <DateField.Input slot='start' className='text-xs font-ios'>
             {(segment) => (

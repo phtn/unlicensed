@@ -255,9 +255,7 @@ function DataTableContent<T>({
     }
 
     return {
-      top: (rowPinningParam?.top ?? []).filter((id) =>
-        availableRowIds.has(id),
-      ),
+      top: (rowPinningParam?.top ?? []).filter((id) => availableRowIds.has(id)),
       bottom: [],
     }
   }, [availableRowIds, enableRowPinning, rowPinningParam])
@@ -384,9 +382,7 @@ function DataTableContent<T>({
 
   const handleRowPinningChange = useCallback(
     (
-      updater:
-        | RowPinningState
-        | ((old: RowPinningState) => RowPinningState),
+      updater: RowPinningState | ((old: RowPinningState) => RowPinningState),
     ) => {
       const nextPinning =
         typeof updater === 'function' ? updater(rowPinning) : updater
@@ -429,7 +425,13 @@ function DataTableContent<T>({
         enableRowPinning,
         rowPinningParamKey,
       ),
-    [columnConfigs, actionConfig, selectOn, enableRowPinning, rowPinningParamKey],
+    [
+      columnConfigs,
+      actionConfig,
+      selectOn,
+      enableRowPinning,
+      rowPinningParamKey,
+    ],
   )
 
   const table = useReactTable({
@@ -679,10 +681,10 @@ function DataTableContent<T>({
     <div className={cn('text-foreground max-w-full overflow-hidden')}>
       <div
         className={cn(
-          'relative inset-0 dark:inset-0 md:pb-8 md:max-w-[84lvw] md:w-full max-w-full overflow-hidden mb-0',
+          'relative inset-0 dark:inset-0 md:pb-8 md:max-w-[84lvw] w-screen md:w-full overflow-hidden mb-0',
           {'md:max-w-[96.25lvw]': !sidebarOpen},
         )}>
-        <div className='portrait:sticky left-0 flex min-h-10.5 w-full max-w-full shrink-0 flex-nowrap items-center justify-between gap-2 overflow-x-auto overflow-y-visible md:gap-0'>
+        <div className='portrait:sticky flex min-h-10.5 w-full max-w-full shrink-0 flex-nowrap items-center justify-between gap-2 overflow-x-auto overflow-y-visible md:gap-0'>
           <div className='flex shrink-0 flex-nowrap items-center gap-2 md:gap-3'>
             <LeftTableToolbar
               select={
@@ -740,7 +742,7 @@ function DataTableContent<T>({
         <HyperWrap className='h-[calc(100svh-7rem)] w-full max-w-full overflow-scroll pb-2 md:h-[93lvh] md:w-full md:pb-12'>
           <TableContainer>
             <Table
-              className='w-fit min-w-4xl table-fixed'
+              className='w-fit md:min-w-4xl table-fixed'
               style={{width: `${table.getTotalSize()}px`}}>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (

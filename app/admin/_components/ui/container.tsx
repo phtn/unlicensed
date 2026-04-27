@@ -37,8 +37,9 @@ export const WrappedContent = ({
 
   useSwipeRight(swipeAreaRef, sidebarOpen, setSidebarOpen, {
     threshold: 50,
-    targetDirection: 'left', // Sidebar opens from the left
+    targetDirection: 'left',
     velocityThreshold: 0.5,
+    edgeThreshold: sidebarOpen ? 1 : 1 / 3,
   })
 
   const {state, openMobile, isMobile, togglePanel} = useSettingsPanel()
@@ -50,7 +51,7 @@ export const WrappedContent = ({
 
   return (
     <Wrapper ref={swipeAreaRef} isPanelExpanded={isExpanded}>
-      <div className='flex min-w-0 flex-wrap items-center justify-between gap-2 md:flex-nowrap md:gap-4 md:px-0'>
+      <div className='flex items-center justify-between gap-2 md:flex-nowrap md:gap-4 px-2 md:px-0'>
         <SidebarTrigger />
         {toolbar}
         {withPanel && (
@@ -81,8 +82,7 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
           'px-2 md:px-4 -ml-1.5 md:ml-0 overflow-x-hidden overflow-y-auto md:overflow-hidden',
           {'': isPanelExpanded},
         )}
-        ref={ref}
-      >
+        ref={ref}>
         {children}
       </div>
     )
@@ -111,8 +111,7 @@ const SettingsPanelTrigger = ({state, toggleFn}: SettingsPanelTriggerProps) => {
         {'rotate-180': isExpanded},
       )}
       onClick={toggleFn}
-      aria-label={isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}
-    >
+      aria-label={isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}>
       <Icon
         name='sidebar'
         className={cn(

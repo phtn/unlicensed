@@ -3,13 +3,7 @@
 import {PrimaryTab, ToolbarButtonWrapper} from '../../components'
 
 export const AnalyticsToolbarTabs = () => (
-  <ToolbarButtonWrapper className='w-full flex-wrap justify-start gap-1 overflow-visible md:w-auto md:justify-end'>
-    <PrimaryTab
-      id='logs'
-      href='/admin/reports/analytics?tabId=logs'
-      icon='eye'
-      label='Logs'
-    />
+  <ToolbarButtonWrapper className='w-full flex-wrap justify-start gap-0 overflow-visible md:w-auto md:justify-end'>
     <PrimaryTab
       id='visitors'
       href='/admin/reports/analytics?tabId=visitors'
@@ -22,6 +16,13 @@ export const AnalyticsToolbarTabs = () => (
       icon='strength'
       label='Insights'
     />
+    <PrimaryTab
+      id='logs'
+      href='/admin/reports/analytics?tabId=logs'
+      icon='alert-triangle'
+      label='Logs'
+    />
+
     <PrimaryTab
       id='geo'
       href='/admin/reports/analytics?tabId=geo'

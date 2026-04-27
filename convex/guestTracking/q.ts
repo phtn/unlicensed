@@ -228,9 +228,15 @@ export const getVisitorGeoStats = query({
       (event) => event.createdAt >= since,
     )
     const visitsByUsState: Record<string, number> = {}
+    const visitsByCountry: Record<string, number> = {}
     let totalUnitedStatesVisits = 0
 
     for (const event of recentPageViewEvents) {
+      if (event.country) {
+        visitsByCountry[event.country] =
+          (visitsByCountry[event.country] ?? 0) + 1
+      }
+
       if (!isUnitedStatesCountry(event.country)) {
         continue
       }
@@ -246,8 +252,10 @@ export const getVisitorGeoStats = query({
     }
 
     return {
+      totalVisits: recentPageViewEvents.length,
       totalUnitedStatesVisits,
       visitsByUsState,
+      visitsByCountry,
     }
   },
 })

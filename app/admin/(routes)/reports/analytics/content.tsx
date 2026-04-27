@@ -5,9 +5,9 @@ import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {useMobile} from '@/hooks/use-mobile'
 import {useToggle} from '@/hooks/use-toggle'
 import {Suspense} from 'react'
-import {VisitorLogData} from './data'
 import {GeoPage} from './geo'
 import {InsightsPage} from './insights'
+import {LogsTable} from './logs-table'
 import {VisitorData} from './visitors'
 
 const ReportsContentInner = () => {
@@ -31,7 +31,11 @@ const ReportsContentInner = () => {
     case 'logs':
       return (
         <Suspense fallback={<div>Loading...</div>}>
-          <VisitorLogData />
+          <LogsTable
+            fullTable={_fullTable}
+            toggleFullTable={_toggleFullTable}
+            isMobile={_isMobile}
+          />
         </Suspense>
       )
     case 'visitors':
@@ -47,7 +51,7 @@ const ReportsContentInner = () => {
 export const Content = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MainWrapper className='border-t-0 px-0'>
+      <MainWrapper className='md:px-0'>
         <ReportsContentInner />
       </MainWrapper>
     </Suspense>

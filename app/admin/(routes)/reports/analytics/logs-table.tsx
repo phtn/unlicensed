@@ -1,84 +1,52 @@
 'use client'
 
-import { User } from '@/components/hero-v3/user'
-import { api } from '@/convex/_generated/api'
-import type { Doc } from '@/convex/_generated/dataModel'
-import { Icon, IconName } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { formatTimestamp } from '@/utils/date'
-import { toEmoji } from '@/utils/fingerprint'
+import {User} from '@/components/hero-v3/user'
+import {api} from '@/convex/_generated/api'
+import type {Doc} from '@/convex/_generated/dataModel'
+import {cn} from '@/lib/utils'
+import {formatTimestamp} from '@/utils/date'
+import {toEmoji} from '@/utils/fingerprint'
 import {
-    Card,
-    Table,
-    TableBody,
-    TableCell,
-    TableColumn,
-    TableHeader,
-    TableRow,
+  Card,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from '@heroui/react'
-import { useQuery } from 'convex/react'
-import React, { ReactNode } from 'react'
+import {useQuery} from 'convex/react'
+import React, {ReactNode} from 'react'
 
 type Log = Doc<'logs'> & {
   user?: {name: string; email: string; photoUrl?: string} | null
 }
 
 const columns = [
+  {name: 'STATUS', uid: 'status'},
+  {name: 'REQUEST', uid: 'request'},
+  {name: 'ERROR', uid: 'error'},
   {name: 'USER', uid: 'user'},
-  {name: 'DEVICE', uid: 'device'},
-  {name: 'OS', uid: 'os'},
-  {name: 'BROWSER', uid: 'browser'},
-  {name: 'IP ADDRESS', uid: 'ipAddress'},
-  {name: 'CITY', uid: 'city'},
+  {name: 'CLIENT', uid: 'client'},
   {name: 'COUNTRY', uid: 'country'},
-  {name: 'PATH', uid: 'path'},
-  {name: 'REFERRER', uid: 'referrer'},
   {name: 'TIME', uid: 'time'},
 ]
 
-const getDeviceIcon = (deviceType?: string): IconName => {
-  // Use eye icon for all device types since specific device icons don't exist
-  switch (deviceType) {
-    case 'mobile':
-      return 'phone'
-    case 'tablet':
-      return 'tablet'
-    case 'desktop':
-      return 'mac'
-    default:
-      return 'pc'
-  }
+const getErrorMessage = (log: Log): string | null => {
+  const meta = log.metadata
+  if (!meta) return null
+  const message =
+    meta.error ??
+    meta.message ??
+    meta.errorMessage ??
+    meta.statusMessage ??
+    null
+  if (message != null) return String(message).slice(0, 120)
+  const entries = Object.entries(meta).slice(0, 2)
+  return entries.length > 0
+    ? entries.map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
+    : null
 }
-
-// const getDeviceChipColor = (
-//   deviceType?: string,
-// ): ChipProps['color'] | undefined => {
-//   switch (deviceType) {
-//     case 'mobile':
-//       return 'primary'
-//     case 'tablet':
-//       return 'secondary'
-//     case 'desktop':
-//       return 'success'
-//     default:
-//       return 'default'
-//   }
-// }
-
-// const getLogTypeChipColor = (type: Log['type']): ChipProps['color'] => {
-//   switch (type) {
-//     case 'page_visit':
-//       return 'primary'
-//     case 'api_request':
-//       return 'secondary'
-//     case 'error':
-//       return 'danger'
-//     case 'action':
-//       return 'warning'
-//     default:
-//       return 'default'
-//   }
-// }
 
 interface LogsTableProps {
   fullTable: boolean
@@ -89,11 +57,60 @@ interface LogsTableProps {
 export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
   const logs = useQuery(api.logs.q.getLogs, {
     limit: 100,
-    type: 'page_visit',
+    type: 'error',
   })
 
   const renderCell = (log: Log, columnKey: React.Key) => {
     switch (columnKey) {
+      case 'status': {
+        const code = log.statusCode
+        const is5xx = code !== undefined && code >= 500
+        const is4xx = code !== undefined && code >= 400 && code < 500
+        return (
+          <div className='flex flex-col items-start'>
+            <span
+              className={cn(
+                'font-mono text-sm font-semibold',
+                is5xx
+                  ? 'text-red-500'
+                  : is4xx
+                    ? 'text-orange-400'
+                    : 'text-default-400',
+              )}>
+              {code ?? '—'}
+            </span>
+            {log.method && (
+              <span className='font-mono text-[10px] uppercase text-default-400'>
+                {log.method}
+              </span>
+            )}
+          </div>
+        )
+      }
+      case 'request':
+        return (
+          <div className='flex flex-col min-w-0'>
+            <p
+              className='truncate font-mono text-xs text-default-500'
+              title={log.path}>
+              {log.path}
+            </p>
+          </div>
+        )
+      case 'error': {
+        const message = getErrorMessage(log)
+        return (
+          <div className='flex flex-col min-w-0'>
+            {message ? (
+              <p className='truncate text-xs text-default-500' title={message}>
+                {message}
+              </p>
+            ) : (
+              <p className='text-xs text-default-300'>—</p>
+            )}
+          </div>
+        )
+      }
       case 'user':
         if (log.userId && 'user' in log && log.user) {
           const user = log.user as {
@@ -121,138 +138,30 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
             </div>
           )
         }
-        return (
-          <div className='flex items-center gap-2'>
-            <div className='flex flex-col'>
-              <p className='text-sm opacity-80'>Guest</p>
-            </div>
-          </div>
-        )
-      case 'device':
-        return (
-          <div className='flex items-center space-x-2'>
-            <Icon
-              name={getDeviceIcon(log.deviceType)}
-              className={cn(
-                'size-6 shrink-0',
-                log.deviceType === 'mobile'
-                  ? 'text-primary'
-                  : log.deviceType === 'tablet'
-                    ? 'text-secondary'
-                    : log.deviceType === 'desktop'
-                      ? 'text-success'
-                      : 'text-default-400',
-              )}
-            />
-            <div className=''>
-              <p className='text-sm capitalize'>
-                {log.deviceType || 'unknown'}
-              </p>
-              {log.screenWidth && log.screenHeight && (
-                <p className='text-xs opacity-50 font-space'>
-                  {log.screenWidth}
-                  <span className='text-xs px-px'>x</span>
-                  {log.screenHeight}
-                </p>
-              )}
-            </div>
-          </div>
-        )
-      case 'os':
+        return <p className='text-sm opacity-60'>Guest</p>
+      case 'client':
         return (
           <div className='flex flex-col'>
+            <p className='text-xs capitalize'>{log.browser ?? '—'}</p>
             {log.os && (
-              <>
-                <p className='text-sm capitalize'>{log.os}</p>
-                {log.osVersion && (
-                  <p className='text-xs opacity-50 font-space'>
-                    {log.osVersion}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        )
-      case 'browser':
-        return (
-          <div className='flex flex-col'>
-            {log.browser ? (
-              <>
-                <p className='text-sm capitalize'>{log.browser}</p>
-                {log.browserVersion && (
-                  <p className='text-xs opacity-50 font-space'>
-                    v{log.browserVersion}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className='text-bold text-tiny text-default-500'>—</p>
-            )}
-          </div>
-        )
-      case 'ipAddress':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-sm font-space opacity-80'>{log.ipAddress}</p>
-          </div>
-        )
-      case 'city':
-        return (
-          <div className='flex flex-col'>
-            {log.city && log.city !== 'null, null' && (
-              <p className='text-xs'>{log.city}</p>
+              <p className='text-xs capitalize opacity-50'>{log.os}</p>
             )}
           </div>
         )
       case 'country':
         return (
           <div className='flex flex-col'>
-            {log.country && log.country !== 'null null' && (
+            {log.country && log.country !== 'null null' ? (
               <p className='text-xs'>{toEmoji(log.country)}</p>
+            ) : (
+              <p className='text-xs text-default-300'>—</p>
             )}
           </div>
         )
-      case 'path':
-        return (
-          <div className='flex items-center gap-2'>
-            <div className='flex flex-col min-w-0'>
-              {log.method && (
-                <p className='font-bold text-tiny'>{log.method}</p>
-              )}
-              <p className='text-bold text-tiny text-default-400 truncate'>
-                {log.path}
-              </p>
-            </div>
-          </div>
-        )
-      case 'referrer':
-        if (log.referrer) {
-          try {
-            const referrerUrl = new URL(log.referrer)
-            const domain = referrerUrl.hostname
-            return (
-              <div className='flex flex-col min-w-0'>
-                <p className='text-bold text-small text-default-600 truncate'>
-                  {domain}
-                </p>
-                <p className='text-bold text-tiny text-default-400 truncate'>
-                  {referrerUrl.pathname}
-                </p>
-              </div>
-            )
-          } catch {
-            return (
-              <p className='text-bold text-small text-default-600 truncate'>
-                {log.referrer}
-              </p>
-            )
-          }
-        }
-        return <p className='text-bold text-tiny text-default-400'>Direct</p>
       case 'time':
         return (
           <div className='flex flex-col font-space'>
-            <p className='text-sm opacity-80 whitespace-nowrap'>
+            <p className='whitespace-nowrap text-sm opacity-80'>
               {formatTimestamp(log.createdAt)}
             </p>
             {log.responseTime && (
@@ -267,9 +176,9 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
 
   if (logs === undefined) {
     return (
-      <Card className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/10 rounded-none'>
         <div className='flex items-center justify-center py-8'>
-          <p className='text-sm text-gray-400'>Loading logs...</p>
+          <p className='text-sm text-gray-400'>Loading error logs...</p>
         </div>
       </Card>
     )
@@ -277,12 +186,12 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
 
   if (logs.logs.length === 0) {
     return (
-      <Card className='p-4 dark:bg-dark-table/60'>
-        <h2 className='text-lg font-semibold font-space mb-4 px-4'>
-          Visit Logs
+      <Card className='p-4 dark:bg-dark-table/0 rounded-none'>
+        <h2 className='mb-4 px-4 font-space text-lg font-semibold'>
+          Error Logs
         </h2>
         <div className='flex items-center justify-center py-8'>
-          <p className='text-sm text-gray-400'>No logs yet</p>
+          <p className='text-sm text-gray-400'>No errors recorded</p>
         </div>
       </Card>
     )
@@ -294,20 +203,14 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
         'w-full max-w-full overflow-hidden bg-light-table/0 dark:bg-dark-table/40 md:w-full md:rounded-t-2xl',
         'transition-transform duration-300',
         {'md:-translate-y-46 -translate-y-42 h-full': fullTable},
-      )}
-    >
-      <div
-        className={cn(
-          'h-lvh overflow-auto transition-transform duration-300 md:h-[calc(100lvh-64px)]',
-        )}
-      >
-        <Table aria-label='Visit logs table' className='min-w-232'>
+      )}>
+      <div className='h-lvh overflow-auto transition-transform duration-300 md:h-[calc(100lvh-64px)]'>
+        <Table aria-label='Error logs table' className='min-w-232'>
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
                 key={column.uid}
-                className='tracking-wider text-xs font-medium sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table'
-              >
+                className='sticky top-0 z-10 h-8 border-b border-gray-200 bg-white/60 text-xs font-medium tracking-wider backdrop-blur-xl first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] dark:border-dark-table dark:bg-dark-table/5'>
                 <div className='drop-shadow-xs'>{column.name}</div>
               </TableColumn>
             )}
@@ -316,8 +219,7 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
             {(log) => (
               <TableRow
                 key={log._id as string}
-                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'
-              >
+                className='h-8 border-b-[0.33px] border-b-light-table last:border-b-0 hover:bg-light-table/60 dark:border-b-dark-table dark:hover:bg-origin/40'>
                 {(columnKey) => (
                   <TableCell>
                     {

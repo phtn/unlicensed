@@ -250,7 +250,7 @@ const SidebarTrigger = memo(function SidebarTrigger({
       )}
       onClick={toggleSidebar}>
       <Icon
-        name='sidebar-simple'
+        name='sidebar-left'
         className={cn(
           'size-5 opacity-90 dark:opacity-70 group-hover:opacity-100',
         )}
