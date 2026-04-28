@@ -746,7 +746,7 @@ export function BundleBuilder({
           </div>
         </div>
       </Card.Header>
-      <Card.Content className='px-0 pb-0 border-t md:px-1 dark:bg-dark-table/20'>
+      <Card.Content className='px-0 pb-0 border-t md:px-1 dark:bg-dark-table/20 min-h-80.25'>
         {!isAvailabilityLoading && (
           <div className='grid gap-1 sm:gap-0 sm:grid-cols-2 lg:grid-cols-3 max-h-80 overflow-y-auto'>
             {filteredProducts.map((product) => {
