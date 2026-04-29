@@ -449,8 +449,11 @@ export const fetchStorageUrlMap = async (
         (value): value is string =>
           typeof value === 'string' &&
           value.length > 0 &&
-          !value.startsWith('http') &&
-          !value.startsWith('data:'),
+          !value.startsWith('http://') &&
+          !value.startsWith('https://') &&
+          !value.startsWith('/') &&
+          !value.startsWith('data:') &&
+          !value.startsWith('blob:'),
       ),
     ),
   )

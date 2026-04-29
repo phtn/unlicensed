@@ -31,7 +31,11 @@ const TIER_AURA_CLASSNAME: Record<string, string> = {
 
 const ProgressBar = memo(function ProgressBar({pct}: {pct: number}) {
   return (
-    <div className='h-2 overflow-hidden rounded-full bg-foreground/5 dark:bg-foreground/20 mb-2 md:my-2.5'>
+    <div className='relative h-2 rounded-full bg-foreground/5 dark:bg-foreground/20 mb-2 md:my-2.5'>
+      <div
+        className='absolute h-full rounded-full bg-linear-to-r from-pink-400/60 via-pink-300/80 to-pink-200 backdrop-blur-sm transition-[width] duration-500 ease-in-out'
+        style={{width: `${pct}%`}}
+      />
       <div
         className='h-full rounded-full bg-linear-to-r from-pink-500/80 via-pink-500/90 to-brand shadow-[0_0_8px_var(--color-brand)] transition-[width] duration-500 ease-in-out'
         style={{width: `${pct}%`}}
@@ -50,14 +54,15 @@ const TierBadge = memo(function TierBadge({
   return (
     <span
       className={cn(
-        'inline-block rounded-full px-2.5 py-1 text-[10px] font-polysans font-semibold uppercase tracking-wider',
+        'inline-block rounded-xl px-2 py-1 text-[10px] font-polysans font-bold uppercase tracking-wide',
         active
           ? 'bg-linear-to-r bg-slate-950 text-white'
-          : 'border border-foreground/20 bg-foreground/5 text-muted-foreground',
+          : 'bg-foreground/5 text-foreground/70',
         {
-          'text-slate-200/95': label === 'Silver',
-          'text-yellow-200/95': label === 'Gold',
-          'text-cyan-100/95': label === 'Platinum',
+          'text-slate-200': label === 'Silver',
+          'text-yellow-300': label === 'Gold',
+          'text-cyan-100': label === 'Platinum',
+          'text-pink-100': label === 'Diamond',
         },
       )}>
       {label}
@@ -192,15 +197,16 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
       <Card.Content className='relative space-y-2 p-2 md:p-4 lg:p-5 overflow-hidden'>
         {/* Tier row */}
         <div className='flex items-center justify-between overflow-hidden'>
-          <span className='font-polysans font-semibold text-lg select-none'>
+          <span className='font-polysans text-lg select-none'>
             You&apos;re getting right now
           </span>
-          <div className='flex items-center gap-1 md:gap-2 overflow-hidden'>
+          <div className='flex items-center gap-1 overflow-hidden'>
             <TierBadge label={r.currentTier.label} active />
             {r.isBundleBonusActive && (
-              <p className='flex rounded-full bg-amber-950 dark:bg-slate-950 px-2 py-0.5 text-[11px] font-semibold text-white whitespace-nowrap'>
+              <p className='flex rounded-full bg-light-brand/20 dark:bg-brand/20 px-2 py-0.75 text-[10px] font-medium dark:text-white whitespace-nowrap'>
                 +0.5%{' '}
-                <span className='hidden md:flex md:px-1'>Bundle Bonus</span> ✦
+                <span className='hidden md:flex md:px-0.75'>Bundle Bonus</span>{' '}
+                ✦
               </p>
             )}
           </div>
@@ -220,14 +226,14 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                   formatRewardsCurrency(r.shippingCost)
                 )}
               </div>
-              <div className='text-[11px] text-muted-foreground'>Shipping</div>
+              <div className='text-[11px] text-foreground/70'>Shipping</div>
             </div>
             <div className='h-full w-px bg-foreground/20' />
             <div className='text-center'>
               <div className='text-lg font-bold text-foreground dark:text-foreground'>
                 {r.cashBackPct}%
               </div>
-              <div className='text-[11px] text-muted-foreground'>Cash back</div>
+              <div className='text-[11px] text-foreground/70'>Cash back</div>
             </div>
             <div className='h-full w-px bg-foreground/20' />
 
@@ -243,9 +249,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 />
                 {/*{formatRewardsCurrency(r.cashBackAmount)}*/}
               </div>
-              <div className='text-[11px] text-muted-foreground'>
-                Store credit
-              </div>
+              <div className='text-[11px] text-foreground/70'>Store credit</div>
             </div>
 
             <div className='h-full w-px bg-foreground/20' />
@@ -253,7 +257,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
               <div className='text-lg font-bold text-foreground dark:text-foreground'>
                 {r.uniqueCategories}
               </div>
-              <div className='text-[11px] text-muted-foreground'>
+              <div className='text-[11px] text-foreground/70'>
                 Categor{r.uniqueCategories === 1 ? 'y' : 'ies'}
               </div>
             </div>
@@ -283,7 +287,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 </ShimmerText>
               </span>
             </div>
-            <div className='text-sm font-medium text-foreground/90 dark:text-foreground'>
+            <div className='font-medium text-foreground/90 dark:text-foreground text-sm tracking-wider'>
               {r.nextTier.shippingCost === 0
                 ? 'Free shipping'
                 : `${formatRewardsCurrency(r.nextTier.shippingCost)} shipping`}{' '}

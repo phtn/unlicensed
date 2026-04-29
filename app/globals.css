@@ -435,12 +435,35 @@
     animation-timing-function: linear;
   }
 
+  ::view-transition-group(.cart-drawer-item) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-group(.cart-drawer-item-shift) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   ::view-transition-image-pair(.cart-cash-back-applied) {
+    isolation: isolate;
+  }
+
+  ::view-transition-image-pair(.cart-drawer-item),
+  ::view-transition-image-pair(.cart-drawer-item-shift) {
     isolation: isolate;
   }
 
   ::view-transition-old(.cart-cash-back-applied),
   ::view-transition-new(.cart-cash-back-applied) {
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(.cart-drawer-item),
+  ::view-transition-new(.cart-drawer-item),
+  ::view-transition-old(.cart-drawer-item-shift),
+  ::view-transition-new(.cart-drawer-item-shift) {
+    animation-duration: 220ms;
     mix-blend-mode: normal;
   }
 
@@ -458,11 +481,26 @@
     animation: cart-cash-back-exit 180ms linear both;
   }
 
+  ::view-transition-new(.cart-drawer-item) {
+    animation: cart-drawer-item-enter 220ms cubic-bezier(0.22, 1, 0.36, 1)
+      both;
+  }
+
+  ::view-transition-old(.cart-drawer-item) {
+    animation: cart-drawer-item-exit 180ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     ::view-transition-group(.cart-cash-back-applied),
     ::view-transition-group(.cart-summary-follow-shift),
+    ::view-transition-group(.cart-drawer-item),
+    ::view-transition-group(.cart-drawer-item-shift),
     ::view-transition-old(.cart-cash-back-applied),
     ::view-transition-new(.cart-cash-back-applied),
+    ::view-transition-old(.cart-drawer-item),
+    ::view-transition-new(.cart-drawer-item),
+    ::view-transition-old(.cart-drawer-item-shift),
+    ::view-transition-new(.cart-drawer-item-shift),
     ::view-transition-old(.cart-summary-follow-shift),
     ::view-transition-new(.cart-summary-follow-shift) {
       animation-duration: 1ms;
@@ -478,6 +516,28 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes cart-drawer-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cart-drawer-item-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
   }
 }
 

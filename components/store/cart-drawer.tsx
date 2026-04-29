@@ -135,10 +135,13 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   // (e.g., products deleted or invalid IDs). In that case, show empty cart, not loading.
   const isStillLoading = isLoading && !hasItems
 
-  const applyOptimisticCartAction = (action: OptimisticAction) => {
-    if (!isAuthenticated) return
-    setOptimisticCartItems(action)
-  }
+  const applyOptimisticCartAction = useCallback(
+    (action: OptimisticAction) => {
+      if (!isAuthenticated) return
+      setOptimisticCartItems(action)
+    },
+    [isAuthenticated, setOptimisticCartItems],
+  )
 
   // Calculate optimistic cart item count
   const optimisticCartItemCount = useMemo(() => {

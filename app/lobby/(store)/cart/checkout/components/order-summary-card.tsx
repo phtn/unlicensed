@@ -240,7 +240,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             </div>
 
             {isAuthenticated && (
-              <div className='space-y-0 mt-2 rounded-sm border border-foreground/10 dark:bg-foreground/5 bg-foreground/2 overflow-hidden'>
+              <div className='space-y-0 mt-2 rounded-sm border border-foreground/20 dark:bg-foreground/5 bg-foreground/2 overflow-hidden'>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center justify-between w-full p-3 md:px-4'>
                     <p className='font-polysans text-base md:tracking-wide leading-none'>

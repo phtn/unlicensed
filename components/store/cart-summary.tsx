@@ -89,7 +89,7 @@ export const CartSummary = memo(function CartSummary({
           <span className='text-lg font-medium'>Subtotal</span>
           <span className='flex flex-col items-end'>
             {saleSavingsCents > 0 ? (
-              <span className='text-sm font-medium text-foreground/45 line-through decoration-foreground/60 decoration-2'>
+              <span className='font-medium text-foreground/60 text-base line-through decoration-foreground decoration-1'>
                 ${formatPrice(regularSubtotal)}
               </span>
             ) : null}
@@ -99,10 +99,10 @@ export const CartSummary = memo(function CartSummary({
           </span>
         </div>
         {saleSavingsCents > 0 ? (
-          <div className='flex justify-between px-2 text-terpenes dark:text-light-brand'>
-            <span className='text-sm font-medium'>Sale savings</span>
-            <span className='text-sm font-medium'>
-              -${formatPrice(saleSavingsCents)}
+          <div className='flex justify-between px-2 dark:text-light-brand'>
+            <span className='font-medium text-base'>Sale savings</span>
+            <span className='font-medium text-base text-terpenes'>
+              ${formatPrice(saleSavingsCents)}
             </span>
           </div>
         ) : null}

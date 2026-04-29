@@ -190,7 +190,10 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   areStringArraysEqual(left.brand, right.brand) &&
   arePriceMapsEqual(left.stockByDenomination, right.stockByDenomination) &&
   arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination) &&
-  arePriceMapsEqual(left.salePriceByDenomination, right.salePriceByDenomination) &&
+  arePriceMapsEqual(
+    left.salePriceByDenomination,
+    right.salePriceByDenomination,
+  ) &&
   areNumberArraysEqual(left.popularDenomination, right.popularDenomination)
 
 const isRenderableImageSrc = (value: string | null | undefined) =>
@@ -249,6 +252,11 @@ const ProductPrice = ({option, variant}: ProductPriceProps) => {
   )
 }
 
+// const specialBrands = {
+//   plug: 'PlugPlay',
+//   coldfire: 'ColdFire',
+// }
+
 const ProductCardComponent = ({
   product,
   imageUrl: imageUrlProp,
@@ -284,14 +292,21 @@ const ProductCardComponent = ({
     const candidateFour = allPriceOptions.slice(0, 4)
 
     if (popularDenomSet.size > 0 && candidateFour.length > 0) {
-      const candidateValues = new Set(candidateFour.map((o) => o.denominationValue))
+      const candidateValues = new Set(
+        candidateFour.map((o) => o.denominationValue),
+      )
       const popularOutside = allPriceOptions.find(
-        (o) => popularDenomSet.has(o.denominationValue) && !candidateValues.has(o.denominationValue),
+        (o) =>
+          popularDenomSet.has(o.denominationValue) &&
+          !candidateValues.has(o.denominationValue),
       )
       if (popularOutside) {
         let smallestIdx = 0
         for (let i = 1; i < candidateFour.length; i += 1) {
-          if (candidateFour[i].denominationValue < candidateFour[smallestIdx].denominationValue) {
+          if (
+            candidateFour[i].denominationValue <
+            candidateFour[smallestIdx].denominationValue
+          ) {
             smallestIdx = i
           }
         }
