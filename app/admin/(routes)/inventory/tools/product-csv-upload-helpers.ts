@@ -27,6 +27,14 @@ export type ImportRowError = {
   message: string
 }
 
+export type PriceOverrideWarning = {
+  rowIndex: number
+  slug?: string
+  denominationKey: string
+  mapPrice: number
+  headerPrice: number
+}
+
 /** CSV column order for preview: #, ...file headers (excluding _id, _creationTime), Status */
 export function getPreviewColumns(
   fileParseResult: ParseResult | null,
@@ -255,6 +263,51 @@ export function seedDefaultDenominationStock(
   ]
 
   return {...parseResult, headers, rows}
+}
+
+export function getPriceOverrideWarnings(
+  rows: ParsedRow[],
+): PriceOverrideWarning[] {
+  return rows.flatMap((row) => {
+    const mapPrices = parseNumericRecord(row.raw.priceByDenomination)
+    if (Object.keys(mapPrices).length === 0) {
+      return []
+    }
+
+    const slug =
+      typeof row.product.slug === 'string' && row.product.slug.trim()
+        ? row.product.slug.trim()
+        : typeof row.product.name === 'string' && row.product.name.trim()
+          ? slugify(row.product.name)
+          : undefined
+
+    return CSV_DENOM_KEYS.flatMap((denominationKey) => {
+      const rawHeaderValue = row.raw[`price_${denominationKey}`]
+      const parsedHeaderPrice = Number(rawHeaderValue)
+      const headerPrice = Number.isFinite(parsedHeaderPrice)
+        ? parsedHeaderPrice
+        : undefined
+      const mapPrice = mapPrices[denominationKey]
+
+      if (
+        headerPrice === undefined ||
+        mapPrice === undefined ||
+        headerPrice === mapPrice
+      ) {
+        return []
+      }
+
+      return [
+        {
+          rowIndex: row.rowIndex,
+          slug,
+          denominationKey,
+          mapPrice,
+          headerPrice,
+        },
+      ]
+    })
+  })
 }
 
 export function getPreviewCellIssue(

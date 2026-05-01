@@ -3,6 +3,7 @@
 
 import type {StoreProduct} from '@/app/types'
 import type {Id} from '@/convex/_generated/dataModel'
+import {formatBrandLabel} from '@/lib/format-brand-label'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
@@ -119,7 +120,7 @@ const ProductCardGlassComponent = ({
     tierLabel,
   } = useMemo(() => {
     const brandLabel = product.brand
-      ? product.brand.map((brand) => brand.split('-').join(' ')).join(', ')
+      ? product.brand.map((brand) => formatBrandLabel(brand)).join(', ')
       : ''
     const firstThreeOptions =
       priceOptionsFromDenomination(

@@ -3,6 +3,7 @@
 import type {StoreProduct} from '@/app/types'
 import NextImage from '@/components/ui/app-image'
 import type {Id} from '@/convex/_generated/dataModel'
+import {formatBrandLabel} from '@/lib/format-brand-label'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
@@ -252,11 +253,6 @@ const ProductPrice = ({option, variant}: ProductPriceProps) => {
   )
 }
 
-// const specialBrands = {
-//   plug: 'PlugPlay',
-//   coldfire: 'ColdFire',
-// }
-
 const ProductCardComponent = ({
   product,
   imageUrl: imageUrlProp,
@@ -276,7 +272,7 @@ const ProductCardComponent = ({
     tierLabel,
   } = useMemo(() => {
     const brandLabel = product.brand
-      ? product.brand.map((brand) => brand.split('-').join(' ')).join(', ')
+      ? product.brand.map((brand) => formatBrandLabel(brand)).join(', ')
       : ''
     const allPriceOptions =
       priceOptionsFromDenomination(

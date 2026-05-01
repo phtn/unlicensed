@@ -1,6 +1,6 @@
 export const getInitials = (label?: string | null) => {
   if (!label) {
-    return '??'
+    return 'US'
   }
 
   const parts = label

@@ -19,6 +19,7 @@ import {
 } from '../product/csv-import/lib'
 import {
   buildRowsWithConflicts,
+  getPriceOverrideWarnings,
   getPreviewCellIssue,
   getPreviewColumns,
   getRowPreviewIssues,
@@ -236,6 +237,10 @@ export function ProductCsvUpload() {
       }),
     [displayRows, previewColumns],
   )
+  const priceOverrideWarnings = useMemo(
+    () => getPriceOverrideWarnings(displayRows),
+    [displayRows],
+  )
   const {open: sidebarOpen} = useSidebar()
 
   return (
@@ -430,6 +435,49 @@ export function ProductCsvUpload() {
                       <span>{issue.slug ?? 'No slug'}</span>
                       <span className='px-2 opacity-80'>-</span>
                       <span>{issue.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {priceOverrideWarnings.length > 0 && (
+              <Card className='rounded-md border border-amber-200 bg-amber-50/70 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/20'>
+                <p className='flex items-center space-x-1 text-sm font-medium text-amber-900 dark:text-amber-200'>
+                  <Icon name='alert-circle' className='size-4' />
+                  <span>Price column override warning</span>
+                </p>
+                <p className='mt-2 text-sm text-amber-800 dark:text-amber-300'>
+                  When both <code>priceByDenomination</code> and{" "}
+                  <code>price_*</code> columns are present, the importer uses
+                  the <code>price_*</code> values.
+                </p>
+                <ul className='mt-3 space-y-1 text-sm text-amber-800 dark:text-amber-300'>
+                  {priceOverrideWarnings.map((warning) => (
+                    <li
+                      key={`${warning.rowIndex}-${warning.slug ?? 'no-slug'}-${warning.denominationKey}`}
+                    >
+                      <Chip
+                        size='sm'
+                        className='rounded-sm bg-amber-500 text-white'
+                      >
+                        Row {warning.rowIndex}
+                      </Chip>
+                      <Chip
+                        size='sm'
+                        className='ms-2 rounded-sm bg-cyan-500/85 text-white dark:bg-cyan-500'
+                      >
+                        price_{warning.denominationKey}
+                      </Chip>
+                      <span className='ms-2'>
+                        {warning.slug ?? 'No slug'}
+                      </span>
+                      <span className='px-2 opacity-80'>-</span>
+                      <span>
+                        importing {warning.headerPrice} cents instead of{' '}
+                        {warning.mapPrice} cents from{' '}
+                        <code>priceByDenomination</code>
+                      </span>
                     </li>
                   ))}
                 </ul>
