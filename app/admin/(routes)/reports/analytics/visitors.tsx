@@ -215,7 +215,9 @@ function ActivityList({
             const metadata = formatEventMetadata(event)
 
             return (
-              <div className='flex items-center '>
+              <div
+                key={event._creationTime.toString(36)}
+                className='flex items-center '>
                 <div
                   key={event._id}
                   className='flex flex-col rounded-sm border border-foreground/15 bg-background/70 px-2 py-2 w-full'>

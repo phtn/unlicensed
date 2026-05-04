@@ -1,3 +1,4 @@
+import {uuidv7} from 'uuidv7'
 export const GUEST_VISITOR_ID_COOKIE_NAME = 'rapidfire_guest_visitor_id'
 export const GUEST_VISITOR_ID_STORAGE_KEY = 'rapidfire:guestVisitorId'
 export const GUEST_TRACKING_OPT_OUT_STORAGE_KEY =
@@ -8,12 +9,7 @@ const getCookieString = () =>
   typeof document === 'undefined' ? '' : document.cookie
 
 export function createGuestVisitorId() {
-  const randomId =
-    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-      ? crypto.randomUUID()
-      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
-
-  return `gv_${randomId}`
+  return `gv_${uuidv7()}`
 }
 
 export function normalizeGuestVisitorId(visitorId?: string | null) {

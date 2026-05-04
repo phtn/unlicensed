@@ -1,16 +1,16 @@
 import {api} from '@/convex/_generated/api'
-import {firebaseSessionCookieName} from '@/lib/firebase/session'
 import {verifyFirebaseSessionCookie} from '@/lib/firebase/server-auth'
+import {firebaseSessionCookieName} from '@/lib/firebase/session'
 import {ConvexHttpClient} from 'convex/browser'
-import {createHmac} from 'node:crypto'
 import {NextRequest, NextResponse} from 'next/server'
+import {createHmac} from 'node:crypto'
 import z from 'zod'
 
 export const runtime = 'nodejs'
 
 const metadataValueSchema = z.union([
   z.string().max(500),
-  z.number().finite(),
+  z.number(),
   z.boolean(),
   z.null(),
 ])
