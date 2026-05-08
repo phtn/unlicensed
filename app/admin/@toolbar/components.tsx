@@ -134,7 +134,7 @@ export const ToolbarButtonWrapper = ({
   return (
     <div
       className={cn(
-        'flex min-w-0 items-center gap-1 overflow-x-auto text-base md:gap-4 md:overflow-visible',
+        'flex min-w-0 items-center gap-1 overflow-x-auto text-base md:gap-4 md:overflow-visible md:px-3',
         className,
       )}>
       {children}

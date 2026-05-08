@@ -24,7 +24,7 @@ const CategoryContentInner = () => {
         <PageTitle>Categories</PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
+            'px-1 h-6 min-w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold ml-2',
             {
               'bg-emerald-500 dark:bg-emerald-500/80 text-white':
                 isCategoryRoute,

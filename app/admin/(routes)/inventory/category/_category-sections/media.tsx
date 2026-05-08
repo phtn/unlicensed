@@ -4,12 +4,21 @@ import {LegacyImage as Image} from '@/components/ui/legacy-image'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Drawer, DrawerContent, DrawerHeader} from '@heroui/react'
+import {PrimaryImageConverterModal} from '@/app/admin/(routes)/inventory/product/primary-image-converter-modal'
+import {Button, Drawer} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
-import {useCallback, useMemo, useState} from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react'
 import {CategoryFormApi, CategoryFormValues} from '../category-schema'
+import {extractImageDetails, normalizeTag, titleCaseTag} from '../../helpers'
 import {FormSection, Header} from './components'
 
 interface MediaProps {
@@ -30,20 +39,18 @@ type TagGalleryGroup = {
   }>
 }
 
-const normalizeTag = (value: string) => value.trim().toLowerCase()
-
-const titleCaseTag = (value: string) =>
-  value
-    .replace(/[-_]+/g, ' ')
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() + part.slice(1))
-    .join(' ')
-
 export const Media = ({form}: MediaProps) => {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false)
+  const [isConverterOpen, setIsConverterOpen] = useState(false)
+  const [converterSourceFile, setConverterSourceFile] = useState<File | null>(
+    null,
+  )
   const [tagSearch, setTagSearch] = useState('')
   const [activeTag, setActiveTag] = useState<string | null>(null)
+  const [uploadedPreviewById, setUploadedPreviewById] = useState<
+    Record<string, string>
+  >({})
+  const libraryUploadInputRef = useRef<HTMLInputElement>(null)
 
   const heroImageValue = useStore(
     form.store as ReadonlyStore<FormStoreState>,
@@ -53,6 +60,17 @@ export const Media = ({form}: MediaProps) => {
   const categorySlug = useStore(
     form.store as ReadonlyStore<FormStoreState>,
     (state: FormStoreState) => (state.values.slug as string) ?? '',
+  )
+
+  const categoryName = useStore(
+    form.store as ReadonlyStore<FormStoreState>,
+    (state: FormStoreState) => (state.values.name as string) ?? '',
+  )
+
+  const categoryBrands = useStore(
+    form.store as ReadonlyStore<FormStoreState>,
+    (state: FormStoreState) =>
+      (state.values.brands ?? []).map((brand) => brand.name).filter(Boolean),
   )
 
   const libraryResponse = useQuery(api.files.upload.listImageGalleriesByTag, {
@@ -77,8 +95,14 @@ export const Media = ({form}: MediaProps) => {
       }
     }
 
+    for (const [storageId, url] of Object.entries(uploadedPreviewById)) {
+      if (url) {
+        map.set(storageId, url)
+      }
+    }
+
     return map
-  }, [allTaggedGroups])
+  }, [allTaggedGroups, uploadedPreviewById])
 
   const resolvePreview = useCallback(
     (storageId: string) => {
@@ -155,6 +179,68 @@ export const Media = ({form}: MediaProps) => {
   const clearHeroImage = useCallback(() => {
     form.setFieldValue('heroImage', '')
   }, [form])
+
+  const openDrawerUploadPicker = useCallback(() => {
+    if (!libraryUploadInputRef.current) {
+      return
+    }
+
+    libraryUploadInputRef.current.value = ''
+    libraryUploadInputRef.current.click()
+  }, [])
+
+  const handleDrawerUploadSelection = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const nextFile = event.target.files?.[0]
+      event.target.value = ''
+
+      if (!nextFile) {
+        return
+      }
+
+      setConverterSourceFile(nextFile)
+      setIsLibraryOpen(false)
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (isLibraryOpen || !converterSourceFile || isConverterOpen) {
+      return
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      setIsConverterOpen(true)
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [converterSourceFile, isConverterOpen, isLibraryOpen])
+
+  const handleConverterOpenChange = useCallback((isOpen: boolean) => {
+    setIsConverterOpen(isOpen)
+
+    if (!isOpen) {
+      setConverterSourceFile(null)
+    }
+  }, [])
+
+  const handleConvertedLibraryUpload = useCallback(
+    ({storageId, url}: {storageId: string; url: string | null}) => {
+      if (url) {
+        setUploadedPreviewById((current) => ({
+          ...current,
+          [storageId]: url,
+        }))
+      }
+
+      form.setFieldValue('heroImage', storageId)
+      setConverterSourceFile(null)
+      setIsConverterOpen(false)
+    },
+    [form],
+  )
 
   const heroPreview = resolvePreview(heroImageValue)
 
@@ -233,150 +319,205 @@ export const Media = ({form}: MediaProps) => {
         </div>
       </FormSection>
 
-      <Drawer
-        isOpen={isLibraryOpen}
-        onOpenChange={(isOpen) => setIsLibraryOpen(isOpen)}>
-        <DrawerContent className='max-w-6xl bg-background p-0'>
-          <DrawerHeader className='border-b border-foreground/10'>
-            <div className='flex w-full items-center justify-between gap-3'>
-              <div className='space-y-0.5'>
-                <p className='text-sm font-semibold uppercase tracking-[0.08em] text-blue-500'>
-                  Media Library
-                </p>
-                <p className='text-sm text-foreground/70'>
-                  Choose one image for the hero slot.
-                </p>
-              </div>
-              <Button
-                size='sm'
-                variant='tertiary'
-                onPress={() => setIsLibraryOpen(false)}>
-                Done
-              </Button>
-            </div>
-          </DrawerHeader>
-
-          <div className='grid h-[calc(100vh-8rem)] grid-cols-1 gap-4 p-4 md:grid-cols-[260px_1fr]'>
-            <aside className='rounded-xl border border-foreground/10 bg-background/80 p-3'>
-              <div className='space-y-2'>
-                <label className='text-xs font-medium uppercase tracking-widest opacity-70'>
-                  Gallery Tags
-                </label>
-                <input
-                  value={tagSearch}
-                  onChange={(event) => setTagSearch(event.target.value)}
-                  placeholder='Search tags'
-                  className='w-full rounded-lg border border-foreground/20 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500'
-                />
-              </div>
-
-              <div className='mt-3 max-h-[calc(100vh-16rem)] space-y-1 overflow-y-auto pr-1'>
-                {filteredTagGroups.map((group) => {
-                  const isActive = activeGroup?.tag === group.tag
-                  return (
-                    <button
-                      key={group.tag}
-                      type='button'
-                      onClick={() => setActiveTag(group.tag)}
-                      className={cn(
-                        'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm transition-colors',
-                        isActive
-                          ? 'bg-blue-500/10 text-blue-500'
-                          : 'hover:bg-foreground/5',
-                      )}>
-                      <span className='truncate'>
-                        {titleCaseTag(group.tag)}
-                      </span>
-                      <span className='rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]'>
-                        {group.total}
-                      </span>
-                    </button>
-                  )
-                })}
-
-                {filteredTagGroups.length === 0 ? (
-                  <div className='rounded-lg border border-dashed border-foreground/20 px-3 py-4 text-xs text-foreground/60'>
-                    No tagged gallery images found.
+      <Drawer isOpen={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
+        <Drawer.Backdrop variant='transparent'>
+          <Drawer.Content placement='right'>
+            <Drawer.Dialog className='w-full max-w-6xl bg-transparent p-0 shadow-none'>
+              <Drawer.Header className='h-6 mt-2'>
+                <div className='flex w-full items-center justify-between px-4'>
+                  <div className='flex items-center space-x-4'>
+                    <p className='rounded-md bg-foreground/15 px-3 py-1 font-polysans text-sm capitalize tracking-wide text-mac-blue backdrop-blur-3xl'>
+                      Media Library
+                    </p>
+                    <input
+                      ref={libraryUploadInputRef}
+                      type='file'
+                      accept='image/*'
+                      className='hidden'
+                      onChange={handleDrawerUploadSelection}
+                    />
+                    <Button
+                      size='sm'
+                      variant='outline'
+                      className='rounded-md bg-white/80 font-semibold text-dark-table'
+                      onPress={openDrawerUploadPicker}>
+                      Upload Image
+                    </Button>
                   </div>
-                ) : null}
-              </div>
-            </aside>
-
-            <section className='rounded-xl border border-foreground/10 bg-background/80 p-3 md:p-4'>
-              {activeGroup ? (
-                <>
-                  <div className='mb-3 flex items-center justify-between'>
-                    <div>
-                      <h3 className='text-base font-semibold'>
-                        {titleCaseTag(activeGroup.tag)}
-                      </h3>
-                      <p className='text-xs opacity-70'>
-                        {activeGroup.total} tagged image
-                        {activeGroup.total === 1 ? '' : 's'}
-                      </p>
-                    </div>
-                    {preferredTagFromCategory &&
-                    preferredTagFromCategory === activeGroup.tag ? (
-                      <span className='rounded bg-blue-500/10 px-2 py-1 text-[11px] font-medium text-blue-500'>
-                        Matches category
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className='grid max-h-[calc(100vh-16rem)] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 lg:grid-cols-4'>
-                    {activeGroup.items.map((item) => {
-                      const isSelected = item.storageId === heroImageValue
-
-                      return (
-                        <button
-                          key={item.storageId}
-                          type='button'
-                          onClick={() => selectLibraryImage(item.storageId)}
-                          className={cn(
-                            'group relative overflow-hidden rounded-xl border-2 text-left transition-all',
-                            {
-                              'border-blue-500 ring-2 ring-blue-500/40':
-                                isSelected,
-                              'border-foreground/20 hover:border-foreground/40':
-                                !isSelected,
-                            },
-                          )}>
-                          {item.url ? (
-                            <Image
-                              src={item.url}
-                              alt={item.caption ?? item.storageId}
-                              radius='none'
-                              className='aspect-square w-full object-cover'
-                            />
-                          ) : (
-                            <div className='flex aspect-square w-full items-center justify-center bg-foreground/5 text-foreground/50'>
-                              <Icon name='image-open-light' />
-                            </div>
-                          )}
-
-                          <div className='absolute inset-x-0 bottom-0 truncate bg-black/50 px-2 py-1 text-[10px] text-white'>
-                            {item.caption?.trim() || item.storageId}
-                          </div>
-
-                          {isSelected ? (
-                            <div className='absolute left-1.5 top-1.5 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-medium uppercase text-white'>
-                              Selected
-                            </div>
-                          ) : null}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </>
-              ) : (
-                <div className='flex h-full items-center justify-center rounded-lg border border-dashed border-foreground/20 text-sm text-foreground/60'>
-                  Choose a tag to view gallery images.
+                  <Button
+                    size='sm'
+                    variant='tertiary'
+                    onPress={() => setIsLibraryOpen(false)}
+                    className='rounded bg-foreground/50 px-2 py-1 text-white'>
+                    <Icon name='x' className='text-xl' />
+                  </Button>
                 </div>
-              )}
-            </section>
-          </div>
-        </DrawerContent>
+              </Drawer.Header>
+
+              <Drawer.Body className='bg-transparent! p-0 text-foreground'>
+                <div className='grid h-[calc(100vh-8rem)] grid-cols-1 p-4 md:grid-cols-[200px_1fr]'>
+                  <aside className='min-h-0 rounded-s-xl border border-slate-400 bg-slate-800/20 p-4 backdrop-blur-lg dark:border-background/80 dark:bg-dark-table/50 md:max-h-[88vh]'>
+                    <div className='space-y-2'>
+                      <input
+                        value={tagSearch}
+                        onChange={(event) => setTagSearch(event.target.value)}
+                        placeholder='Search tags'
+                        className='w-full rounded-lg border border-slate-400 bg-background px-3 py-1 text-sm outline-none transition-colors focus:border-blue-500 dark:border-background/60 dark:bg-background/50'
+                      />
+                    </div>
+
+                    <div className='mt-3 max-h-[78vh] space-y-1 overflow-y-auto pr-1'>
+                      {filteredTagGroups.map((group) => {
+                        const isActive = activeGroup?.tag === group.tag
+                        return (
+                          <button
+                            key={group.tag}
+                            type='button'
+                            onClick={() => setActiveTag(group.tag)}
+                            className={cn(
+                              'flex w-full items-center justify-between rounded-lg py-0.5 pl-3 text-left text-sm transition-colors',
+                              isActive
+                                ? 'bg-mac-blue/10 text-mac-blue dark:bg-background/40'
+                                : 'text-foreground/75 hover:bg-foreground/5',
+                            )}>
+                            <span className='truncate'>
+                              {titleCaseTag(group.tag)}
+                            </span>
+                            <span className='rounded-full px-2 py-0.5 text-[11px]'>
+                              {group.total}
+                            </span>
+                          </button>
+                        )
+                      })}
+
+                      {filteredTagGroups.length === 0 ? (
+                        <div className='rounded-lg border border-dashed border-foreground/20 px-3 py-4 text-xs text-foreground/60'>
+                          No tagged gallery images found.
+                        </div>
+                      ) : null}
+                    </div>
+                  </aside>
+
+                  <section className='flex min-h-0 flex-col rounded-e-xl border border-l-0 border-slate-400 bg-slate-100 px-4 pt-1.5 pb-0.5 dark:border-dark-table/50 dark:bg-background'>
+                    {activeGroup ? (
+                      <>
+                        <div className='flex flex-col gap-4'>
+                          <div className='flex items-center justify-between'>
+                            <h3 className='space-x-2 text-base font-semibold'>
+                              <span>{titleCaseTag(activeGroup.tag)}</span>
+                              {preferredTagFromCategory &&
+                              preferredTagFromCategory === activeGroup.tag ? (
+                                <span className='rounded border border-mac-blue/60 px-1.5 py-0.5 text-xs font-semibold tracking-wide text-mac-blue'>
+                                  Matches Category
+                                </span>
+                              ) : null}
+                            </h3>
+                            <p className='text-xs opacity-70'>
+                              {activeGroup.total} image
+                              {activeGroup.total === 1 ? '' : 's'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className='min-h-0 flex-1 overflow-y-auto pr-1'>
+                          <div className='grid content-start grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'>
+                            {activeGroup.items.map((item) => {
+                              const itemLabel =
+                                item.caption?.trim() || item.storageId
+                              const isSelected =
+                                item.storageId === heroImageValue
+                              const imageDetails = extractImageDetails(itemLabel)
+                              const imageName = imageDetails.name || itemLabel
+                              const imageType = imageDetails.type || 'image'
+
+                              return (
+                                <div
+                                  key={item.storageId}
+                                  role='button'
+                                  tabIndex={0}
+                                  onClick={() =>
+                                    selectLibraryImage(item.storageId)
+                                  }
+                                  onKeyDown={(event) => {
+                                    if (
+                                      event.key === 'Enter' ||
+                                      event.key === ' '
+                                    ) {
+                                      event.preventDefault()
+                                      selectLibraryImage(item.storageId)
+                                    }
+                                  }}
+                                  aria-label={
+                                    isSelected
+                                      ? `${itemLabel} is the current hero image`
+                                      : `Select ${itemLabel} as the hero image`
+                                  }
+                                  className={cn(
+                                    'group relative overflow-hidden rounded-lg border-2 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
+                                    {
+                                      'border-blue-500 ring-2 ring-blue-500/40':
+                                        isSelected,
+                                      'border-foreground/20 hover:border-foreground/40':
+                                        !isSelected,
+                                    },
+                                  )}>
+                                  {item.url ? (
+                                    <Image
+                                      src={item.url}
+                                      alt={item.caption ?? item.storageId}
+                                      radius='none'
+                                      className='aspect-square w-full object-cover'
+                                    />
+                                  ) : (
+                                    <div className='flex aspect-square w-full items-center justify-center bg-foreground/5 text-foreground/50'>
+                                      <Icon name='image-open-light' />
+                                    </div>
+                                  )}
+
+                                  <div className='pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between truncate bg-black/50 px-2 py-1 text-[10px] text-white'>
+                                    <span className='capitalize'>
+                                      {imageName}
+                                    </span>
+                                    <span className='text-[7px] font-semibold uppercase tracking-wide opacity-80'>
+                                      {imageType}
+                                    </span>
+                                  </div>
+
+                                  {isSelected ? (
+                                    <div className='pointer-events-none absolute left-1.5 top-1.5 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-medium uppercase text-white'>
+                                      Selected
+                                    </div>
+                                  ) : null}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className='flex h-full items-center justify-center rounded-lg border border-dashed border-foreground/20 text-sm text-foreground/60'>
+                        Choose a tag to view gallery images.
+                      </div>
+                    )}
+                  </section>
+                </div>
+              </Drawer.Body>
+            </Drawer.Dialog>
+          </Drawer.Content>
+        </Drawer.Backdrop>
       </Drawer>
+
+      <PrimaryImageConverterModal
+        isOpen={isConverterOpen}
+        onOpenChangeAction={handleConverterOpenChange}
+        onConvertedAction={handleConvertedLibraryUpload}
+        sourceUrl={null}
+        sourceFile={converterSourceFile}
+        categorySlug={categorySlug}
+        productBrands={categoryBrands}
+        suggestedFileNameStem={categoryName || categorySlug}
+        variant='library-upload'
+      />
     </>
   )
 }
