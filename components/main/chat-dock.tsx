@@ -9,9 +9,9 @@ import {
   CHAT_DOCK_TOGGLE_EVENT,
   type ChatDockOpenEvent,
 } from '@/lib/chat-dock'
-import {Badge, Tooltip} from '@heroui/react'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {Badge, Tooltip} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {usePathname} from 'next/navigation'
@@ -187,7 +187,7 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
                           size='sm'
                           key={`chat-dock-badge-${unreadCount ?? 0}`}
                           className={cn(
-                            'absolute top-1 right-1 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border-1 border-foreground shadow-sm bg-brand font-clash font-medium text-white leading-none',
+                            'absolute top-1 right-1 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border border-foreground shadow-sm bg-brand font-clash font-medium text-white leading-none',
                           )}>
                           {(unreadCount ?? 0) > 99
                             ? '99+'

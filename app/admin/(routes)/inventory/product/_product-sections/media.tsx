@@ -2,6 +2,7 @@
 
 import {FormInput} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
+import {UNSAFE_PortalProvider} from '@react-aria/overlays'
 import {Alert, AlertDescription, AlertTitle} from '@/components/reui/alert'
 import {api} from '@/convex/_generated/api'
 import {useFileUpload} from '@/hooks/use-file-upload'
@@ -12,8 +13,14 @@ import {Button, Drawer} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
-import {PrimaryImageConverterModal} from '../primary-image-converter-modal'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react'
 import {ProductFormValues} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -24,6 +31,7 @@ import {
   summarizeStorageId,
   titleCaseTag,
 } from '../../helpers'
+import {PrimaryImageConverterModal} from '../primary-image-converter-modal'
 
 interface MediaProps {
   form: ReturnType<typeof useAppForm>
@@ -58,10 +66,11 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
   const {uploadFile} = useStorageUpload()
   const [isLibraryOpen, setIsLibraryOpen] = useState(false)
   const [isConverterOpen, setIsConverterOpen] = useState(false)
-  const [recentlyOptimizedStorageIds, setRecentlyOptimizedStorageIds] =
-    useState<string[]>([])
   const [libraryTarget, setLibraryTarget] =
     useState<MediaLibraryTarget>('primary')
+  const [converterSourceFile, setConverterSourceFile] = useState<File | null>(
+    null,
+  )
   const [tagSearch, setTagSearch] = useState('')
   const [activeTag, setActiveTag] = useState<string | null>(null)
   const [uploadStateById, setUploadStateById] = useState<
@@ -70,7 +79,10 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
   const [uploadedPreviewById, setUploadedPreviewById] = useState<
     Record<string, string>
   >({})
+  const [converterPortalContainer, setConverterPortalContainer] =
+    useState<HTMLDivElement | null>(null)
   const processingFileIdsRef = useRef<Set<string>>(new Set())
+  const libraryUploadInputRef = useRef<HTMLInputElement>(null)
 
   const primaryImageValue = useStore(
     form.store as ReadonlyStore<FormStoreState>,
@@ -435,6 +447,83 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
     [libraryTarget, setPrimaryImage],
   )
 
+  const openDrawerUploadPicker = useCallback(() => {
+    if (!libraryUploadInputRef.current) {
+      return
+    }
+
+    libraryUploadInputRef.current.value = ''
+    libraryUploadInputRef.current.click()
+  }, [])
+
+  const handleDrawerUploadSelection = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const nextFile = event.target.files?.[0]
+      event.target.value = ''
+
+      if (!nextFile) {
+        return
+      }
+
+      setConverterSourceFile(nextFile)
+      setIsLibraryOpen(false)
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (isLibraryOpen || !converterSourceFile || isConverterOpen) {
+      return
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      setIsConverterOpen(true)
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [converterSourceFile, isConverterOpen, isLibraryOpen])
+
+  const handleConverterOpenChange = useCallback((isOpen: boolean) => {
+    setIsConverterOpen(isOpen)
+
+    if (!isOpen) {
+      setConverterSourceFile(null)
+    }
+  }, [])
+
+  const handleConvertedLibraryUpload = useCallback(
+    ({storageId, url}: {storageId: string; url: string | null}) => {
+      if (url) {
+        setUploadedPreviewById((current) => ({
+          ...current,
+          [storageId]: url,
+        }))
+      }
+
+      if (libraryTarget === 'primary') {
+        setPrimaryImage(storageId)
+        setIsLibraryOpen(false)
+      } else {
+        attachUploadedStorageIds([storageId])
+      }
+
+      setConverterSourceFile(null)
+      setIsConverterOpen(false)
+    },
+    [attachUploadedStorageIds, libraryTarget, setPrimaryImage],
+  )
+
+  const setConverterPortalNode = useCallback((node: HTMLDivElement | null) => {
+    setConverterPortalContainer(node)
+  }, [])
+
+  const getConverterPortalContainer = useCallback(
+    () => converterPortalContainer,
+    [converterPortalContainer],
+  )
+
   const displayImages = useMemo(() => {
     if (!primaryImageValue) {
       return galleryValue
@@ -533,436 +622,399 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
     [uploadStateById],
   )
 
-  const optimizedStorageIds = useMemo(() => {
-    const ids = new Set(recentlyOptimizedStorageIds)
+  // const handleConvertedPrimary = useCallback(
+  //   ({storageId, url}: {storageId: string; url: string | null}) => {
+  //     if (url) {
+  //       setUploadedPreviewById((current) => ({
+  //         ...current,
+  //         [storageId]: url,
+  //       }))
+  //     }
 
-    for (const group of allTaggedGroups) {
-      for (const item of group.items) {
-        ids.add(item.storageId)
-      }
-    }
-
-    return ids
-  }, [allTaggedGroups, recentlyOptimizedStorageIds])
-
-  const canConvertPrimaryImage = useMemo(
-    () =>
-      Boolean(
-        primaryMediaItem?.preview &&
-        primaryImageValue &&
-        !optimizedStorageIds.has(primaryImageValue),
-      ),
-    [optimizedStorageIds, primaryImageValue, primaryMediaItem?.preview],
-  )
-
-  const handleConvertedPrimary = useCallback(
-    ({storageId, url}: {storageId: string; url: string | null}) => {
-      if (url) {
-        setUploadedPreviewById((current) => ({
-          ...current,
-          [storageId]: url,
-        }))
-      }
-
-      setRecentlyOptimizedStorageIds((current) =>
-        current.includes(storageId) ? current : [...current, storageId],
-      )
-      setPrimaryImage(storageId)
-      setIsConverterOpen(false)
-    },
-    [setPrimaryImage],
-  )
+  //     setRecentlyOptimizedStorageIds((current) =>
+  //       current.includes(storageId) ? current : [...current, storageId],
+  //     )
+  //     setPrimaryImage(storageId)
+  //     setIsConverterOpen(false)
+  //   },
+  //   [setPrimaryImage],
+  // )
 
   return (
     <>
-      <FormSection>
-        <Header label='Media' />
-        <div className='grid gap-6'>
-          <section
-            className={cn(
-              'rounded-2xl border border-dashed p-5 transition-colors',
-              isDragging
-                ? 'border-blue-500 bg-blue-500/5'
-                : 'border-foreground/15 bg-background/60',
-            )}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}>
-            <input {...getInputProps()} className='sr-only' />
+      <div
+        ref={setConverterPortalNode}
+        className='relative isolate overflow-hidden transform:translateZ(0)'>
+        <FormSection>
+          <Header label='Media' />
+          <div className='grid gap-6'>
+            <section
+              className={cn(
+                'rounded-2xl border border-dashed p-5 transition-colors',
+                isDragging
+                  ? 'border-blue-500 bg-blue-500/5'
+                  : 'border-foreground/15 bg-background/60',
+              )}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}>
+              <input {...getInputProps()} className='sr-only' />
 
-            <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
-              <div className='flex items-start gap-4'>
-                <div
-                  className={cn(
-                    'flex size-10 shrink-0 items-center justify-center rounded-lg',
-                    isDragging ? 'bg-blue-500/10' : 'bg-foreground/5',
-                  )}>
-                  <Icon
-                    name='image-plus-light'
+              <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+                <div className='flex items-start gap-4'>
+                  <div
                     className={cn(
-                      'size-8',
-                      isDragging ? 'text-blue-500' : 'text-foreground/60',
-                    )}
-                  />
-                </div>
-
-                <div className='space-y-0.5'>
-                  <h3 className='text-base font-semibold'>
-                    Upload Product Images
-                  </h3>
-                  <p className='text-sm text-foreground/70'>
-                    Select images from the product gallery.
-                  </p>
-                </div>
-              </div>
-              <div className='flex items-center space-x-4'>
-                {/*<Button
-                  id='converter-trigger'
-                  variant='tertiary'
-                  className='rounded-lg bg-indigo-950 text-white dark:text-white'
-                  isDisabled={!canConvertPrimaryImage}
-                  onPress={() => setIsConverterOpen(true)}>
-                  {!canConvertPrimaryImage
-                    ? 'Image Optimized'
-                    : 'Optimize Primary Image'}
-                  <Icon
-                    name='lightning'
-                    className='size-5 rotate-6 text-yellow-500'
-                  />
-                </Button>*/}
-                <Button
-                  variant='tertiary'
-                  className='rounded-lg bg-blue-500 text-white dark:text-white'
-                  onPress={() => openLibrary('gallery')}>
-                  Select Primary Image
-                  <Icon name='image-plus-light' className='size-5' />
-                </Button>
-              </div>
-            </div>
-
-            {(queuedFiles.length > 0 || activeUploadCount > 0) && (
-              <div className='mt-5 flex flex-wrap items-center gap-3 text-xs text-foreground/60'>
-                <span>
-                  Queue: {queuedFiles.length}/{MAX_UPLOAD_FILES}
-                </span>
-                <span>
-                  {Math.round(MAX_UPLOAD_SIZE / (1024 * 1024))}MB max per file
-                </span>
-                <span>
-                  Pending size:{' '}
-                  {queuedTotalBytes > 0
-                    ? `${(queuedTotalBytes / (1024 * 1024)).toFixed(2)} MB`
-                    : '0 MB'}
-                </span>
-                {activeUploadCount > 0 ? (
-                  <span className='inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2 py-1 text-blue-500'>
-                    <span className='size-3 animate-spin rounded-full border border-current border-r-transparent' />
-                    Uploading {activeUploadCount}
-                  </span>
-                ) : null}
-              </div>
-            )}
-
-            {queuedFiles.length > 0 ? (
-              <div className='mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
-                {queuedFiles.map((item) => {
-                  const uploadState = uploadStateById[item.id]
-                  const isUploading = uploadState?.status === 'uploading'
-                  const isError = uploadState?.status === 'error'
-
-                  return (
-                    <div
-                      key={item.id}
+                      'flex size-10 shrink-0 items-center justify-center rounded-lg',
+                      isDragging ? 'bg-blue-500/10' : 'bg-foreground/5',
+                    )}>
+                    <Icon
+                      name='image-plus-light'
                       className={cn(
-                        'overflow-hidden rounded-xl border bg-background',
-                        {
-                          'border-blue-500/30': isUploading,
-                          'border-red-500/40': isError,
-                          'border-foreground/10': !isUploading && !isError,
-                        },
-                      )}>
-                      <div className='relative aspect-square overflow-hidden bg-foreground/5'>
-                        {item.preview ? (
-                          <Image
-                            src={item.preview}
-                            alt={item.file.name}
-                            radius='none'
-                            shadow='none'
-                            className='size-full object-cover'
-                          />
-                        ) : (
-                          <div className='flex size-full items-center justify-center text-foreground/40'>
-                            <Icon name='image-open-light' className='size-7' />
-                          </div>
-                        )}
+                        'size-8',
+                        isDragging ? 'text-blue-500' : 'text-foreground/60',
+                      )}
+                    />
+                  </div>
 
-                        {isUploading ? (
-                          <div className='absolute inset-0 flex items-center justify-center bg-black/45 text-white'>
-                            <div className='flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs'>
-                              <span className='size-3.5 animate-spin rounded-full border border-current border-r-transparent' />
-                              Uploading
-                            </div>
-                          </div>
-                        ) : null}
-
-                        {!isUploading ? (
-                          <button
-                            type='button'
-                            onClick={() => dismissQueuedFile(item.id)}
-                            className='absolute right-2 top-2 rounded-full bg-black/55 p-1.5 text-white transition-colors hover:bg-black/75'>
-                            <Icon name='x' size={14} />
-                          </button>
-                        ) : null}
-                      </div>
-
-                      <div className='space-y-1 p-3'>
-                        <p className='truncate text-sm font-medium'>
-                          {item.file.name}
-                        </p>
-                        <p className='text-xs text-foreground/55'>
-                          {(item.file.size / (1024 * 1024)).toFixed(2)} MB
-                        </p>
-                        {isError && uploadState?.message ? (
-                          <p className='text-xs text-red-500'>
-                            {uploadState.message}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            ) : null}
-
-            {uploadMessages.length > 0 ? (
-              <Alert variant='destructive' className='mt-5'>
-                <AlertTitle>File upload error(s)</AlertTitle>
-                <AlertDescription>
-                  {uploadMessages.map((message) => (
-                    <p key={message}>{message}</p>
-                  ))}
-                </AlertDescription>
-              </Alert>
-            ) : null}
-            <div className='mt-6 space-y-3'>
-              <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-                <div className='space-y-1'>
-                  <div className='flex flex-wrap items-center gap-2'>
-                    <h3 className='text-sm font-semibold'>Selected Media</h3>
-                    <span className='bg-background/80 px-2 py-0.5 text-sm text-mac-blue'>
-                      {displayMediaItems.length} total
-                    </span>
-                    {remainingMediaCount > 0 ? (
-                      <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
-                        +{remainingMediaCount} more
-                      </span>
-                    ) : null}
+                  <div className='space-y-0.5'>
+                    <h3 className='text-base font-semibold'>
+                      Upload Product Images
+                    </h3>
+                    <p className='text-sm text-foreground/70'>
+                      Select images from the product gallery.
+                    </p>
                   </div>
                 </div>
-
-                <div className='flex flex-wrap gap-2'>
+                <div className='flex items-center space-x-4'>
                   <Button
-                    size='sm'
                     variant='tertiary'
-                    className='rounded-lg'
+                    className='rounded-lg bg-blue-500 text-white dark:text-white'
                     onPress={() => openLibrary('gallery')}>
-                    Add Gallery Images
-                    <Icon name='image-open-light' className='size-5' />
+                    Select Primary Image
+                    <Icon name='image-plus-light' className='size-5' />
                   </Button>
-                  {primaryImageValue ? (
+                </div>
+              </div>
+
+              {(queuedFiles.length > 0 || activeUploadCount > 0) && (
+                <div className='mt-5 flex flex-wrap items-center gap-3 text-xs text-foreground/60'>
+                  <span>
+                    Queue: {queuedFiles.length}/{MAX_UPLOAD_FILES}
+                  </span>
+                  <span>
+                    {Math.round(MAX_UPLOAD_SIZE / (1024 * 1024))}MB max per file
+                  </span>
+                  <span>
+                    Pending size:{' '}
+                    {queuedTotalBytes > 0
+                      ? `${(queuedTotalBytes / (1024 * 1024)).toFixed(2)} MB`
+                      : '0 MB'}
+                  </span>
+                  {activeUploadCount > 0 ? (
+                    <span className='inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2 py-1 text-blue-500'>
+                      <span className='size-3 animate-spin rounded-full border border-current border-r-transparent' />
+                      Uploading {activeUploadCount}
+                    </span>
+                  ) : null}
+                </div>
+              )}
+
+              {queuedFiles.length > 0 ? (
+                <div className='mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+                  {queuedFiles.map((item) => {
+                    const uploadState = uploadStateById[item.id]
+                    const isUploading = uploadState?.status === 'uploading'
+                    const isError = uploadState?.status === 'error'
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={cn(
+                          'overflow-hidden rounded-xl border bg-background',
+                          {
+                            'border-blue-500/30': isUploading,
+                            'border-red-500/40': isError,
+                            'border-foreground/10': !isUploading && !isError,
+                          },
+                        )}>
+                        <div className='relative aspect-square overflow-hidden bg-foreground/5'>
+                          {item.preview ? (
+                            <Image
+                              src={item.preview}
+                              alt={item.file.name}
+                              radius='none'
+                              shadow='none'
+                              className='size-full object-cover'
+                            />
+                          ) : (
+                            <div className='flex size-full items-center justify-center text-foreground/40'>
+                              <Icon
+                                name='image-open-light'
+                                className='size-7'
+                              />
+                            </div>
+                          )}
+
+                          {isUploading ? (
+                            <div className='absolute inset-0 flex items-center justify-center bg-black/45 text-white'>
+                              <div className='flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs'>
+                                <span className='size-3.5 animate-spin rounded-full border border-current border-r-transparent' />
+                                Uploading
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {!isUploading ? (
+                            <button
+                              type='button'
+                              onClick={() => dismissQueuedFile(item.id)}
+                              className='absolute right-2 top-2 rounded-full bg-black/55 p-1.5 text-white transition-colors hover:bg-black/75'>
+                              <Icon name='x' size={14} />
+                            </button>
+                          ) : null}
+                        </div>
+
+                        <div className='space-y-1 p-3'>
+                          <p className='truncate text-sm font-medium'>
+                            {item.file.name}
+                          </p>
+                          <p className='text-xs text-foreground/55'>
+                            {(item.file.size / (1024 * 1024)).toFixed(2)} MB
+                          </p>
+                          {isError && uploadState?.message ? (
+                            <p className='text-xs text-red-500'>
+                              {uploadState.message}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : null}
+
+              {uploadMessages.length > 0 ? (
+                <Alert variant='destructive' className='mt-5'>
+                  <AlertTitle>File upload error(s)</AlertTitle>
+                  <AlertDescription>
+                    {uploadMessages.map((message) => (
+                      <p key={message}>{message}</p>
+                    ))}
+                  </AlertDescription>
+                </Alert>
+              ) : null}
+              <div className='mt-6 space-y-3'>
+                <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+                  <div className='space-y-1'>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <h3 className='text-sm font-semibold'>Selected Media</h3>
+                      <span className='bg-background/80 px-2 py-0.5 text-sm text-mac-blue'>
+                        {displayMediaItems.length} total
+                      </span>
+                      {remainingMediaCount > 0 ? (
+                        <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
+                          +{remainingMediaCount} more
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className='flex flex-wrap gap-2'>
                     <Button
                       size='sm'
                       variant='tertiary'
-                      className='bg-light-gray/0 dark:bg-transparent'
-                      onPress={clearPrimaryImage}>
-                      Clear Primary
+                      className='rounded-lg'
+                      onPress={() => openLibrary('gallery')}>
+                      Add Gallery Images
+                      <Icon name='image-open-light' className='size-5' />
                     </Button>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className='grid gap-4 md:grid-cols-[minmax(0,14rem)_1fr] md:items-start'>
-                <div className='space-y-2'>
-                  <p className='text-[11px] font-medium uppercase tracking-[0.16em] text-foreground/55'>
-                    Primary Image
-                  </p>
-
-                  {primaryMediaItem ? (
-                    <div className='group relative aspect-square w-full max-w-40 overflow-hidden rounded-2xl border border-foreground/10 bg-background sm:max-w-48 md:max-w-none'>
-                      {primaryMediaItem.preview ? (
-                        <Image
-                          src={primaryMediaItem.preview}
-                          alt={primaryMediaItem.label}
-                          radius='none'
-                          shadow='none'
-                          removeWrapper
-                          className='pointer-events-none size-full object-cover'
-                        />
-                      ) : (
-                        <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
-                          <Icon
-                            name='image-open-light'
-                            className='size-8 opacity-70'
-                          />
-                        </div>
-                      )}
-
-                      <div className='absolute left-3 top-3 z-10 rounded bg-blue-600 px-2 py-1 text-xs font-medium uppercase tracking-[0.12em] text-white'>
-                        Lead
-                      </div>
-
-                      <button
-                        type='button'
-                        onClick={clearPrimaryImage}
-                        className='absolute right-3 top-3 z-20 flex size-8 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
-                        aria-label='Clear lead image'>
-                        <Icon name='x' size={14} />
-                      </button>
-
-                      <div className='absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/30 to-transparent px-3 py-3 text-white'>
-                        <p className='truncate text-sm font-medium'>
-                          {primaryMediaItem.label}
-                        </p>
-                        <p className='truncate text-xs text-white/75'>
-                          {primaryMediaItem.summary}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type='button'
-                      onClick={() => openLibrary('gallery')}
-                      className='flex aspect-square w-full max-w-40 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-foreground/20 bg-background/50 px-4 text-center transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:max-w-48 md:max-w-none'>
-                      <div className='flex size-11 items-center justify-center rounded-full bg-foreground/5 text-foreground/70'>
-                        <Icon name='image-plus-light' className='size-5' />
-                      </div>
-                      <div className='space-y-1'>
-                        <p className='text-sm font-semibold'>
-                          Select primary image
-                        </p>
-                      </div>
-                    </button>
-                  )}
-                </div>
-
-                <div className='space-y-2'>
-                  <div className='flex items-center justify-between gap-3'>
-                    <p className='text-[11px] font-medium uppercase tracking-[0.16em] text-foreground/55'>
-                      Gallery Slots
-                    </p>
-                    {remainingMediaCount > 0 ? (
-                      <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
-                        +{remainingMediaCount} more
-                      </span>
+                    {primaryImageValue ? (
+                      <Button
+                        size='sm'
+                        variant='tertiary'
+                        className='bg-light-gray/0 dark:bg-transparent'
+                        onPress={clearPrimaryImage}>
+                        Clear Primary
+                      </Button>
                     ) : null}
                   </div>
+                </div>
 
-                  <div className='overflow-x-auto pb-1 sm:overflow-visible sm:pb-0'>
-                    <div className='flex w-max gap-3 sm:grid sm:w-full sm:grid-cols-4'>
-                      {Array.from({length: 4}).map((_, index) => {
-                        const item = thumbnailMediaItems[index]
-                        const slotLabel = `Gallery slot ${index + 1}`
+                <div className='grid gap-4 md:grid-cols-[minmax(0,14rem)_1fr] md:items-start'>
+                  <div className='space-y-2'>
+                    <p className='text-[8px] font-medium uppercase tracking-[0.16em] text-foreground/55'>
+                      Primary Image
+                    </p>
 
-                        if (!item) {
-                          return (
-                            <button
-                              key={`empty-slot-${index}`}
-                              type='button'
-                              onClick={() => openLibrary('gallery')}
-                              className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-dashed border-foreground/20 bg-background/50 text-left transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:w-auto'>
-                              <div className='flex size-full flex-col items-center justify-center gap-2 text-foreground/45'>
-                                <Icon
-                                  name='image-plus-light'
-                                  className='size-7 opacity-70'
-                                />
-                                <span className='text-[11px] font-medium uppercase tracking-[0.16em]'>
-                                  {slotLabel}
-                                </span>
-                              </div>
-                            </button>
-                          )
-                        }
-
-                        return (
-                          <div
-                            key={item.storageId}
-                            className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-foreground/10 bg-background sm:w-auto'>
-                            {item.preview ? (
-                              <Image
-                                src={item.preview}
-                                alt={item.label}
-                                radius='none'
-                                shadow='none'
-                                removeWrapper
-                                className='pointer-events-none size-full object-cover'
-                              />
-                            ) : (
-                              <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
-                                <Icon
-                                  name='image-open-light'
-                                  className='size-7'
-                                />
-                              </div>
-                            )}
-
-                            <div className='absolute left-2 top-2 z-10 rounded bg-black/60 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white'>
-                              {item.badgeLabel}
-                            </div>
-
-                            <div className='absolute right-2 top-2 z-20 flex gap-1.5'>
-                              <button
-                                type='button'
-                                onClick={() => setPrimaryImage(item.storageId)}
-                                className='rounded-full bg-black/55 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-blue-600'>
-                                Lead
-                              </button>
-                              <button
-                                type='button'
-                                onClick={() =>
-                                  removeGalleryItem(item.storageId)
-                                }
-                                className='flex size-7 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
-                                aria-label={`Remove ${item.label.toLowerCase()}`}>
-                                <Icon name='x' size={12} />
-                              </button>
-                            </div>
-
-                            <div className='absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/30 to-transparent px-2 py-2 text-white'>
-                              <p className='truncate text-xs font-medium'>
-                                {item.label}
-                              </p>
-                              <p className='truncate text-[11px] text-white/75'>
-                                {item.summary}
-                              </p>
-                            </div>
+                    {primaryMediaItem ? (
+                      <div className='group relative aspect-square w-full max-w-40 overflow-hidden rounded-2xl border border-foreground/10 bg-background sm:max-w-48 md:max-w-none'>
+                        {primaryMediaItem.preview ? (
+                          <Image
+                            src={primaryMediaItem.preview}
+                            alt={primaryMediaItem.label}
+                            radius='none'
+                            shadow='none'
+                            removeWrapper
+                            className='pointer-events-none size-full object-cover'
+                          />
+                        ) : (
+                          <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
+                            <Icon
+                              name='image-open-light'
+                              className='size-8 opacity-70'
+                            />
                           </div>
-                        )
-                      })}
+                        )}
+
+                        <div className='absolute left-3 top-3 z-10 rounded bg-blue-600 px-2 py-1 text-xs font-medium uppercase tracking-[0.12em] text-white'>
+                          Lead
+                        </div>
+
+                        <button
+                          type='button'
+                          onClick={clearPrimaryImage}
+                          className='absolute right-3 top-3 z-20 flex size-8 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
+                          aria-label='Clear lead image'>
+                          <Icon name='x' size={14} />
+                        </button>
+
+                        <div className='absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/30 to-transparent px-3 py-3 text-white'>
+                          <p className='truncate text-sm font-medium'>
+                            {primaryMediaItem.label}
+                          </p>
+                          <p className='truncate text-xs text-white/75'>
+                            {primaryMediaItem.summary}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type='button'
+                        onClick={() => openLibrary('gallery')}
+                        className='flex aspect-square w-full max-w-40 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-foreground/20 bg-background/50 px-4 text-center transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:max-w-48 md:max-w-none'>
+                        <div className='flex size-11 items-center justify-center rounded-full bg-foreground/5 text-foreground/70'>
+                          <Icon name='image-plus-light' className='size-5' />
+                        </div>
+                        <div className='space-y-1'>
+                          <p className='text-sm font-semibold'>
+                            Select primary image
+                          </p>
+                        </div>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className='space-y-2'>
+                    <div className='flex items-center justify-between gap-3'>
+                      <p className='text-[8px] font-medium uppercase tracking-[0.16em] text-foreground/55'>
+                        Gallery Slots
+                      </p>
+                      {remainingMediaCount > 0 ? (
+                        <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
+                          +{remainingMediaCount} more
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className='overflow-x-auto pb-1 sm:overflow-visible sm:pb-0'>
+                      <div className='flex w-max gap-3 sm:grid sm:w-full sm:grid-cols-4'>
+                        {Array.from({length: 4}).map((_, index) => {
+                          const item = thumbnailMediaItems[index]
+                          const slotLabel = `Gallery slot ${index + 1}`
+
+                          if (!item) {
+                            return (
+                              <button
+                                key={`empty-slot-${index}`}
+                                type='button'
+                                onClick={() => openLibrary('gallery')}
+                                className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-dashed border-foreground/20 bg-background/50 text-left transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:w-auto'>
+                                <div className='flex size-full flex-col items-center justify-center gap-2 text-foreground/45'>
+                                  <Icon
+                                    name='image-plus-light'
+                                    className='size-7 opacity-70'
+                                  />
+                                  <span className='text-[11px] font-medium uppercase tracking-[0.16em]'>
+                                    {slotLabel}
+                                  </span>
+                                </div>
+                              </button>
+                            )
+                          }
+
+                          return (
+                            <div
+                              key={item.storageId}
+                              className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-foreground/10 bg-background sm:w-auto'>
+                              {item.preview ? (
+                                <Image
+                                  src={item.preview}
+                                  alt={item.label}
+                                  radius='none'
+                                  shadow='none'
+                                  removeWrapper
+                                  className='pointer-events-none size-full object-cover'
+                                />
+                              ) : (
+                                <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
+                                  <Icon
+                                    name='image-open-light'
+                                    className='size-7'
+                                  />
+                                </div>
+                              )}
+
+                              <div className='absolute left-2 top-2 z-10 rounded bg-black/60 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white'>
+                                {item.badgeLabel}
+                              </div>
+
+                              <div className='absolute right-2 top-2 z-20 flex gap-1.5'>
+                                <button
+                                  type='button'
+                                  onClick={() =>
+                                    setPrimaryImage(item.storageId)
+                                  }
+                                  className='rounded-full bg-black/55 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-blue-600'>
+                                  Lead
+                                </button>
+                                <button
+                                  type='button'
+                                  onClick={() =>
+                                    removeGalleryItem(item.storageId)
+                                  }
+                                  className='flex size-7 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
+                                  aria-label={`Remove ${item.label.toLowerCase()}`}>
+                                  <Icon name='x' size={12} />
+                                </button>
+                              </div>
+
+                              <div className='absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/30 to-transparent px-2 py-2 text-white'>
+                                <p className='truncate text-xs font-medium'>
+                                  {item.label}
+                                </p>
+                                <p className='truncate text-[11px] text-white/75'>
+                                  {item.summary}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {hasUnresolvedDisplayImages ? (
-            <p className='text-xs text-dark-gray/70 dark:text-light-gray/70'>
-              Some selected storage IDs have not resolved to preview URLs yet.
-            </p>
-          ) : null}
-        </div>
-      </FormSection>
-
-      <PrimaryImageConverterModal
-        isOpen={isConverterOpen}
-        onOpenChangeAction={setIsConverterOpen}
-        onConvertedAction={handleConvertedPrimary}
-        sourceUrl={primaryMediaItem?.preview ?? null}
-        categorySlug={categorySlug}
-        productBrands={productBrands}
-        suggestedFileNameStem={productName}
-      />
+            {hasUnresolvedDisplayImages ? (
+              <p className='text-xs text-dark-gray/70 dark:text-light-gray/70'>
+                Some selected storage IDs have not resolved to preview URLs yet.
+              </p>
+            ) : null}
+          </div>
+        </FormSection>
+      </div>
 
       <Drawer isOpen={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
         <Drawer.Backdrop variant='transparent'>
@@ -970,9 +1022,25 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
             <Drawer.Dialog className='w-full max-w-6xl bg-transparent p-0 shadow-none'>
               <Drawer.Header className='h-6 mt-2'>
                 <div className='flex w-full items-center justify-between px-4'>
-                  <p className='font-clash text-sm capitalize tracking-[0.08em] text-white rounded bg-foreground/50 px-3 py-1'>
-                    Media Library
-                  </p>
+                  <div className='flex items-center space-x-4'>
+                    <p className='font-polysans text-sm capitalize tracking-wide text-mac-blue rounded-md bg-foreground/15 backdrop-blur-3xl px-3 py-1'>
+                      Media Library
+                    </p>
+                    <input
+                      ref={libraryUploadInputRef}
+                      type='file'
+                      accept='image/*'
+                      className='hidden'
+                      onChange={handleDrawerUploadSelection}
+                    />
+                    <Button
+                      size='sm'
+                      variant='outline'
+                      className='font-semibold text-dark-table rounded-md bg-white/80'
+                      onPress={openDrawerUploadPicker}>
+                      Upload Image
+                    </Button>
+                  </div>
                   <Button
                     size='sm'
                     variant='tertiary'
@@ -1027,7 +1095,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                     </div>
                   </aside>
 
-                  <section className='flex min-h-0 flex-col rounded-e-xl border border-l-0 border-slate-400 dark:border-dark-table/50 bg-slate-100 dark:bg-background px-4 pt-2'>
+                  <section className='flex min-h-0 flex-col rounded-e-xl border border-l-0 border-slate-400 dark:border-dark-table/50 bg-slate-100 dark:bg-background px-4 pt-1.5 pb-0.5'>
                     {activeGroup ? (
                       <>
                         <div className='flex flex-col gap-4'>
@@ -1036,7 +1104,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                               <span>{titleCaseTag(activeGroup.tag)}</span>
                               {preferredTagFromCategory &&
                               preferredTagFromCategory === activeGroup.tag ? (
-                                <span className='rounded border border-mac-blue/60 px-2 py-1 font-semibold text-mac-blue text-xs tracking-wide'>
+                                <span className='rounded border border-mac-blue/60 px-1.5 py-0.5 font-semibold text-mac-blue text-xs tracking-wide'>
                                   Matches Category
                                 </span>
                               ) : null}
@@ -1188,6 +1256,20 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
           </Drawer.Content>
         </Drawer.Backdrop>
       </Drawer>
+
+      <UNSAFE_PortalProvider getContainer={getConverterPortalContainer}>
+        <PrimaryImageConverterModal
+          isOpen={isConverterOpen}
+          onOpenChangeAction={handleConverterOpenChange}
+          onConvertedAction={handleConvertedLibraryUpload}
+          sourceUrl={null}
+          sourceFile={converterSourceFile}
+          categorySlug={categorySlug}
+          productBrands={productBrands}
+          suggestedFileNameStem={productName}
+          variant='library-upload'
+        />
+      </UNSAFE_PortalProvider>
     </>
   )
 }

@@ -8,8 +8,17 @@ import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {Input} from '@/components/hero-v3/input'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useDisclosure} from '@/hooks/use-disclosure'
+import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
-import {Button, Modal} from '@heroui/react'
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownTrigger,
+  Modal,
+} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useState} from 'react'
 import {
@@ -193,15 +202,26 @@ export const BasicInfo = ({
     <FormSection position='top'>
       <div className='flex items-center justify-between'>
         <Header label='Basic Information'></Header>
-        <Button
-          size='sm'
-          onPress={onOpen}
-          variant='danger-soft'
-          isDisabled={!onArchiveProduct}
-          isPending={isArchiving}
-          className='rounded-sm h-7 flex-1 border-transparent bg-red-100'>
-          Delete
-        </Button>
+        <Dropdown>
+          <DropdownTrigger>
+            <Icon name='more-v' className='size-4' />
+          </DropdownTrigger>
+          <DropdownPopover>
+            <DropdownMenu>
+              <DropdownItem>
+                <Button
+                  size='sm'
+                  onPress={onOpen}
+                  variant='danger-soft'
+                  isDisabled={!onArchiveProduct}
+                  isPending={isArchiving}
+                  className='flex-1 border-transparent bg-red-100'>
+                  Delete this product
+                </Button>
+              </DropdownItem>
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
       </div>
       <div className='grid gap-4 w-full'>
         <div className='grid gap-4 md:grid-cols-3 items-start w-full'>

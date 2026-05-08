@@ -106,31 +106,64 @@ const buildConvexRemoteImagePatterns = () => {
 const convexRemoteImagePatterns = buildConvexRemoteImagePatterns()
 
 const buildR2RemoteImagePatterns = () => {
-  const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
-  if (!r2PublicUrl) return []
-  try {
-    const parsed = new URL(r2PublicUrl)
-    return [
-      {
-        protocol: parsed.protocol.replace(':', '') as 'http' | 'https',
+  const urls = [
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL,
+    process.env.R2_PUBLIC_URL,
+  ].filter(Boolean) as string[]
+
+  const patterns: Array<{
+    protocol: 'http' | 'https'
+    hostname: string
+  }> = []
+  const seen = new Set<string>()
+
+  for (const url of urls) {
+    try {
+      const parsed = new URL(url)
+      const protocol = parsed.protocol.replace(':', '') as 'http' | 'https'
+      const key = `${protocol}:${parsed.hostname}`
+      if (seen.has(key)) {
+        continue
+      }
+
+      seen.add(key)
+      patterns.push({
+        protocol,
         hostname: parsed.hostname,
-      },
-    ]
-  } catch {
-    return []
+      })
+    } catch {
+      continue
+    }
   }
+
+  return patterns
 }
 
 const r2RemoteImagePatterns = buildR2RemoteImagePatterns()
-const r2CspHost = (() => {
-  const url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
-  if (!url) return ''
-  try {
-    return new URL(url).hostname
-  } catch {
-    return ''
+const r2CspHosts = (() => {
+  const hosts = new Set<string>()
+
+  for (const url of [
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL,
+    process.env.R2_PUBLIC_URL,
+  ]) {
+    if (!url) continue
+
+    try {
+      hosts.add(new URL(url).hostname)
+    } catch {
+      continue
+    }
   }
+
+  const r2AccountId = process.env.R2_ACCOUNT_ID?.trim()
+  if (r2AccountId) {
+    hosts.add(`${r2AccountId}.r2.cloudflarestorage.com`)
+  }
+
+  return [...hosts]
 })()
+const r2CspHostSuffix = r2CspHosts.length > 0 ? ` ${r2CspHosts.join(' ')}` : ''
 
 if (
   process.env.NODE_ENV === 'production' &&
@@ -186,9 +219,9 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com api.web3modal.org rpc.walletconnect.org *.coinbase.com *.rapidfirenow.com static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline' embed.hel.io *.walletconnect.org *.reown.com firestore.googleapis.com api.web3modal.org *.rapidfirenow.com",
-      `img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com *.rapidfirenow.com${r2CspHost ? ` ${r2CspHost}` : ''}`,
+      `img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com *.rapidfirenow.com${r2CspHostSuffix}`,
       "font-src 'self' data: *.reown.com",
-      `connect-src 'self' *.convex.cloud wss://*.convex.cloud *.paygate.to *.paylex.org *.rampex.io *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.coinbase.com api.web3modal.org *.rapidfirenow.com mempool.space *.walletconnect.org wss://relay.walletconnect.org *.mapbox.com${r2CspHost ? ` ${r2CspHost}` : ''}`,
+      `connect-src 'self' *.convex.cloud wss://*.convex.cloud *.paygate.to *.paylex.org *.rampex.io *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.coinbase.com api.web3modal.org *.rapidfirenow.com mempool.space *.walletconnect.org wss://relay.walletconnect.org *.mapbox.com${r2CspHostSuffix}`,
       "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.walletconnect.org  *.coinbase.com *.rapidfirenow.com *.youtube.com",
       "worker-src 'self' blob:",
       "object-src 'none'",

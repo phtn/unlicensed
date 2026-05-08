@@ -1,7 +1,7 @@
 'use client'
 
 import {useCallback, useState} from 'react'
-import {useAction, useConvex, useMutation} from 'convex/react'
+import {useConvex, useMutation} from 'convex/react'
 import {api} from '@/convex/_generated/api'
 
 const USE_R2 = process.env.NEXT_PUBLIC_USE_R2 === 'true'
@@ -91,17 +91,9 @@ const optimizeImageFile = async (
   }
 }
 
-function generateR2Key(prefix: string, file: File): string {
-  const timestamp = Date.now()
-  const random = Math.random().toString(36).slice(2, 10)
-  const ext = file.name.split('.').pop() || 'webp'
-  return `${prefix}/${timestamp}-${random}.${ext}`
-}
-
 export const useStorageUpload = (options: UseStorageUploadOptions = {}) => {
   const convex = useConvex()
   const generateUploadUrl = useMutation(api.uploads.generateUploadUrl)
-  const generateR2UploadUrl = useAction(api.r2.actions.generateR2UploadUrl)
   const [isUploading, setIsUploading] = useState(false)
   const optimizeImages = options.optimizeImages !== false
   const maxImageDimension =
@@ -129,26 +121,30 @@ export const useStorageUpload = (options: UseStorageUploadOptions = {}) => {
         }
 
         if (USE_R2) {
-          const prefix = options.r2KeyPrefix || 'uploads'
-          const key = generateR2Key(prefix, fileToUpload)
-          const contentType = fileToUpload.type || 'application/octet-stream'
+          const formData = new FormData()
+          formData.append('file', fileToUpload)
+          formData.append('keyPrefix', options.r2KeyPrefix || 'uploads')
 
-          const {uploadUrl, publicUrl} = await generateR2UploadUrl({
-            key,
-            contentType,
-          })
-
-          const response = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: {'Content-Type': contentType},
-            body: fileToUpload,
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to upload file to R2.')
+          let response: Response
+          try {
+            response = await fetch('/api/uploads/r2', {
+              method: 'POST',
+              body: formData,
+            })
+          } catch {
+            throw new Error('Failed to reach the server R2 upload route.')
           }
 
-          return {storageId: publicUrl, url: publicUrl}
+          if (!response.ok) {
+            const message = await response.text().catch(() => '')
+            throw new Error(
+              message ||
+                `Failed to upload file to R2. Upload endpoint responded with ${response.status}.`,
+            )
+          }
+
+          const result = (await response.json()) as UploadResult
+          return result
         }
 
         const uploadUrl = await generateUploadUrl()
@@ -174,7 +170,7 @@ export const useStorageUpload = (options: UseStorageUploadOptions = {}) => {
         setIsUploading(false)
       }
     },
-    [convex, generateUploadUrl, generateR2UploadUrl, imageQuality, maxImageDimension, optimizeImages, options.r2KeyPrefix],
+    [convex, generateUploadUrl, imageQuality, maxImageDimension, optimizeImages, options.r2KeyPrefix],
   )
 
   return {

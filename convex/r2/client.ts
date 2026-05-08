@@ -23,11 +23,12 @@ export function getR2Client() {
 
 export function getR2Config() {
   const bucketName = process.env.R2_BUCKET_NAME
-  const publicUrl = process.env.R2_PUBLIC_URL
+  const publicUrl =
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? process.env.R2_PUBLIC_URL
 
   if (!bucketName || !publicUrl) {
     throw new Error(
-      'Missing R2 config: R2_BUCKET_NAME and R2_PUBLIC_URL must be set',
+      'Missing R2 config: R2_BUCKET_NAME and a public R2 URL must be set',
     )
   }
 

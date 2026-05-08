@@ -1,8 +1,10 @@
 'use client'
 
+import Image from '@/components/ui/app-image'
 import {useAuthCtx} from '@/ctx/auth'
 import {
   getPostEmailLinkRedirectUrl,
+  loginWithEmail,
   loginWithEmailLink,
   loginWithGoogle,
   sendEmailLink,
@@ -21,7 +23,6 @@ import {
   Separator,
 } from '@heroui/react'
 import type {ActionCodeSettings} from 'firebase/auth'
-import Image from '@/components/ui/app-image'
 import type {ReactNode} from 'react'
 import {useEffect, useMemo, useState} from 'react'
 
@@ -33,8 +34,14 @@ type AuthTab = 'login' | 'signup'
 
 interface EmailLinkFormProps {
   email: string
+  password: string
   onEmailChange: (email: string) => void
+  onPasswordChange: (password: string) => void
   onSubmit: () => void
+  onPasswordSubmit: () => void
+  onTogglePasswordMode: () => void
+  onExitPasswordMode: () => void
+  passwordMode: boolean
   loading: boolean
   error: string | null
   tab: AuthTab
@@ -42,8 +49,14 @@ interface EmailLinkFormProps {
 
 export const EmailLinkForm = ({
   email,
+  password,
   onEmailChange,
+  onPasswordChange,
   onSubmit,
+  onPasswordSubmit,
+  onTogglePasswordMode,
+  onExitPasswordMode,
+  passwordMode,
   loading,
   error,
   tab,
@@ -68,25 +81,75 @@ export const EmailLinkForm = ({
         placeholder={copy}
         value={email}
         onChange={(e) => onEmailChange(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), onSubmit())}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter') return
+
+          e.preventDefault()
+          if (passwordMode) {
+            onPasswordSubmit()
+            return
+          }
+
+          onSubmit()
+        }}
         autoComplete='email'
         className='placeholder:text-foreground/60 rounded-xs dark:text-white! shadow-none'
       />
-      <Button
-        size='lg'
-        type='button'
-        variant='primary'
-        onPress={onSubmit}
-        isDisabled={!email.trim() || loading}
-        className={cn('bg-brand w-full text-white rounded-xs', {
-          'bg-brand/70': !email.trim() || loading,
-        })}>
-        {loading ? (
-          <Icon name='spinners-ring' className='size-5 text-white' />
-        ) : (
-          'Send email link'
-        )}
-      </Button>
+      {passwordMode ? (
+        <>
+          <Input
+            fullWidth
+            type='password'
+            placeholder='Password'
+            value={password}
+            onChange={(e) => onPasswordChange(e.target.value)}
+            onKeyDown={(e) =>
+              e.key === 'Enter' && (e.preventDefault(), onPasswordSubmit())
+            }
+            autoComplete='current-password'
+            className='placeholder:text-foreground/60 rounded-xs dark:text-white! shadow-none'
+          />
+          <Button
+            size='sm'
+            type='button'
+            variant='ghost'
+            onPress={onExitPasswordMode}
+            isDisabled={loading}
+            className='w-fit self-start px-0 text-xs text-white/70 hover:text-white hover:bg-transparent min-w-0 h-auto'>
+            Use email link instead
+          </Button>
+        </>
+      ) : (
+        <Button
+          size='lg'
+          type='button'
+          variant='primary'
+          onPress={onSubmit}
+          isDisabled={!email.trim() || loading}
+          className={cn('bg-brand w-full text-white rounded-xs', {
+            'bg-brand/70': !email.trim() || loading,
+          })}>
+          {loading ? (
+            <Icon name='spinners-ring' className='size-5 text-white' />
+          ) : (
+            'Send email link'
+          )}
+        </Button>
+      )}
+      {tab === 'login' && (
+        <Button
+          size='lg'
+          type='button'
+          variant='primary'
+          onPress={passwordMode ? onPasswordSubmit : onTogglePasswordMode}
+          isDisabled={!email.trim() || loading || (passwordMode && !password)}
+          className={cn('bg-brand w-full text-white rounded-xs', {
+            'bg-brand/70':
+              !email.trim() || loading || (passwordMode && !password),
+          })}>
+          Sign-in with a password
+        </Button>
+      )}
     </div>
   )
 }
@@ -218,6 +281,8 @@ export const AuthModal = ({
     mode === 'signup' ? 'signup' : 'login',
   )
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [passwordMode, setPasswordMode] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -268,6 +333,32 @@ export const AuthModal = ({
     }
   }
 
+  const handlePasswordLogin = async () => {
+    const trimmedEmail = email.trim()
+
+    if (!trimmedEmail) {
+      setError('Please enter your email.')
+      return
+    }
+
+    if (!password) {
+      setError('Please enter your password.')
+      return
+    }
+
+    setError(null)
+    setLoading(true)
+    try {
+      await loginWithEmail(trimmedEmail, password)
+      setAuthModalOpen(false)
+      onClose()
+    } catch (err) {
+      setError(parseFirebaseAuthError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleGoogleLogin = async () => {
     setError(null)
     setGoogleLoading(true)
@@ -305,6 +396,8 @@ export const AuthModal = ({
 
   const handleClose = () => {
     setEmail('')
+    setPassword('')
+    setPasswordMode(false)
     setEmailSent(false)
     setError(null)
     setEmailForLink('')
@@ -320,6 +413,8 @@ export const AuthModal = ({
 
   const switchTab = (next: AuthTab) => {
     setError(null)
+    setPassword('')
+    setPasswordMode(false)
     setEmailSent(false)
     setTab(next)
   }
@@ -460,8 +555,21 @@ export const AuthModal = ({
               <div className='px-4 pb-4 pt-3 flex flex-col gap-1'>
                 <EmailLinkForm
                   email={email}
+                  password={password}
                   onEmailChange={setEmail}
+                  onPasswordChange={setPassword}
                   onSubmit={() => void handleSendEmailLink()}
+                  onPasswordSubmit={() => void handlePasswordLogin()}
+                  onTogglePasswordMode={() => {
+                    setError(null)
+                    setPasswordMode(true)
+                  }}
+                  onExitPasswordMode={() => {
+                    setError(null)
+                    setPassword('')
+                    setPasswordMode(false)
+                  }}
+                  passwordMode={passwordMode}
                   loading={loading}
                   error={error}
                   tab={tab}
@@ -479,7 +587,7 @@ export const AuthModal = ({
                   variant='tertiary'
                   onPress={() => void handleGoogleLogin()}
                   isDisabled={googleLoading}
-                  className='bg-black/80 backdrop-blur-2xl font-medium text-sm w-full text-white rounded-xs'>
+                  className='bg-black/80 backdrop-blur-2xl font-medium text-base w-full text-white rounded-xs'>
                   {googleLoading ? (
                     <Icon name='spinners-ring' className='size-5 text-white' />
                   ) : (
