@@ -152,23 +152,28 @@ export default function CartPage() {
               0,
             )
         const products = item.bundleItemsWithProducts.map((bi) => bi.product)
-        const bundleTotalCents = getBundleTotalCents(
-          products,
-          denom,
-          bundleAmount,
-        )
+        const bundleTotalCents =
+          variation?.defaultPriceEnabled === true &&
+          variation.defaultPriceCents != null &&
+          variation.defaultPriceCents > 0
+            ? variation.defaultPriceCents
+            : getBundleTotalCents(products, denom, bundleAmount)
         let sumUnitQty = 0
         for (const bi of item.bundleItemsWithProducts) {
           sumUnitQty +=
             getUnitPriceCents(bi.product, bi.denomination) * bi.quantity
         }
+        let remainingBundleCents = bundleTotalCents
         item.bundleItemsWithProducts.forEach((bi, lineIdx) => {
           const lineUnitQty =
             getUnitPriceCents(bi.product, bi.denomination) * bi.quantity
           const lineTotalCents =
-            sumUnitQty > 0
+            lineIdx === item.bundleItemsWithProducts.length - 1
+              ? remainingBundleCents
+              : sumUnitQty > 0
               ? Math.round((bundleTotalCents * lineUnitQty) / sumUnitQty)
               : 0
+          remainingBundleCents -= lineTotalCents
           bundleItems.push({
             product: bi.product,
             quantity: bi.quantity,

@@ -91,6 +91,13 @@ export function BundleCartItem({
 
   const totalPriceCents = useMemo(() => {
     if (!variation) return 0
+    if (
+      variation.defaultPriceEnabled === true &&
+      variation.defaultPriceCents != null &&
+      variation.defaultPriceCents > 0
+    ) {
+      return variation.defaultPriceCents
+    }
     const denom = variation.denominationPerUnit
     const bundleAmount = variation.totalUnits * denom
     const products = item.bundleItemsWithProducts.map((bi) => bi.product)

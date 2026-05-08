@@ -338,11 +338,16 @@ async function buildOrderItems(
       }),
     )
 
-    const bundleTotalCents = getBundleTotalCents(
-      lineItems.map(({product}) => product),
-      variation.denominationPerUnit,
-      bundleAmount,
-    )
+    const bundleTotalCents =
+      variation.defaultPriceEnabled === true &&
+      variation.defaultPriceCents != null &&
+      variation.defaultPriceCents > 0
+        ? variation.defaultPriceCents
+        : getBundleTotalCents(
+            lineItems.map(({product}) => product),
+            variation.denominationPerUnit,
+            bundleAmount,
+          )
     const lineUnitQtyTotal = lineItems.reduce(
       (sum, lineItem) => sum + lineItem.lineUnitQtyCents,
       0,

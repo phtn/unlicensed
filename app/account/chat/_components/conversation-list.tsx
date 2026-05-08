@@ -258,7 +258,7 @@ export function ConversationList({
                       {getInitials(displayName)}
                     </Avatar.Fallback>
                   </Avatar>
-                  <div className='absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-green-500 md:size-3' />
+                  <div className='absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-green-100 md:size-3' />
                 </div>
                 <div className='min-w-0 flex-1'>
                   <div className='mb-0 flex items-start justify-between gap-2'>

@@ -273,6 +273,12 @@ export function BundleBuilder({
   const isOverSelected = totalSelected > requiredUnits
   const maxPerStrain = config.maxPerStrain
   const lowThreshold = config.lowStockThreshold
+  const defaultBundlePriceCents =
+    variation.defaultPriceEnabled === true &&
+    variation.defaultPriceCents != null &&
+    variation.defaultPriceCents > 0
+      ? variation.defaultPriceCents
+      : undefined
 
   const rawCartQtyMap = useMemo(() => cartQtyByProductDenom(cart), [cart])
 
@@ -560,11 +566,9 @@ export function BundleBuilder({
     }
     if (selectedProducts.length === 0) return null
     const bundleAmount = variation.totalUnits * variation.denominationPerUnit
-    const bundleTotalCents = getBundleTotalCents(
-      selectedProducts,
-      denom,
-      bundleAmount,
-    )
+    const bundleTotalCents =
+      defaultBundlePriceCents ??
+      getBundleTotalCents(selectedProducts, denom, bundleAmount)
     if (bundleTotalCents <= 0) return null
     return {
       bundleTotalCents,
@@ -579,6 +583,7 @@ export function BundleBuilder({
     variation.totalUnits,
     variation.denominationPerUnit,
     variation.unitLabel,
+    defaultBundlePriceCents,
   ])
   const bundleSavingsCents =
     bundleTotalDisplay && isComplete

@@ -78,8 +78,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
   const [uploadedPreviewById, setUploadedPreviewById] = useState<
     Record<string, string>
   >({})
-  const [converterPortalContainer, setConverterPortalContainer] =
-    useState<HTMLDivElement | null>(null)
+
   const processingFileIdsRef = useRef<Set<string>>(new Set())
   const libraryUploadInputRef = useRef<HTMLInputElement>(null)
 
@@ -514,14 +513,9 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
     [attachUploadedStorageIds, libraryTarget, setPrimaryImage],
   )
 
-  const setConverterPortalNode = useCallback((node: HTMLDivElement | null) => {
-    setConverterPortalContainer(node)
-  }, [])
-
-  const getConverterPortalContainer = useCallback(
-    () => converterPortalContainer,
-    [converterPortalContainer],
-  )
+  // const setConverterPortalNode = useCallback((node: HTMLDivElement | null) => {
+  //   return node
+  // }, [])
 
   const displayImages = useMemo(() => {
     if (!primaryImageValue) {
@@ -642,7 +636,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
   return (
     <>
       <div
-        ref={setConverterPortalNode}
+        // ref={setConverterPortalNode}
         className='relative isolate overflow-hidden transform:translateZ(0)'>
         <FormSection>
           <Header label='Media' />
@@ -1052,7 +1046,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
 
               <Drawer.Body className='p-0 text-foreground bg-transparent!'>
                 <div className='h-[calc(100vh-8rem)] grid grid-cols-1 p-4 md:grid-cols-[200px_1fr]'>
-                  <aside className='min-h-0 md:max-h-[88vh] bg-slate-800/20 backdrop-blur-lg dark:bg-dark-table/50 rounded-s-xl border border-slate-400 dark:border-background/80 p-4'>
+                  <aside className='min-h-0 md:max-h-[88vh] bg-slate-800/20 backdrop-blur-xl dark:bg-dark-table/50 rounded-s-xl border border-slate-400 dark:border-background/80 p-4'>
                     <div className='space-y-2'>
                       <input
                         value={tagSearch}

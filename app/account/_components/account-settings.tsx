@@ -1,5 +1,6 @@
 'use client'
 
+import {User} from '@/components/hero-v3/user'
 import {api} from '@/convex/_generated/api'
 import type {Id} from '@/convex/_generated/dataModel'
 import type {AddressType} from '@/convex/users/d'
@@ -332,9 +333,9 @@ export const AccountSettings = ({user}: AccountSettingsProps) => {
                 aria-label='Change avatar'
                 className='relative size-9 shrink-0 overflow-hidden rounded-full ring-1 ring-foreground/10 transition-opacity hover:opacity-75 disabled:cursor-wait'>
                 {user?.photoUrl ? (
-                  <img
-                    src={user.photoUrl}
-                    alt='Avatar'
+                  <User
+                    name={user.name ?? 'XX'}
+                    avatar={user.photoUrl}
                     className='size-full object-cover'
                   />
                 ) : (

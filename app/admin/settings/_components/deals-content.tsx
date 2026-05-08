@@ -27,6 +27,8 @@ type VariationForm = {
   denominationPerUnit: string
   denominationLabel: string
   unitLabel: string
+  defaultPriceEnabled: boolean
+  defaultPrice: string
 }
 
 type DealFormState = {
@@ -254,6 +256,8 @@ function syncVariationsWithCategoryAttributes(
       denominationPerUnit: denominationValue,
       denominationLabel: getDenominationLabel(denominationValue, unitValue),
       unitLabel: unitValue,
+      defaultPriceEnabled: variation.defaultPriceEnabled,
+      defaultPrice: variation.defaultPrice,
     }
   })
 }
@@ -313,6 +317,8 @@ function emptyVariation(categories?: DealCategory[]): VariationForm {
     denominationPerUnit: denominationValue,
     denominationLabel: getDenominationLabel(denominationValue, unitValue),
     unitLabel: unitValue,
+    defaultPriceEnabled: false,
+    defaultPrice: '',
   }
 }
 
@@ -378,6 +384,8 @@ function variationFormToDoc(v: VariationForm): {
   denominationPerUnit: number
   denominationLabel?: string
   unitLabel: string
+  defaultPriceEnabled?: boolean
+  defaultPriceCents?: number
 } | null {
   const totalUnits = parseInt(v.totalUnits, 10)
   const denominationPerUnit = parseFloat(v.denominationPerUnit)
@@ -388,13 +396,32 @@ function variationFormToDoc(v: VariationForm): {
     denominationPerUnit <= 0
   )
     return null
+  let defaultPriceCents: number | undefined
+  if (v.defaultPriceEnabled) {
+    const parsedDefaultPriceCents = Math.round(Number(v.defaultPrice) * 100)
+    if (
+      !Number.isFinite(parsedDefaultPriceCents) ||
+      parsedDefaultPriceCents <= 0
+    )
+      return null
+    defaultPriceCents = parsedDefaultPriceCents
+  }
   return {
     categorySlug: v.categorySlug.trim() || undefined,
     totalUnits,
     denominationPerUnit,
     denominationLabel: v.denominationLabel.trim() || undefined,
     unitLabel: v.unitLabel.trim() || 'unit',
+    defaultPriceEnabled: v.defaultPriceEnabled,
+    defaultPriceCents,
   }
+}
+
+function centsToDollarInput(cents?: number): string {
+  if (cents == null || cents <= 0) return ''
+  return Number.isInteger(cents / 100)
+    ? String(cents / 100)
+    : (cents / 100).toFixed(2)
 }
 
 function dealToForm(deal: Deal): DealFormState {
@@ -414,6 +441,11 @@ function dealToForm(deal: Deal): DealFormState {
       denominationPerUnit: String(v.denominationPerUnit),
       denominationLabel: v.denominationLabel ?? '',
       unitLabel: v.unitLabel,
+      defaultPriceEnabled:
+        v.defaultPriceEnabled ?? deal.defaultPriceEnabled === true,
+      defaultPrice: centsToDollarInput(
+        v.defaultPriceCents ?? deal.defaultPriceCents,
+      ),
     })),
     defaultVariationIndex: String(deal.defaultVariationIndex ?? 0),
     maxPerStrain: String(deal.maxPerStrain),
@@ -458,6 +490,8 @@ type DealInsert = {
     denominationPerUnit: number
     denominationLabel?: string
     unitLabel: string
+    defaultPriceEnabled?: boolean
+    defaultPriceCents?: number
   }>
   defaultVariationIndex?: number
   maxPerStrain: number
@@ -836,6 +870,15 @@ export const DealsContent = () => {
                           <span className='ml-3 text-[10px] text-foreground/60 tracking-wide'>
                             max {deal.maxPerStrain} per strain
                           </span>
+                          {deal.variations.some(
+                            (variation) =>
+                              variation.defaultPriceEnabled === true &&
+                              variation.defaultPriceCents != null,
+                          ) && (
+                            <span className='ml-3 text-[10px] text-terpenes tracking-wide'>
+                              variation prices set
+                            </span>
+                          )}
                         </div>
                       </div>
                       <Toggle
@@ -941,6 +984,7 @@ export const DealsContent = () => {
                     required
                   />
                 </div>
+
                 <Input
                   label='Description'
                   placeholder='Short description shown on the store Deals page'
@@ -1074,7 +1118,12 @@ export const DealsContent = () => {
                 <div className='space-y-5'>
                   <div>
                     <p className='text-base font-medium text-foreground'>
-                      Variations
+                      <span>Bundle Variations</span>{' '}
+                      <span>
+                        <span className='font-ios font-thin opacity-50'>(</span>
+                        {form.variations.length}
+                        <span className='font-ios font-thin opacity-50'>)</span>
+                      </span>
                     </p>
                     <p className='text-xs text-foreground/55'>
                       {`Each variation is one option (e.g. 8 × 3.5g or 4 × 7g). At least one
@@ -1101,8 +1150,8 @@ export const DealsContent = () => {
                       return (
                         <div
                           key={idx}
-                          className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
-                          <div className='grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4'>
+                          className='relative rounded-lg bg-default-50/30 dark:bg-dark-table p-4 overflow-visible'>
+                          <div className='grid grid-cols-1 gap-x-2 gap-y-4 sm:grid-cols-2 lg:grid-cols-5'>
                             <Select
                               label='Category'
                               placeholder={
@@ -1208,6 +1257,33 @@ export const DealsContent = () => {
                                 }),
                               )}
                             />
+                            <Input
+                              label='Price'
+                              type='number'
+                              min={0}
+                              step='0.01'
+                              placeholder='0'
+                              value={v.defaultPrice}
+                              onChange={(e) =>
+                                updateVariation(idx, (variation) => ({
+                                  ...variation,
+                                  defaultPrice: e.target.value,
+                                }))
+                              }
+                              withAction
+                              disabled={!v.defaultPriceEnabled}>
+                              <Toggle
+                                title='Enable'
+                                checked={v.defaultPriceEnabled}
+                                onChange={() =>
+                                  updateVariation(idx, (variation) => ({
+                                    ...variation,
+                                    defaultPriceEnabled:
+                                      !variation.defaultPriceEnabled,
+                                  }))
+                                }
+                              />
+                            </Input>
                           </div>
                           {variationCategoryOptions.length === 0 && (
                             <p className='mt-3 text-xs text-foreground/55'>
@@ -1228,7 +1304,7 @@ export const DealsContent = () => {
                             size='sm'
                             variant='tertiary'
                             isIconOnly
-                            className='absolute -top-4 -right-2 hover:text-danger'
+                            className='absolute size-6 -top-4 right-1 hover:text-danger rounded-md'
                             isDisabled={form.variations.length <= 1}
                             onPress={() =>
                               setForm((f) => ({
@@ -1245,7 +1321,8 @@ export const DealsContent = () => {
                     })}
                     <Button
                       size='sm'
-                      variant='secondary'
+                      variant='primary'
+                      className='text-background bg-foreground'
                       onPress={() =>
                         setForm((f) => ({
                           ...f,
@@ -1255,7 +1332,7 @@ export const DealsContent = () => {
                           ],
                         }))
                       }>
-                      Add variation
+                      Add Bundle Variation
                     </Button>
                   </div>
                 </div>

@@ -7,6 +7,8 @@ export const dealVariationSchema = v.object({
   denominationPerUnit: v.number(),
   denominationLabel: v.optional(v.string()),
   unitLabel: v.string(),
+  defaultPriceEnabled: v.optional(v.boolean()),
+  defaultPriceCents: v.optional(v.number()),
 })
 
 /** Deal document stored in Convex. Maps to BundleConfig in the store. */
@@ -22,6 +24,10 @@ export const dealSchema = v.object({
   excludedBrands: v.optional(v.array(v.string())),
   variations: v.array(dealVariationSchema),
   defaultVariationIndex: v.optional(v.number()),
+  /** Deprecated: default prices now live on each variation. */
+  defaultPriceEnabled: v.optional(v.boolean()),
+  /** Deprecated: default prices now live on each variation. */
+  defaultPriceCents: v.optional(v.number()),
   maxPerStrain: v.number(),
   lowStockThreshold: v.optional(v.number()),
   order: v.number(),

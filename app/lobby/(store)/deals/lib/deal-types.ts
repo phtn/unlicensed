@@ -9,6 +9,8 @@ export interface BundleVariation {
   denominationPerUnit: number
   denominationLabel?: string
   unitLabel: string
+  defaultPriceEnabled?: boolean
+  defaultPriceCents?: number
 }
 
 export interface BundleConfig {
@@ -72,6 +74,8 @@ export function dealDocToBundleConfig(doc: {
     denominationPerUnit: number
     denominationLabel?: string
     unitLabel: string
+    defaultPriceEnabled?: boolean
+    defaultPriceCents?: number
   }>
   defaultVariationIndex?: number
   maxPerStrain: number

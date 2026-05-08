@@ -25,10 +25,12 @@ export const Input = ({
   value,
   onChange,
   onBlur,
+  disabled,
   placeholder,
   name,
   withAction = false,
   children,
+  ...props
 }: InputProps) => {
   const valueProps = onChange ? {value: value ?? ''} : {defaultValue: value}
 
@@ -41,8 +43,10 @@ export const Input = ({
         name={name}
         onBlur={onBlur}
         onChange={onChange}
-        {...valueProps}
         placeholder={placeholder}
+        disabled={disabled}
+        {...props}
+        {...valueProps}
         className={inputClass.input}
       />
 
@@ -60,6 +64,7 @@ export const TextArea = ({
   value,
   onChange,
   onBlur,
+  disabled,
   placeholder,
   name,
   rows,
@@ -78,6 +83,7 @@ export const TextArea = ({
         onChange={onChange}
         {...valueProps}
         placeholder={placeholder}
+        disabled={disabled}
         className={cn(
           inputClass.input,
           'overflow-hidden placeholder:font-normal!',
