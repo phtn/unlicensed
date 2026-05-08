@@ -38,7 +38,6 @@
     "@origin-space/image-cropper": "^0.1.9",
     "@paper-design/shaders-react": "^0.0.71",
     "@radix-ui/react-scroll-area": "^1.2.10",
-    "@react-aria/overlays": "^3.32.0",
     "@react-email/components": "^1.0.10",
     "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^10.7.7",

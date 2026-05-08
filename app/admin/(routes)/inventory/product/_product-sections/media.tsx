@@ -2,7 +2,6 @@
 
 import {FormInput} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
-import {UNSAFE_PortalProvider} from '@react-aria/overlays'
 import {Alert, AlertDescription, AlertTitle} from '@/components/reui/alert'
 import {api} from '@/convex/_generated/api'
 import {useFileUpload} from '@/hooks/use-file-upload'
@@ -1257,19 +1256,17 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
         </Drawer.Backdrop>
       </Drawer>
 
-      <UNSAFE_PortalProvider getContainer={getConverterPortalContainer}>
-        <PrimaryImageConverterModal
-          isOpen={isConverterOpen}
-          onOpenChangeAction={handleConverterOpenChange}
-          onConvertedAction={handleConvertedLibraryUpload}
-          sourceUrl={null}
-          sourceFile={converterSourceFile}
-          categorySlug={categorySlug}
-          productBrands={productBrands}
-          suggestedFileNameStem={productName}
-          variant='library-upload'
-        />
-      </UNSAFE_PortalProvider>
+      <PrimaryImageConverterModal
+        isOpen={isConverterOpen}
+        onOpenChangeAction={handleConverterOpenChange}
+        onConvertedAction={handleConvertedLibraryUpload}
+        sourceUrl={null}
+        sourceFile={converterSourceFile}
+        categorySlug={categorySlug}
+        productBrands={productBrands}
+        suggestedFileNameStem={productName}
+        variant='library-upload'
+      />
     </>
   )
 }
