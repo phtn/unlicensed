@@ -434,6 +434,23 @@ function DataTableContent<T>({
     ],
   )
 
+  const getColumnCanGlobalFilter = useCallback(
+    (column: Column<T, unknown>) => {
+      if (column.columnDef.enableGlobalFilter === true) {
+        return true
+      }
+
+      const firstRow = tableData[0]
+      if (!firstRow || !column.accessorFn) {
+        return false
+      }
+
+      const value = column.accessorFn(firstRow, 0)
+      return typeof value === 'string' || typeof value === 'number'
+    },
+    [tableData],
+  )
+
   const table = useReactTable({
     data: tableData,
     columns,
@@ -453,6 +470,7 @@ function DataTableContent<T>({
     getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     globalFilterFn: globalFilterFn,
+    getColumnCanGlobalFilter,
     state: {
       sorting,
       pagination: paginationState,

@@ -402,6 +402,7 @@ export const ProductsData = ({
           cell: textCell('name'),
           size: 100,
           enableFiltering: false,
+          enableGlobalFiltering: true,
         },
         {
           id: 'categorySlug',
@@ -409,6 +410,7 @@ export const ProductsData = ({
           accessorKey: 'categorySlug',
           cell: linkText('categorySlug', '/admin/inventory/category/'),
           size: 100,
+          enableGlobalFiltering: true,
           meta: {filterOptions: categorySlugs},
         },
         {
@@ -417,6 +419,7 @@ export const ProductsData = ({
           accessorKey: 'tier',
           cell: textCell('tier', 'text-center uppercase'),
           size: 64,
+          enableGlobalFiltering: true,
           meta: {
             bulkEditor: {
               type: 'select',
@@ -445,6 +448,7 @@ export const ProductsData = ({
           accessorKey: 'brand',
           cell: textCell('brand', 'text-xs uppercase'),
           size: 100,
+          enableGlobalFiltering: true,
           meta: {filterOptions: brandFilterOptions},
         },
         {
@@ -453,6 +457,7 @@ export const ProductsData = ({
           accessorKey: 'subcategory',
           cell: textCell('subcategory', 'text-xs uppercase'),
           size: 100,
+          enableGlobalFiltering: true,
           meta: {filterOptions: subcategoryFilterOptions},
         },
         {
@@ -461,6 +466,7 @@ export const ProductsData = ({
           accessorKey: 'productType',
           cell: textCell('productType', 'text-xs uppercase'),
           size: 100,
+          enableGlobalFiltering: true,
           meta: {filterOptions: productTypeFilterOptions},
         },
         // {
@@ -619,6 +625,7 @@ export const ProductsData = ({
           accessorKey: 'packagingMode',
           cell: textCell('packagingMode', 'uppercase text-xs'),
           size: 140,
+          enableGlobalFiltering: true,
           meta: {
             bulkEditor: {
               type: 'select',
@@ -643,6 +650,7 @@ export const ProductsData = ({
             <ColHeader tip='Lineage' symbol='Lineage' className='w-20' center />
           ),
           accessorKey: 'lineage',
+          enableGlobalFiltering: true,
           cell: (ctx) => {
             const lineage = ctx.row.original.lineage?.trim()
 

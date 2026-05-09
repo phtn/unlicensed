@@ -73,6 +73,7 @@ export interface ColumnConfig<T> {
   size?: number
   filterFn?: FilterFn<T>
   enableFiltering?: boolean
+  enableGlobalFiltering?: boolean
   enableHiding?: boolean
   enableSorting?: boolean
   meta?: ColumnMeta<T>
@@ -211,6 +212,7 @@ export const createColumns = <T,>(
       size: config.size ?? 150,
       filterFn: config.filterFn ?? filterFn,
       enableColumnFilter: config.enableFiltering ?? true,
+      enableGlobalFilter: config.enableGlobalFiltering,
       enableHiding: config.enableHiding ?? true,
       enableSorting: config.enableSorting ?? true,
       ...(config.meta && Object.keys(config.meta).length > 0

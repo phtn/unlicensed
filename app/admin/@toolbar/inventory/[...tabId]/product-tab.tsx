@@ -25,7 +25,7 @@ const ProductContentInner = () => {
         <PageTitle>Products</PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-10 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-sm font-space font-semibold',
+            'px-1 h-6 w-10 ml-3 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-sm font-space font-semibold',
             {'bg-white dark:bg-white/10 text-blue-500': isProductRoute},
           )}>
           <AnimatedNumber value={productCount ?? 0} />
