@@ -25,6 +25,7 @@ interface MessageBubbleTimestampProps {
 }
 
 export function MessageBubbleTimestamp({
+  messageId,
   createdAt,
   isCurrentUser,
   isVisible,
@@ -33,12 +34,14 @@ export function MessageBubbleTimestamp({
   isLiked,
   onLike,
 }: MessageBubbleTimestampProps) {
+  const transitionName = `chat-message-timestamp-${messageId}`
+
   return (
     <div className='relative w-full flex items-center gap-2 text-xs text-muted-foreground px-2'>
       {isCurrentUser ? (
         <div className='min-w-12 relative flex items-center'>
           <ViewTransition
-            name='chat-message-timestamp'
+            name={transitionName}
             enter='vt-enter'
             exit='vt-exit'>
             {isVisible ? (
@@ -72,7 +75,7 @@ export function MessageBubbleTimestamp({
           )}
           <div className='min-w-12 px-1'>
             <ViewTransition
-              name='chat-message-timestamp'
+              name={transitionName}
               enter='vt-enter'
               exit='vt-exit'>
               {isVisible ? (

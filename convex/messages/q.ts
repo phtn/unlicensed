@@ -119,6 +119,7 @@ const mapConversationUser = (
     locationLabel: includeLocation
       ? getChatParticipantLocationLabel(user)
       : null,
+    lastActiveAt: user.lastActiveAt ?? user.updatedAt ?? null,
   }
 }
 

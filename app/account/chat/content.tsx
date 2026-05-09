@@ -60,6 +60,36 @@ const getInitials = (value: string) =>
     .slice(0, 2)
     .toUpperCase()
 
+const ACTIVE_ONLINE_MS = 5 * 60 * 1000
+const RECENTLY_ACTIVE_MS = 10 * 60 * 1000
+const ACTIVITY_TICK_MS = 60 * 1000
+
+function getActivityDotClass(
+  lastActiveAt: number | null | undefined,
+  now: number,
+) {
+  if (!lastActiveAt) return 'bg-gray-200 dark:bg-dark-table'
+
+  const elapsedMs = now - lastActiveAt
+  if (elapsedMs < 0 || elapsedMs <= ACTIVE_ONLINE_MS) return 'bg-green-500'
+  if (elapsedMs <= RECENTLY_ACTIVE_MS) return 'bg-orange-400'
+
+  return 'bg-gray-200 dark:bg-dark-table'
+}
+
+function getActivityLabel(
+  lastActiveAt: number | null | undefined,
+  now: number,
+) {
+  if (!lastActiveAt) return 'Offline'
+
+  const elapsedMs = now - lastActiveAt
+  if (elapsedMs < 0 || elapsedMs <= ACTIVE_ONLINE_MS) return 'Active now'
+  if (elapsedMs <= RECENTLY_ACTIVE_MS) return 'Recently active'
+
+  return 'Offline'
+}
+
 const ChatAvatar = ({
   src,
   label,
@@ -90,6 +120,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
     useState<HTMLDivElement | null>(null)
   const shouldAutoScrollRef = useRef(true) // Track if we should auto-scroll
   const previousMessagesLengthRef = useRef(0)
+  const [activityNow, setActivityNow] = useState(() => Date.now())
 
   // Derive conversation state from URL
   const selectedConversationRef = initialConversationId ?? null
@@ -99,6 +130,14 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   // Assistant chat hook
   const assistantChat = useAssistantChat()
   const [assistantDraft, setAssistantDraft] = useState('')
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActivityNow(Date.now())
+    }, ACTIVITY_TICK_MS)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   // Get assistant user and last message for preview
   const assistantUser = useQuery(api.assistant.q.getAssistantUser)
@@ -595,8 +634,21 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
           proId: selectedConversationFid ?? '',
           displayName: otherUser.name ?? null,
           avatarUrl: otherUser.photoUrl ?? null,
+          lastActiveAt: otherUser.lastActiveAt ?? otherUser.updatedAt ?? null,
         }
       : null)
+  const chatDisplayLastActiveAt =
+    selectedConversation?.otherUser?.lastActiveAt ??
+    chatDisplayUser?.lastActiveAt ??
+    null
+  const chatDisplayActivityDotClass = getActivityDotClass(
+    chatDisplayLastActiveAt,
+    activityNow,
+  )
+  const chatDisplayActivityLabel = getActivityLabel(
+    chatDisplayLastActiveAt,
+    activityNow,
+  )
 
   // On mobile, show either list or chat. On desktop, show both
   const showConversationList = !isMobile || !showChat
@@ -830,7 +882,12 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                       }
                     />
                   )}
-                  <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border border-white' />
+                  <div
+                    className={cn(
+                      'absolute bottom-0 right-0 size-2.5 rounded-full border border-background md:size-3',
+                      chatDisplayActivityDotClass,
+                    )}
+                  />
                 </div>
                 <div className='min-w-0 flex-1'>
                   <h2 className='font-semibold text-sm truncate'>
@@ -839,7 +896,11 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                       chatDisplayUser.email?.split('@')[0] ??
                       'Unknown User'}
                   </h2>
-                  <p className='text-xs'>Active now</p>
+                  <p
+                    id='user-activity'
+                    className='text-xs text-muted-foreground'>
+                    {chatDisplayActivityLabel}
+                  </p>
                 </div>
               </div>
               <div className='flex items-center gap-1 md:gap-2 shrink-0'>

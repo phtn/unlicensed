@@ -3,6 +3,7 @@
 import {AdminMasterMonitor} from '@/components/main/master/admin-master-monitor'
 import dynamic from 'next/dynamic'
 import {useEffect, useState} from 'react'
+import {UserActivityTracker} from './user-activity-tracker'
 
 const DynamicEmailLinkHandler = dynamic(
   () =>
@@ -85,6 +86,7 @@ export function DeferredRootClient() {
       {/*<DynamicAgeConfirmationModal />*/}
       <AdminMasterMonitor />
       <DynamicGlobalAuthModal />
+      <UserActivityTracker />
       {/*<DynamicCookieUsageConfirmation />*/}
       {mountDeferredClients ? (
         <>

@@ -40,3 +40,24 @@ export const updateLocation = mutation({
     return guest._id
   },
 })
+
+export const updateActivity = mutation({
+  args: {
+    fid: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const guest = await getGuestByFid(ctx, args.fid)
+
+    if (!guest) {
+      return null
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(guest._id, {
+      lastActiveAt: now,
+      updatedAt: now,
+    })
+
+    return guest._id
+  },
+})

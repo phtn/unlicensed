@@ -126,6 +126,7 @@ export const userSchema = v.object({
   ),
   fcm: v.optional(fcmSchema),
   isActive: v.optional(v.boolean()),
+  lastActiveAt: v.optional(v.number()),
 
   // Timestamps
   createdAt: v.optional(v.number()),

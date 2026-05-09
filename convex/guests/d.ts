@@ -26,6 +26,7 @@ export const guestSchema = v.object({
   ),
   locationUpdatedAt: v.optional(v.number()),
   isActive: v.optional(v.boolean()),
+  lastActiveAt: v.optional(v.number()),
   createdAt: v.optional(v.number()),
   updatedAt: v.optional(v.number()),
   notes: v.optional(v.string()),

@@ -339,6 +339,27 @@ export const getUserByFid = mutation({
   handler: async (ctx, args) => getCanonicalUserByFid(ctx, args.fid),
 })
 
+export const updateActivity = mutation({
+  args: {
+    fid: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCanonicalUserByFid(ctx, args.fid)
+
+    if (!user) {
+      return null
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(user._id, {
+      lastActiveAt: now,
+      updatedAt: now,
+    })
+
+    return user._id
+  },
+})
+
 export const updateContact = mutation({
   args: {
     fid: v.string(),

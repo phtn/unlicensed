@@ -59,6 +59,8 @@ export interface OtherUser {
   avatarUrl?: string | null
   /** Staff-only location preview for conversation lists */
   locationLabel?: string | null
+  /** Last known foreground activity timestamp in milliseconds. */
+  lastActiveAt?: number | null
 }
 
 export interface LastMessage {

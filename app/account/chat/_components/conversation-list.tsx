@@ -17,6 +17,7 @@ import {
   ReactNode,
   TouchEvent,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from 'react'
@@ -46,6 +47,9 @@ interface ConversationListProps {
 
 const ARCHIVE_BUTTON_WIDTH = 80
 const UNFILED_FOLDER_VALUE = '__unfiled__'
+const ACTIVE_ONLINE_MS = 5 * 60 * 1000
+const RECENTLY_ACTIVE_MS = 10 * 60 * 1000
+const ACTIVITY_TICK_MS = 60 * 1000
 
 const getInitials = (value: string) =>
   value
@@ -55,6 +59,19 @@ const getInitials = (value: string) =>
     .join('')
     .slice(0, 2)
     .toUpperCase()
+
+function getActivityDotClass(
+  lastActiveAt: number | null | undefined,
+  now: number,
+) {
+  if (!lastActiveAt) return 'bg-gray-200 dark:bg-dark-table'
+
+  const elapsedMs = now - lastActiveAt
+  if (elapsedMs < 0 || elapsedMs <= ACTIVE_ONLINE_MS) return 'bg-green-500'
+  if (elapsedMs <= RECENTLY_ACTIVE_MS) return 'bg-orange-400'
+
+  return 'bg-gray-200 dark:bg-dark-table'
+}
 
 function SwipeableConversationRow({
   conversation,
@@ -148,6 +165,15 @@ export function ConversationList({
   const [folderEditorConversationId, setFolderEditorConversationId] = useState<
     string | null
   >(null)
+  const [activityNow, setActivityNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActivityNow(Date.now())
+    }, ACTIVITY_TICK_MS)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   // Filter out null conversations and cast to expected type
   const validConversations = (conversations?.filter((conv) => conv !== null) ??
@@ -258,7 +284,15 @@ export function ConversationList({
                       {getInitials(displayName)}
                     </Avatar.Fallback>
                   </Avatar>
-                  <div className='absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-green-100 md:size-3' />
+                  <div
+                    className={cn(
+                      'absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background md:size-3',
+                      getActivityDotClass(
+                        conversation.otherUser?.lastActiveAt,
+                        activityNow,
+                      ),
+                    )}
+                  />
                 </div>
                 <div className='min-w-0 flex-1'>
                   <div className='mb-0 flex items-start justify-between gap-2'>
