@@ -16,7 +16,7 @@ export const Crumbs = ({product}: Props) => {
       <BreadcrumbsItem href='/lobby/category' className='group/root'>
         <Icon
           name='lineage'
-          className='rotate-45 size-4 sm:size-4 text-foreground/50 group-hover/root:opacity-100 dark:group-hover/root:text-white'
+          className='rotate-45 size-4 sm:size-4 text-foreground group-hover/root:opacity-100 dark:group-hover/root:text-white'
         />
       </BreadcrumbsItem>
       <BreadcrumbsItem

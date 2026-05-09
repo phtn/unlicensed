@@ -10,7 +10,13 @@ import {
   socialMediaSchema,
   type AddressType,
 } from './d'
-import {getCanonicalUserByEmail, getCanonicalUserByFid} from './lib'
+import {
+  getCanonicalUserByEmail,
+  getCanonicalUserByFid,
+  getCanonicalUserByFirebaseId,
+  normalizeUserEmail,
+  normalizeUserFid,
+} from './lib'
 
 const supportsShipping = (type: AddressType['type']) =>
   type === 'shipping' || type === 'both'
@@ -167,20 +173,37 @@ export const createOrUpdateUser = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now()
+    const email = normalizeUserEmail(args.email)
+    const firebaseId = normalizeUserFid(args.firebaseId)
+    const fid = normalizeUserFid(args.fid ?? args.firebaseId)
+
+    if (!email) {
+      throw new Error('Email is required')
+    }
+
+    if (!firebaseId || !fid) {
+      throw new Error('Firebase ID is required')
+    }
 
     // Prefer the auth identifier and only fall back to email for legacy rows
     // that were created before `fid` was consistently backfilled.
-    const existingByFid = await getCanonicalUserByFid(ctx, args.firebaseId)
-    const existingByEmail = existingByFid
+    const existingByFid = await getCanonicalUserByFid(ctx, fid)
+    const existingByFirebaseId = existingByFid
       ? null
-      : await getCanonicalUserByEmail(ctx, args.email)
+      : await getCanonicalUserByFirebaseId(ctx, firebaseId)
+    const existingByEmail =
+      existingByFid || existingByFirebaseId
+        ? null
+        : await getCanonicalUserByEmail(ctx, email)
     const canReuseEmailMatch =
       !!existingByEmail &&
       (!existingByEmail.fid ||
-        existingByEmail.fid === args.firebaseId ||
-        existingByEmail.firebaseId === args.firebaseId)
+        existingByEmail.fid === fid ||
+        existingByEmail.firebaseId === firebaseId)
     const existing =
-      existingByFid ?? (canReuseEmailMatch ? existingByEmail : null)
+      existingByFid ??
+      existingByFirebaseId ??
+      (canReuseEmailMatch ? existingByEmail : null)
 
     if (existing) {
       // Update existing user - only patch fields that are provided (not undefined)
@@ -198,10 +221,10 @@ export const createOrUpdateUser = mutation({
         cashAppUsername?: string
         updatedAt: number
       } = {
-        email: args.email,
+        email,
         name: args.name,
-        firebaseId: args.firebaseId,
-        fid: args.firebaseId,
+        firebaseId,
+        fid,
         updatedAt: now,
       }
 
@@ -256,10 +279,10 @@ export const createOrUpdateUser = mutation({
 
     // Create new user
     const userId = await ctx.db.insert('users', {
-      email: args.email,
+      email,
       name: args.name,
-      firebaseId: args.firebaseId,
-      fid: args.firebaseId,
+      firebaseId,
+      fid,
       photoUrl: args.photoUrl,
       contact: args.contact,
       socialMedia: args.socialMedia,
@@ -282,7 +305,7 @@ export const createOrUpdateUser = mutation({
     await ctx.scheduler.runAfter(0, internal.activities.m.logUserSignup, {
       userId,
       userName: args.name,
-      userEmail: args.email,
+      userEmail: email,
     })
 
     await ctx.scheduler.runAfter(0, internal.users.a.sendWelcomeEmailForUser, {

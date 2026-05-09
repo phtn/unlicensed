@@ -16,6 +16,7 @@ import {
   Fragment,
   ReactNode,
   PointerEvent,
+  MouseEvent,
   useCallback,
   useEffect,
   useRef,
@@ -32,12 +33,17 @@ export interface Conversation {
   folderName?: string | null
 }
 
+type ArchiveConversationHandler = (
+  otherUserId: string,
+  otherUserProId: string,
+) => void | Promise<void>
+
 interface ConversationListProps {
   conversations: Conversation[] | undefined
   folderOptions?: ConversationFolderSummary[]
   selectedProId: string | null
   onSelectConversation: (otherUserId: string, otherUserProId: string) => void
-  onArchiveConversation?: (otherUserId: string, otherUserProId: string) => void
+  onArchiveConversation?: ArchiveConversationHandler
   onMoveConversation?: (
     otherUserId: string,
     otherUserProId: string,
@@ -79,19 +85,22 @@ function SwipeableConversationRow({
   children,
 }: {
   conversation: Conversation
-  onArchive: (otherUserId: string, otherUserProId: string) => void
+  onArchive: ArchiveConversationHandler
   children: ReactNode
 }) {
   const [translateX, setTranslateX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
   const pointerStartX = useRef(0)
   const pointerStartTranslate = useRef(0)
   const activePointerId = useRef<number | null>(null)
   const hasDragged = useRef(false)
   const suppressNextClick = useRef(false)
+  const isPointerCaptured = useRef(false)
 
   const finishDrag = useCallback(() => {
     activePointerId.current = null
+    isPointerCaptured.current = false
     setIsDragging(false)
     setTranslateX((current) =>
       current < -ARCHIVE_BUTTON_WIDTH / 2 ? -ARCHIVE_BUTTON_WIDTH : 0,
@@ -120,8 +129,7 @@ function SwipeableConversationRow({
       pointerStartX.current = event.clientX
       pointerStartTranslate.current = translateX
       hasDragged.current = false
-      event.currentTarget.setPointerCapture(event.pointerId)
-      setIsDragging(true)
+      isPointerCaptured.current = false
     },
     [translateX],
   )
@@ -132,8 +140,18 @@ function SwipeableConversationRow({
     }
 
     const deltaX = event.clientX - pointerStartX.current
-    if (Math.abs(deltaX) > 4) {
+    if (!hasDragged.current && Math.abs(deltaX) <= 4) {
+      return
+    }
+
+    if (!hasDragged.current) {
       hasDragged.current = true
+      setIsDragging(true)
+
+      if (!isPointerCaptured.current) {
+        event.currentTarget.setPointerCapture(event.pointerId)
+        isPointerCaptured.current = true
+      }
     }
 
     setTranslateX(
@@ -175,6 +193,14 @@ function SwipeableConversationRow({
 
   const handleClickCapture = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest('[data-archive-action]')
+      ) {
+        suppressNextClick.current = false
+        return
+      }
+
       if (!suppressNextClick.current) {
         return
       }
@@ -186,17 +212,46 @@ function SwipeableConversationRow({
     [],
   )
 
-  const handleArchiveClick = useCallback(() => {
-    onArchive(
+  const handleArchiveClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (isArchiving) {
+        return
+      }
+
+      const otherUserProId =
+        conversation.otherUser?.proId ?? conversation.otherUser?.fid ?? ''
+
+      setIsArchiving(true)
+      void Promise.resolve(onArchive(conversation.otherUserId, otherUserProId))
+        .then(() => {
+          setTranslateX(0)
+        })
+        .catch((error) => {
+          console.error('Error archiving conversation:', error)
+        })
+        .finally(() => {
+          setIsArchiving(false)
+        })
+    },
+    [
       conversation.otherUserId,
-      conversation.otherUser?.proId ?? conversation.otherUser?.fid ?? '',
-    )
-  }, [
-    conversation.otherUserId,
-    conversation.otherUser?.proId,
-    conversation.otherUser?.fid,
-    onArchive,
-  ])
+      conversation.otherUser?.proId,
+      conversation.otherUser?.fid,
+      isArchiving,
+      onArchive,
+    ],
+  )
+
+  const handleArchivePointerDown = useCallback(
+    (event: PointerEvent<HTMLButtonElement>) => {
+      event.stopPropagation()
+      suppressNextClick.current = false
+    },
+    [],
+  )
 
   return (
     <div className='relative overflow-hidden'>
@@ -223,9 +278,16 @@ function SwipeableConversationRow({
           style={{width: ARCHIVE_BUTTON_WIDTH}}>
           <button
             type='button'
+            data-archive-action
+            disabled={isArchiving}
+            aria-busy={isArchiving}
+            onPointerDown={handleArchivePointerDown}
             onClick={handleArchiveClick}
-            className='flex flex-col items-center justify-center text-white gap-1 px-3 py-2 touch-manipulation bg-light-brand active:scale-85 transition-transform duration-200'>
-            <Icon name='archive-fill' className='size-5 text-white' />
+            className='flex flex-col items-center justify-center text-white gap-1 px-3 py-2 touch-manipulation bg-light-brand active:scale-85 transition-transform duration-200 disabled:cursor-wait disabled:opacity-70'>
+            <Icon
+              name={isArchiving ? 'spinners-ring' : 'archive-fill'}
+              className='size-5 text-white'
+            />
             <span className='text-xs font-medium'>Archive</span>
           </button>
         </div>

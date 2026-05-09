@@ -80,12 +80,13 @@ const AuthCtxProvider = ({children}: AuthProviderProps) => {
       return
     }
 
-    const nextName = user.displayName || user.email.split('@')[0]
+    const nextEmail = user.email.trim().toLowerCase()
+    const nextName = user.displayName || nextEmail.split('@')[0]
     const nextPhotoUrl = user.photoURL ?? null
     const needsSync =
       !convexUser ||
       convexUser.fid !== user.uid ||
-      convexUser.email !== user.email ||
+      convexUser.email !== nextEmail ||
       convexUser.name !== nextName ||
       (convexUser.photoUrl ?? null) !== nextPhotoUrl
 
@@ -94,7 +95,7 @@ const AuthCtxProvider = ({children}: AuthProviderProps) => {
     }
 
     void createOrUpdateUser({
-      email: user.email,
+      email: nextEmail,
       name: nextName,
       firebaseId: user.uid,
       ...(user.photoURL ? {photoUrl: user.photoURL} : {}),

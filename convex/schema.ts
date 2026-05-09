@@ -55,6 +55,7 @@ export default defineSchema({
   staff: defineTable(staffSchema).index('by_email', ['email']),
   users: defineTable(userSchema)
     .index('by_fid', ['fid'])
+    .index('by_firebaseId', ['firebaseId'])
     .index('by_email', ['email']),
   guests: defineTable(guestSchema)
     .index('by_fid', ['fid'])

@@ -1,10 +1,11 @@
 import type {Doc} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
+import {normalizeUserEmail} from '../users/lib'
 
 const getUserByEmail = async (ctx: MutationCtx, email: string) =>
   ctx.db
     .query('users')
-    .withIndex('by_email', (q) => q.eq('email', email))
+    .withIndex('by_email', (q) => q.eq('email', normalizeUserEmail(email)))
     .first()
 
 const getPreferredStaffFid = (
@@ -42,7 +43,7 @@ export const resolveStaffChatUser = async (
     const now = Date.now()
     const fallbackName =
       staff.name?.trim() || staff.email.split('@')[0] || 'Staff member'
-    const normalizedEmail = staff.email.trim().toLowerCase()
+    const normalizedEmail = normalizeUserEmail(staff.email)
 
     const staffUserId = await ctx.db.insert('users', {
       email: normalizedEmail,
@@ -78,7 +79,7 @@ export const resolveStaffChatUser = async (
     nextUserUpdates.fid = staffUserFid
   }
   if (staffUser.email !== staff.email && staff.email) {
-    nextUserUpdates.email = staff.email.trim().toLowerCase()
+    nextUserUpdates.email = normalizeUserEmail(staff.email)
   }
   if (!staffUser.name?.trim() && staff.name?.trim()) {
     nextUserUpdates.name = staff.name.trim()

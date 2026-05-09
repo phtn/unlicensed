@@ -214,7 +214,7 @@ export const ChatSupportHours = () => {
     <div
       ref={rootRef}
       className={cn(
-        'fixed right-0 bottom-7 flex h-15 w-60 items-center overflow-hidden rounded-full bg-black/20 px-4 text-balance text-white shadow-lg backdrop-blur-sm',
+        'fixed -right-1 bottom-7 flex h-15 w-60 items-center overflow-hidden rounded-full bg-black/25 px-4 text-balance text-white shadow-lg backdrop-blur-sm',
         isCompact ? 'space-x-5' : 'space-x-5',
       )}>
       <div
