@@ -84,11 +84,11 @@ export function DeferredRootClient() {
     <>
       {/*<DynamicAgeConfirmationModal />*/}
       <AdminMasterMonitor />
+      <DynamicGlobalAuthModal />
       {/*<DynamicCookieUsageConfirmation />*/}
       {mountDeferredClients ? (
         <>
           <DynamicEmailLinkHandler />
-          <DynamicGlobalAuthModal />
           <DynamicScreenDimensionsTracker />
           <DynamicUserLocationTracker />
           <DynamicGuestBehaviorTracker />

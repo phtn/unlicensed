@@ -1,9 +1,9 @@
 'use client'
 
-import {AuthModal} from '@/components/auth/auth-modal'
 import {CartDrawer} from '@/components/store/cart-drawer'
 import {useTheme} from '@/components/ui/theme-provider'
 import {api} from '@/convex/_generated/api'
+import {useAuthCtx} from '@/ctx/auth'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {useDisclosure} from '@/hooks/use-disclosure'
@@ -33,7 +33,7 @@ export const Nav = ({children}: NavProps) => {
   const inStoreLobby = pathname.split('/').pop() === 'lobby'
   const {resolvedTheme, setTheme, theme} = useTheme()
   const {cartItemCount} = useCart()
-  const {isOpen, onOpen, onClose} = useDisclosure()
+  const {setAuthModalOpen} = useAuthCtx()
   const {
     isOpen: isCartDrawerOpen,
     onOpen: onCartDrawerOpen,
@@ -45,10 +45,8 @@ export const Nav = ({children}: NavProps) => {
       await logout()
     } catch (error) {
       console.error('Failed to logout:', error)
-    } finally {
-      onClose()
     }
-  }, [onClose])
+  }, [])
 
   const staff = useQuery(
     api.staff.q.getStaffByEmail,
@@ -73,6 +71,10 @@ export const Nav = ({children}: NavProps) => {
   const handleHomeMouseLeave = useCallback(() => {
     setHovered(false)
   }, [])
+
+  const handleOpenAuthModal = useCallback(() => {
+    setAuthModalOpen(true)
+  }, [setAuthModalOpen])
 
   return (
     <div>
@@ -206,7 +208,7 @@ export const Nav = ({children}: NavProps) => {
             ) : (
               <Icon
                 name='user'
-                onClick={onOpen}
+                onClick={handleOpenAuthModal}
                 className={cn(
                   'size-6 text-white focus-visible:outline-2! focus-visible:outline-brand!',
                   {
@@ -222,7 +224,6 @@ export const Nav = ({children}: NavProps) => {
           </div>
         </div>
       </header>
-      <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
       <CartDrawer
         open={isCartDrawerOpen}
         onOpenChange={(open) => {

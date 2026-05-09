@@ -294,10 +294,6 @@ export const AuthModal = ({
   const canOpen = isOpen && !hasActiveSession
 
   useEffect(() => {
-    setAuthModalOpen(canOpen)
-  }, [canOpen, setAuthModalOpen])
-
-  useEffect(() => {
     if (isOpen && hasActiveSession) {
       setAuthModalOpen(false)
       onClose()
