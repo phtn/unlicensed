@@ -13,7 +13,7 @@ const createOrUpdateUserHandler = (
             withIndex: (
               indexName: string,
               cb: unknown,
-            ) => {first: () => Promise<Doc<'users'> | null>}
+            ) => {collect: () => Promise<Array<Doc<'users'>>>}
             first?: never
           }
           insert: (table: string, value: Record<string, unknown>) => Promise<Id<'users'>>
@@ -57,7 +57,7 @@ describe('createOrUpdateUser welcome email scheduling', () => {
             withIndex: (indexName: string, _cb: unknown) => {
               lookupIndexes.push(indexName)
               return {
-                first: async () => null,
+                collect: async () => [],
               }
             },
           }
@@ -102,7 +102,7 @@ describe('createOrUpdateUser welcome email scheduling', () => {
     })
     expect(typeof insertCalls[0]?.value.createdAt).toBe('number')
     expect(typeof insertCalls[0]?.value.updatedAt).toBe('number')
-    expect(lookupIndexes).toEqual(['by_fid', 'by_email'])
+    expect(lookupIndexes).toEqual(['by_fid', 'by_firebaseId', 'by_email'])
 
     expect(schedulerCalls).toEqual([
       {
@@ -149,8 +149,8 @@ describe('createOrUpdateUser welcome email scheduling', () => {
             withIndex: (indexName: string, _cb: unknown) => {
               lookupIndexes.push(indexName)
               return {
-                first: async () =>
-                  indexName === 'by_fid' ? existingUser : null,
+                collect: async () =>
+                  indexName === 'by_fid' ? [existingUser] : [],
               }
             },
           }
