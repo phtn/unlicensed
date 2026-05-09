@@ -1,15 +1,14 @@
 const pascalCaseBrands = {
   plugplay: 'PlugPlay',
   coldfire: 'ColdFire',
+  superdope: 'SuperDope',
 } as const
 
 export const formatBrandLabel = (brand: string) => {
   const trimmedBrand = brand.trim()
   if (!trimmedBrand) return ''
 
-  const normalizedBrandKey = trimmedBrand
-    .replace(/[\s_-]+/g, '')
-    .toLowerCase()
+  const normalizedBrandKey = trimmedBrand.replace(/[\s_-]+/g, '').toLowerCase()
   const pascalCaseBrand =
     pascalCaseBrands[normalizedBrandKey as keyof typeof pascalCaseBrands]
 

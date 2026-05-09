@@ -35,6 +35,7 @@ export interface RewardsConfig {
   tiers: RewardsTier[]
   bundleBonus: BundleBonus
   freeShippingFirstOrder: number
+  /** Minimum order subtotal required before rewards can be redeemed. */
   minRedemption: number
   topUpProximityThreshold: number
 }
@@ -101,8 +102,15 @@ export const REWARDS_CONFIG: RewardsConfig = {
   ],
   bundleBonus: {enabled: true, bonusPct: 0.5, minCategories: 2},
   freeShippingFirstOrder: 49,
-  minRedemption: 5,
+  minRedemption: 50,
   topUpProximityThreshold: 20,
+}
+
+export function getMinimumSpendForRedemptionCents(
+  config?: Pick<RewardsConfig, 'minRedemption'> | null,
+): number {
+  const minimumSpendDollars = config?.minRedemption ?? REWARDS_CONFIG.minRedemption
+  return Math.max(0, Math.round(minimumSpendDollars * 100))
 }
 
 // ─── Pure logic ───────────────────────────────────────────────────────────────

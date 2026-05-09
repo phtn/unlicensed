@@ -536,7 +536,7 @@ const DEFAULT_REWARDS_TIERS = [
 
 const DEFAULT_BUNDLE_BONUS = {enabled: true, bonusPct: 0.5, minCategories: 2}
 const DEFAULT_FREE_SHIPPING_FIRST_ORDER = 49
-const DEFAULT_MIN_REDEMPTION = 5
+const DEFAULT_MINIMUM_SPEND_FOR_REDEMPTION = 50
 const DEFAULT_TOP_UP_PROXIMITY = 20
 
 export const getRewardsConfig = query({
@@ -552,7 +552,7 @@ export const getRewardsConfig = query({
         tiers: [...DEFAULT_REWARDS_TIERS],
         bundleBonus: {...DEFAULT_BUNDLE_BONUS},
         freeShippingFirstOrder: DEFAULT_FREE_SHIPPING_FIRST_ORDER,
-        minRedemption: DEFAULT_MIN_REDEMPTION,
+        minRedemption: DEFAULT_MINIMUM_SPEND_FOR_REDEMPTION,
         topUpProximityThreshold: DEFAULT_TOP_UP_PROXIMITY,
       }
     }
@@ -609,7 +609,7 @@ export const getRewardsConfig = query({
       minRedemption:
         typeof v.minRedemption === 'number'
           ? v.minRedemption
-          : DEFAULT_MIN_REDEMPTION,
+          : DEFAULT_MINIMUM_SPEND_FOR_REDEMPTION,
       topUpProximityThreshold:
         typeof v.topUpProximityThreshold === 'number'
           ? v.topUpProximityThreshold

@@ -17,7 +17,11 @@ import {
   PointsBalance,
   RewardsSummary,
 } from '../../rewards-summary'
-import type {ComputedRewards, RewardsCartItem} from '../lib/rewards'
+import {
+  getMinimumSpendForRedemptionCents,
+  type ComputedRewards,
+  type RewardsCartItem,
+} from '../lib/rewards'
 import type {FormData, RewardsVariant} from '../types'
 import {CashBackRedemption} from './cash-back-redemption'
 import {CheckoutRewardsContent} from './checkout-rewards-content'
@@ -45,6 +49,7 @@ interface OrderSummaryCardProps {
   pointsBalance: PointsBalance | undefined
   onOpen?: VoidFunction
   minimumOrderCents?: number
+  minimumSpendForRedemptionCents?: number
   shippingFeeCents?: number
   /**
    * Which rewards panel to show. Toggle this state to swap panels.
@@ -96,6 +101,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   onPlaceOrderClick,
   pointsBalance,
   onOpen,
+  minimumSpendForRedemptionCents,
   rewardsVariant,
   computedRewards,
   rewardsConfig,
@@ -137,6 +143,9 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
       ? `Cash App Transaction Fee (${formatProcessingFeePercent(cashAppFeePercent)})`
       : 'Processing Fee'
   const paymentMethodDiscountLabel = `Crypto Discount (${formatProcessingFeePercent(CRYPTO_PAYMENT_DISCOUNT_PERCENT)})`
+  const effectiveMinimumSpendForRedemptionCents =
+    minimumSpendForRedemptionCents ??
+    getMinimumSpendForRedemptionCents(rewardsConfig)
 
   const rewardsPanel =
     effectiveVariant === 'tier' && computedRewards != null ? (
@@ -325,6 +334,9 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                 isEnabled={isUsingCashBack}
                 onToggle={onCashBackToggle}
                 customRedemptionCents={customRedemptionCents}
+                minimumSpendForRedemptionCents={
+                  effectiveMinimumSpendForRedemptionCents
+                }
                 onCustomCentsChange={
                   onCustomRedemptionCentsChange ?? (() => {})
                 }

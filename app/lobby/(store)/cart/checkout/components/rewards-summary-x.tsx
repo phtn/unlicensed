@@ -82,7 +82,7 @@ const CONFIG: RewardsConfig = {
   ],
   bundleBonus: {enabled: true, bonusPct: 0.5, minCategories: 2},
   freeShippingFirstOrder: 49,
-  minRedemption: 5,
+  minRedemption: 50,
   topUpProximityThreshold: 20,
 }
 
@@ -796,8 +796,8 @@ export default function RewardsCart() {
                 fontFamily: "'DM Sans', sans-serif",
               }}>
               * First order: free discreet shipping on orders over{' '}
-              {fmt(CONFIG.freeShippingFirstOrder)}. Min. redemption:{' '}
-              {fmt(CONFIG.minRedemption)} store credit.
+              {fmt(CONFIG.freeShippingFirstOrder)}. Minimum spend for
+              redemption: {fmt(CONFIG.minRedemption)}.
             </p>
           )}
         </div>

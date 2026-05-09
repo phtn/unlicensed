@@ -43,7 +43,6 @@ export const ProductDetails = ({product}: ProductDetailsProps) => {
   const lineage = product.lineage?.trim()
   const hasProfileDetails =
     Boolean(lineage) ||
-    product.noseRating != null ||
     product.terpenes.length > 0 ||
     product.flavorNotes.length > 0 ||
     product.effects.length > 0

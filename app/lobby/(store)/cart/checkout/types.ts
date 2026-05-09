@@ -38,6 +38,7 @@ export interface CheckoutProps {
   paymentMethodFromUrl?: PaymentMethod
   onPaymentMethodUrlChange?: (method: PaymentMethod) => void
   minimumOrderCents: number
+  minimumSpendForRedemptionCents?: number
   shippingFeeCents?: number
   /** Toggle to swap rewards panel: 'tier' | 'points' | 'off' */
   rewardsVariant?: RewardsVariant

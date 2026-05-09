@@ -1,6 +1,7 @@
 'use client'
 
 import {CashBackRedemption} from '@/app/lobby/(store)/cart/checkout/components/cash-back-redemption'
+import {getMinimumSpendForRedemptionCents} from '@/app/lobby/(store)/cart/checkout/lib/rewards'
 import {useCashBackRedemption} from '@/app/lobby/(store)/cart/hooks/use-cash-back-redemption'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -9,7 +10,6 @@ import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {memo, useTransition, ViewTransition} from 'react'
 
-const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
 const CASH_BACK_APPLIED_VIEW_TRANSITION = 'cart-cash-back-applied'
 const CART_SUMMARY_FOLLOW_VIEW_TRANSITION = 'cart-summary-follow-shift'
 
@@ -35,6 +35,7 @@ interface CartSummaryProps {
   convexUserId: Id<'users'> | null
   optimisticCartItemCount: number
   isSignedIn: boolean
+  minimumSpendForRedemptionCents?: number
   onCheckout: () => void
   onClose: () => void
 }
@@ -46,6 +47,7 @@ export const CartSummary = memo(function CartSummary({
   convexUserId,
   optimisticCartItemCount,
   isSignedIn,
+  minimumSpendForRedemptionCents = getMinimumSpendForRedemptionCents(),
   onCheckout,
   onClose,
 }: CartSummaryProps) {
@@ -69,7 +71,7 @@ export const CartSummary = memo(function CartSummary({
   )
   const maxRedeemableCents = Math.min(availableCashBackCents, subtotal)
   const appliedCashBackCents =
-    isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+    isCashBackEnabled && subtotal >= minimumSpendForRedemptionCents
       ? customRedemptionCents !== null
         ? Math.min(customRedemptionCents, maxRedeemableCents)
         : maxRedeemableCents
@@ -115,6 +117,7 @@ export const CartSummary = memo(function CartSummary({
             onToggle={handleCashBackToggle}
             customRedemptionCents={customRedemptionCents}
             onCustomCentsChange={setCashBackCustomCents}
+            minimumSpendForRedemptionCents={minimumSpendForRedemptionCents}
           />
         )}
         <CashBackAppliedRow amountCents={appliedCashBackCents} />

@@ -3,8 +3,8 @@
 import type {StoreProduct} from '@/app/types'
 import NextImage from '@/components/ui/app-image'
 import type {Id} from '@/convex/_generated/dataModel'
-import {formatBrandLabel} from '@/lib/format-brand-label'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
+import {formatBrandLabel} from '@/lib/format-brand-label'
 import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
@@ -541,7 +541,7 @@ const ProductCardComponent = ({
                     {option.isPopular ? (
                       <div
                         title='Popular'
-                        className='absolute -right-2 -top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
+                        className='absolute right-2 top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
                         <Icon
                           name='hot'
                           className='absolute w-5 h-4 translate-y-[0.33px] text-dark-table rotate-25'
@@ -724,7 +724,7 @@ const ProductCardComponent = ({
                   {option.isPopular ? (
                     <div
                       title='Popular'
-                      className='absolute -right-2 -top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
+                      className='absolute right-0.5 -top-1.5 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
                       <Icon
                         name='hot'
                         className='absolute w-5 h-4 translate-y-[0.33px] text-dark-table rotate-25'

@@ -14,11 +14,11 @@ interface CashBackRedemptionProps {
   onToggle: (nextValue: boolean) => void
   customRedemptionCents: number | null
   onCustomCentsChange: (cents: number | null) => void
-  minimumOrderCents?: number
+  minimumSpendForRedemptionCents?: number
   className?: string
 }
 
-const DEFAULT_MINIMUM_REDEMPTION_ORDER_CENTS = 5000
+const DEFAULT_MINIMUM_SPEND_FOR_REDEMPTION_CENTS = 5000
 
 export function CashBackRedemption({
   availableBalanceCents,
@@ -27,12 +27,16 @@ export function CashBackRedemption({
   onToggle,
   customRedemptionCents,
   onCustomCentsChange,
-  minimumOrderCents = DEFAULT_MINIMUM_REDEMPTION_ORDER_CENTS,
+  minimumSpendForRedemptionCents = DEFAULT_MINIMUM_SPEND_FOR_REDEMPTION_CENTS,
   className,
 }: CashBackRedemptionProps) {
   const hasBalance = availableBalanceCents > 0
-  const isEligibleOrder = subtotalCents >= minimumOrderCents
+  const isEligibleOrder = subtotalCents >= minimumSpendForRedemptionCents
   const canRedeem = hasBalance && isEligibleOrder
+  const amountUntilEligibleCents = Math.max(
+    0,
+    minimumSpendForRedemptionCents - subtotalCents,
+  )
 
   const maxRedeemable = Math.min(availableBalanceCents, subtotalCents)
   const effectiveCents =
@@ -63,7 +67,7 @@ export function CashBackRedemption({
               {canRedeem
                 ? 'Redeemable'
                 : availableBalanceCents
-                  ? `$${formatPrice(5000 - subtotalCents)} away to redeem points.`
+                  ? `Spend $${formatPrice(amountUntilEligibleCents)} more to redeem rewards.`
                   : `Complete orders to build up cash back.`}
             </span>
           </div>

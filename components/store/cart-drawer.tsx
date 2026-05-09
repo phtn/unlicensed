@@ -1,7 +1,9 @@
 'use client'
 
 import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
+import {getMinimumSpendForRedemptionCents} from '@/app/lobby/(store)/cart/checkout/lib/rewards'
 import {AuthModal} from '@/components/auth/auth-modal'
+import {api} from '@/convex/_generated/api'
 import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {useAuthCtx} from '@/ctx/auth'
 import {
@@ -19,6 +21,7 @@ import {
   getUnitPriceCents,
 } from '@/utils/cartPrice'
 import {Avatar, Button} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {useCallback, useMemo, useOptimistic, useTransition} from 'react'
 import {Drawer} from 'vaul'
@@ -60,6 +63,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   } = useCart()
   const {user, convexUser, convexUserId} = useAuthCtx()
   const {configs} = useDealConfigs()
+  const rewardsConfig = useQuery(api.admin.q.getRewardsConfig, {})
   const {
     isOpen: isAuthOpen,
     onOpen: onAuthOpen,
@@ -128,6 +132,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   const cartItems = isAuthenticated ? optimisticCartItems : baseCartItems
 
   const hasItems = cartItems.length > 0
+  const minimumSpendForRedemptionCents = getMinimumSpendForRedemptionCents(
+    rewardsConfig,
+  )
 
   // Show loading only if the hook says we're loading.
   // Once isLoading is false, the cart query has resolved (even if cart is null or items are empty).
@@ -284,6 +291,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     convexUserId={convexUserId}
                     optimisticCartItemCount={optimisticCartItemCount}
                     isSignedIn={!!user}
+                    minimumSpendForRedemptionCents={
+                      minimumSpendForRedemptionCents
+                    }
                     onCheckout={handleCartCheckout}
                     onClose={handleClose}
                   />

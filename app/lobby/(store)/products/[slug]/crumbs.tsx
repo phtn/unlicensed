@@ -15,8 +15,8 @@ export const Crumbs = ({product}: Props) => {
       className='text-xs sm:text-sm font-ios tracking-tighter text-foreground w-full min-w-0 overflow-hidden'>
       <BreadcrumbsItem href='/lobby/category' className='group/root'>
         <Icon
-          name='notebook'
-          className='size-4 sm:size-4 text-foreground/50 group-hover/root:opacity-100 dark:group-hover/root:text-white'
+          name='lineage'
+          className='rotate-45 size-4 sm:size-4 text-foreground/50 group-hover/root:opacity-100 dark:group-hover/root:text-white'
         />
       </BreadcrumbsItem>
       <BreadcrumbsItem

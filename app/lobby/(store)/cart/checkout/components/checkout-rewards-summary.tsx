@@ -33,7 +33,7 @@ const ProgressBar = memo(function ProgressBar({pct}: {pct: number}) {
   return (
     <div className='relative h-2 rounded-full bg-foreground/5 dark:bg-foreground/20 mb-2 md:my-2.5'>
       <div
-        className='absolute h-full rounded-full bg-linear-to-r from-pink-400/60 via-pink-300/80 to-pink-200 backdrop-blur-sm transition-[width] duration-500 ease-in-out'
+        className='absolute h-full rounded-full bg-linear-to-r dark:from-pink-400/70 from-brand via-light-brand to-pink-400/60 dark:via-pink-300/80 dark:to-pink-200 backdrop-blur-sm transition-[width] duration-500 ease-in-out'
         style={{width: `${pct}%`}}
       />
       <div

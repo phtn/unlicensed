@@ -25,10 +25,12 @@ import {DevelopmentModal} from './components/development-modal'
 import {OrderSummaryCard} from './components/order-summary-card'
 import {isCheckoutDevMode} from './config'
 import {useOrderForm} from './hooks/use-order-form'
-import {computeCashBackAmount} from './lib/rewards'
+import {
+  computeCashBackAmount,
+  getMinimumSpendForRedemptionCents,
+} from './lib/rewards'
 import {CheckoutProps, FormData} from './types'
 
-const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
 const DEFAULT_COUPON_VALIDATION_ERROR_MESSAGE =
   'We could not validate that coupon code right now.'
 
@@ -89,6 +91,8 @@ export function Checkout({
   paymentMethodFromUrl,
   onPaymentMethodUrlChange,
   minimumOrderCents,
+  minimumSpendForRedemptionCents:
+    configuredMinimumSpendForRedemptionCents,
   shippingFeeCents,
   rewardsVariant,
   computedRewards,
@@ -175,6 +179,9 @@ export function Checkout({
     0,
     Math.round((pointsBalance?.availablePoints ?? 0) * 100),
   )
+  const minimumSpendForRedemptionCents =
+    configuredMinimumSpendForRedemptionCents ??
+    getMinimumSpendForRedemptionCents(rewardsConfig)
   const couponDiscountCents = appliedCoupon?.discountCents ?? 0
   const paymentMethodDiscountCents = computePaymentMethodDiscountCents({
     paymentMethod: formData.paymentMethod,
@@ -189,7 +196,7 @@ export function Checkout({
     totalBeforeProcessingFee,
   )
   const appliedCashBackCents =
-    isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+    isCashBackEnabled && subtotal >= minimumSpendForRedemptionCents
       ? customRedemptionCents !== null
         ? Math.min(customRedemptionCents, maxRedeemableCents)
         : maxRedeemableCents
@@ -614,6 +621,7 @@ export function Checkout({
         pointsBalance={pointsBalance}
         onOpen={onOpen}
         minimumOrderCents={minimumOrderCents}
+        minimumSpendForRedemptionCents={minimumSpendForRedemptionCents}
         shippingFeeCents={shippingFeeCents}
         rewardsVariant={rewardsVariant}
         computedRewards={effectiveComputedRewards}

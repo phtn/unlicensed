@@ -21,6 +21,7 @@ import {useCallback, useEffect, useMemo, useState, useTransition} from 'react'
 import {CartEmptyState} from './CartEmptyState'
 import {CartItemsSection} from './CartItemsSection'
 import {Checkout} from './checkout'
+import {getMinimumSpendForRedemptionCents} from './checkout/lib/rewards'
 import type {RewardsVariant} from './checkout/types'
 import {useCartCheckoutQueryState} from './hooks/use-cart-checkout-query-state'
 import {useCartDebugLog} from './hooks/use-cart-debug-log'
@@ -92,6 +93,8 @@ export default function CartPage() {
     shippingConfig?.shippingFeeCents ?? DEFAULT_SHIPPING_FEE_CENTS
   const minimumOrderCents =
     shippingConfig?.minimumOrderCents ?? DEFAULT_MINIMUM_ORDER_CENTS
+  const minimumSpendForRedemptionCents =
+    getMinimumSpendForRedemptionCents(rewardsConfig)
 
   const defaultAddress = useQuery(
     api.users.q.getDefaultAddress,
@@ -330,6 +333,7 @@ export default function CartPage() {
             paymentMethodFromUrl={paymentMethod}
             onPaymentMethodUrlChange={onPaymentMethodChange}
             minimumOrderCents={minimumOrderCents}
+            minimumSpendForRedemptionCents={minimumSpendForRedemptionCents}
             shippingFeeCents={shippingFeeCents}
             rewardsVariant={rewardsVariant}
             computedRewards={computedRewards}

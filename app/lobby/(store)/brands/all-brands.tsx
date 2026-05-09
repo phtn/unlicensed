@@ -67,7 +67,7 @@ export const brands: IEnhancedBrand[] = [
     productCount: 0,
   },
   {
-    name: 'Plugplay',
+    name: 'PlugPlay',
     slug: 'plugplay',
     icon: 'plugplay',
     description: 'Legacy genetics, modern innovation',
@@ -99,10 +99,10 @@ export const brands: IEnhancedBrand[] = [
     productCount: 0,
   },
   {
-    name: '710labs',
-    slug: '710labs',
+    name: '710 Labs',
+    slug: '710-labs',
     icon: '710labs',
-    description: '710labs Premium Cannabis Products',
+    description: '710 Labs Premium Cannabis Products',
     featured: false,
     productCount: 0,
   },

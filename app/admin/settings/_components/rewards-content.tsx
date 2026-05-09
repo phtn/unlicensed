@@ -5,6 +5,11 @@ import type {
   RewardsConfig,
   RewardsTier,
 } from '@/app/lobby/(store)/cart/checkout/lib/rewards'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/animate-ui/components/radix/hover-card'
 import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
@@ -57,7 +62,7 @@ function BundleAndThresholdsSection({
   const [freeShipFirst, setFreeShipFirst] = useState(
     String(config.freeShippingFirstOrder),
   )
-  const [minRedemption, setMinRedemption] = useState(
+  const [minimumSpendForRedemption, setMinimumSpendForRedemption] = useState(
     String(config.minRedemption),
   )
   const [topUpThreshold, setTopUpThreshold] = useState(
@@ -69,19 +74,19 @@ function BundleAndThresholdsSection({
   useEffect(() => {
     setBundleForm(config.bundleBonus)
     setFreeShipFirst(String(config.freeShippingFirstOrder))
-    setMinRedemption(String(config.minRedemption))
+    setMinimumSpendForRedemption(String(config.minRedemption))
     setTopUpThreshold(String(config.topUpProximityThreshold))
   }, [config])
 
   const freeShippingFirstOrder = parseFloat(freeShipFirst)
-  const minRedemptionVal = parseFloat(minRedemption)
+  const minimumSpendForRedemptionVal = parseFloat(minimumSpendForRedemption)
   const topUpProximityThreshold = parseFloat(topUpThreshold)
   const isGlobalFormValid =
     !Number.isNaN(freeShippingFirstOrder) &&
-    !Number.isNaN(minRedemptionVal) &&
+    !Number.isNaN(minimumSpendForRedemptionVal) &&
     !Number.isNaN(topUpProximityThreshold) &&
     freeShippingFirstOrder >= 0 &&
-    minRedemptionVal >= 0 &&
+    minimumSpendForRedemptionVal >= 0 &&
     topUpProximityThreshold >= 0 &&
     (!bundleForm.enabled ||
       (bundleForm.bonusPct >= 0 &&
@@ -93,7 +98,7 @@ function BundleAndThresholdsSection({
     bundleForm.bonusPct !== config.bundleBonus.bonusPct ||
     bundleForm.minCategories !== config.bundleBonus.minCategories ||
     freeShipFirst !== String(config.freeShippingFirstOrder) ||
-    minRedemption !== String(config.minRedemption) ||
+    minimumSpendForRedemption !== String(config.minRedemption) ||
     topUpThreshold !== String(config.topUpProximityThreshold)
 
   const handleSaveGlobal = useCallback(() => {
@@ -106,7 +111,7 @@ function BundleAndThresholdsSection({
       ...config,
       bundleBonus: bundleForm,
       freeShippingFirstOrder,
-      minRedemption: minRedemptionVal,
+      minRedemption: minimumSpendForRedemptionVal,
       topUpProximityThreshold,
     })
       .then(() => {
@@ -123,7 +128,7 @@ function BundleAndThresholdsSection({
     config,
     freeShippingFirstOrder,
     isGlobalFormValid,
-    minRedemptionVal,
+    minimumSpendForRedemptionVal,
     onSave,
     topUpProximityThreshold,
   ])
@@ -136,8 +141,7 @@ function BundleAndThresholdsSection({
       <Checkbox
         isSelected={bundleForm.enabled}
         className='font-clash font-normal'
-        onChange={(v) => setBundleForm((f) => ({...f, enabled: v}))}
-      >
+        onChange={(v) => setBundleForm((f) => ({...f, enabled: v}))}>
         <Checkbox.Control>
           <Checkbox.Indicator />
         </Checkbox.Control>
@@ -190,13 +194,25 @@ function BundleAndThresholdsSection({
           />
           <Input
             id='min-redemption'
-            label='Min redemption ($)'
+            label='Minimum spend for redemption ($)'
             type='number'
             min={0}
             step={0.5}
-            value={minRedemption}
-            onChange={(e) => setMinRedemption(e.target.value)}
-          />
+            value={minimumSpendForRedemption}
+            onChange={(e) => setMinimumSpendForRedemption(e.target.value)}
+            withAction>
+            <HoverCard>
+              <HoverCardTrigger>
+                <Icon name='info' className='size-4 opacity-80' />
+              </HoverCardTrigger>
+              <HoverCardContent className='bg-background border border-sidebar'>
+                <p className='max-w-64 text-sm'>
+                  Customer cart subtotal must meet this amount before available
+                  rewards can be applied.
+                </p>
+              </HoverCardContent>
+            </HoverCard>
+          </Input>
 
           <Input
             id='top-up-proximity'
@@ -215,8 +231,7 @@ function BundleAndThresholdsSection({
             variant='primary'
             onPress={handleSaveGlobal}
             isDisabled={!hasGlobalChange || !isGlobalFormValid || isSaving}
-            className='bg-dark-table dark:bg-white dark:text-dark-table h-7 rounded-md'
-          >
+            className='bg-dark-table dark:bg-white dark:text-dark-table h-7 rounded-md'>
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
           {saveMessage === 'saved' && (
@@ -441,8 +456,7 @@ export const RewardsContent = () => {
     <div className='flex h-[90lvh] min-w-0 w-full flex-col space-y-2 overflow-y-auto pb-24'>
       <ContentHeader
         title='Rewards Manager'
-        description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'
-      >
+        description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
         <PrimaryButton onPress={openAddTier} icon='plus' label='Add Tier' />
       </ContentHeader>
 
@@ -456,8 +470,7 @@ export const RewardsContent = () => {
               key={`${tier.label}-${tier.minSubtotal}-${tier.maxSubtotal ?? 'max'}`}
               className={`border border-alum/80 rounded-xs overflow-hidden transition-colors dark:bg-dark-table/40 p-0 shadow-none ${
                 tier.enabled === false ? 'opacity-60' : ''
-              }`}
-            >
+              }`}>
               <Card.Content className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
                 <div className='min-w-0'>
                   <div className='flex flex-wrap items-center min-w-0 gap-4'>
@@ -491,8 +504,7 @@ export const RewardsContent = () => {
                     variant='ghost'
                     isIconOnly
                     onPress={() => openEditTier(index)}
-                    isDisabled={isTierMutationBusy}
-                  >
+                    isDisabled={isTierMutationBusy}>
                     <Icon name='cf-pen-2' className='size-4' />
                   </Button>
                   <Toggle
@@ -526,8 +538,7 @@ export const RewardsContent = () => {
           if (!isOpen) {
             closeTierModal()
           }
-        }}
-      >
+        }}>
         <Modal.Backdrop>
           <Modal.Container scroll='inside' size='lg'>
             <Modal.Dialog className='rounded-md'>
@@ -611,8 +622,7 @@ export const RewardsContent = () => {
                       variant='tertiary'
                       onPress={() => openDeleteTier(editingTierIndex)}
                       className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
-                      isDisabled={config.tiers.length <= 1 || isDeleting}
-                    >
+                      isDisabled={config.tiers.length <= 1 || isDeleting}>
                       Delete
                     </Button>
                   </div>
@@ -621,8 +631,7 @@ export const RewardsContent = () => {
                   size='sm'
                   variant='ghost'
                   onPress={closeTierModal}
-                  className='rounded-sm'
-                >
+                  className='rounded-sm'>
                   Cancel
                 </Button>
                 <Button
@@ -630,8 +639,7 @@ export const RewardsContent = () => {
                   variant='primary'
                   onPress={handleSaveTier}
                   isDisabled={!formToTier(tierForm) || isTierSaving}
-                  className='font-clash font-medium bg-dark-table dark:bg-white dark:text-dark-table rounded-sm'
-                >
+                  className='font-clash font-medium bg-dark-table dark:bg-white dark:text-dark-table rounded-sm'>
                   {isTierSaving
                     ? 'Saving...'
                     : editingTierIndex !== null
@@ -651,8 +659,7 @@ export const RewardsContent = () => {
             setDeleteTierIndex(null)
             setDeleteMessage(null)
           }
-        }}
-      >
+        }}>
         <Modal.Backdrop>
           <Modal.Container size='sm'>
             <Modal.Dialog className='rounded-md'>
@@ -673,15 +680,13 @@ export const RewardsContent = () => {
                   onPress={() => {
                     setDeleteTierIndex(null)
                     setDeleteMessage(null)
-                  }}
-                >
+                  }}>
                   Cancel
                 </Button>
                 <Button
                   variant='danger'
                   onPress={handleDeleteTier}
-                  isDisabled={isDeleting}
-                >
+                  isDisabled={isDeleting}>
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </Button>
               </Modal.Footer>

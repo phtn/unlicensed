@@ -7,6 +7,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {useDisclosure} from '@/hooks/use-disclosure'
 import {useProductCartQuantity} from '@/hooks/use-product-cart-quantity'
+import {formatBrandLabel} from '@/lib/format-brand-label'
 import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
@@ -57,15 +58,17 @@ const ProductSummary = memo(({product}: {product: StoreProduct}) => (
   <div className='space-y-2'>
     {product.brand && (
       <p className='text-sm font-clash tracking-wider opacity-70 capitalize'>
-        <span>{product.brand.join(', ')}</span>
+        <span>
+          {product.brand.map((brand) => formatBrandLabel(brand)).join(', ')}
+        </span>
         {product.productType && <span className='px-1'>&middot;</span>}
         {product.productType && (
-          <span className='ml-2'>{product.productType}</span>
+          <span className='ml-2 font-okxs'>{product.productType}</span>
         )}
       </p>
     )}
     <h1 className='text-3xl lg:text-4xl xl:text-4xl capitalize font-clash text-foreground leading-tight tracking-tight'>
-      {product.name.split('-').join(' ')}
+      {product.name}
     </h1>
     <p className='text-sm font-okxs opacity-70 leading-relaxed'>
       <span className='font-okxs tracking-wider'>{product.categorySlug}</span>

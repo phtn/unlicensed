@@ -44,9 +44,9 @@ import {
   shouldQueueCashAppPaymentSuccessEmailOnOrderProcessing,
 } from './email_delivery'
 
-const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 4900
 const DEFAULT_SHIPPING_FEE_CENTS = 1299
 const DEFAULT_MINIMUM_ORDER_CENTS = 4900
+const DEFAULT_MINIMUM_SPEND_FOR_REDEMPTION_CENTS = 5000
 const DEFAULT_TAX_RATE_PERCENT = 10
 const DEFAULT_REWARDS_TIERS = [
   {
@@ -635,6 +635,10 @@ export const createOrder = mutation({
       : 0
 
     const rewardsConfig = await getAdminSettingValue(ctx, 'rewards_config')
+    const minimumSpendForRedemptionCents =
+      rewardsConfig && typeof rewardsConfig.minRedemption === 'number'
+        ? Math.max(0, Math.round(rewardsConfig.minRedemption * 100))
+        : DEFAULT_MINIMUM_SPEND_FOR_REDEMPTION_CENTS
     const tiers =
       rewardsConfig && Array.isArray(rewardsConfig.tiers)
         ? rewardsConfig.tiers
@@ -793,7 +797,7 @@ export const createOrder = mutation({
     if (
       orderUserId &&
       (args.redeemedStoreCreditCents ?? 0) > 0 &&
-      subtotalCents >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+      subtotalCents >= minimumSpendForRedemptionCents
     ) {
       const userRewards = await ctx.db
         .query('userRewards')
