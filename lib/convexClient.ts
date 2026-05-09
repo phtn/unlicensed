@@ -41,6 +41,8 @@ export type RawProduct = {
   cbdPercentage?: number
   effects?: string[]
   terpenes?: string[]
+  lineage?: string
+  noseRating?: number
   featured?: boolean
   limited?: boolean
   onSale?: boolean
@@ -182,6 +184,8 @@ export const adaptProduct = (
   cbdPercentage: product.cbdPercentage,
   effects: product.effects ?? [],
   terpenes: product.terpenes ?? [],
+  lineage: product.lineage,
+  noseRating: product.noseRating,
   featured: product.featured ?? false,
   limited: product.limited ?? false,
   onSale: product.onSale ?? false,

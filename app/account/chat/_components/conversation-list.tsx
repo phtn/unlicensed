@@ -15,7 +15,7 @@ import {Avatar} from '@heroui/react'
 import {
   Fragment,
   ReactNode,
-  TouchEvent,
+  PointerEvent,
   useCallback,
   useEffect,
   useRef,
@@ -84,32 +84,107 @@ function SwipeableConversationRow({
 }) {
   const [translateX, setTranslateX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  const touchStartX = useRef(0)
-  const touchStartTranslate = useRef(0)
+  const pointerStartX = useRef(0)
+  const pointerStartTranslate = useRef(0)
+  const activePointerId = useRef<number | null>(null)
+  const hasDragged = useRef(false)
+  const suppressNextClick = useRef(false)
 
-  const handleTouchStart = useCallback(
-    (e: TouchEvent) => {
-      touchStartX.current = e.touches[0].clientX
-      touchStartTranslate.current = translateX
-      setIsDragging(true)
-    },
-    [translateX],
-  )
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    const deltaX = e.touches[0].clientX - touchStartX.current
-    const next = Math.max(
-      -ARCHIVE_BUTTON_WIDTH,
-      Math.min(0, touchStartTranslate.current + deltaX),
-    )
-    setTranslateX(next)
-  }, [])
-
-  const handleTouchEnd = useCallback(() => {
+  const finishDrag = useCallback(() => {
+    activePointerId.current = null
     setIsDragging(false)
     setTranslateX((current) =>
       current < -ARCHIVE_BUTTON_WIDTH / 2 ? -ARCHIVE_BUTTON_WIDTH : 0,
     )
   }, [])
+
+  const handlePointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (
+        event.button !== 0 ||
+        event.pointerType === 'mouse' &&
+          event.buttons !== 1
+      ) {
+        return
+      }
+
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        target.closest('button,select,input,textarea,a')
+      ) {
+        return
+      }
+
+      activePointerId.current = event.pointerId
+      pointerStartX.current = event.clientX
+      pointerStartTranslate.current = translateX
+      hasDragged.current = false
+      event.currentTarget.setPointerCapture(event.pointerId)
+      setIsDragging(true)
+    },
+    [translateX],
+  )
+
+  const handlePointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== event.pointerId) {
+      return
+    }
+
+    const deltaX = event.clientX - pointerStartX.current
+    if (Math.abs(deltaX) > 4) {
+      hasDragged.current = true
+    }
+
+    setTranslateX(
+      Math.max(
+        -ARCHIVE_BUTTON_WIDTH,
+        Math.min(0, pointerStartTranslate.current + deltaX),
+      ),
+    )
+  }, [])
+
+  const handlePointerUp = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (activePointerId.current !== event.pointerId) {
+        return
+      }
+
+      if (hasDragged.current) {
+        suppressNextClick.current = true
+        window.setTimeout(() => {
+          suppressNextClick.current = false
+        }, 0)
+      }
+
+      finishDrag()
+    },
+    [finishDrag],
+  )
+
+  const handlePointerCancel = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (activePointerId.current !== event.pointerId) {
+        return
+      }
+
+      finishDrag()
+    },
+    [finishDrag],
+  )
+
+  const handleClickCapture = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!suppressNextClick.current) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      suppressNextClick.current = false
+    },
+    [],
+  )
 
   const handleArchiveClick = useCallback(() => {
     onArchive(
@@ -126,15 +201,20 @@ function SwipeableConversationRow({
   return (
     <div className='relative overflow-hidden'>
       <div
-        className='flex touch-pan-y'
+        className={cn(
+          'flex touch-pan-y select-none cursor-grab active:cursor-grabbing',
+          isDragging && 'cursor-grabbing',
+        )}
         style={{
           width: `calc(100% + ${ARCHIVE_BUTTON_WIDTH}px)`,
           transform: `translateX(${translateX}px)`,
           transition: isDragging ? 'none' : 'transform 0.2s ease-out',
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}>
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+        onClickCapture={handleClickCapture}>
         <div className='min-w-0 shrink-0' style={{width: 'calc(100% - 80px)'}}>
           {children}
         </div>

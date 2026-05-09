@@ -40,8 +40,9 @@ const ProfileGroup = ({title, items, group, bordered}: ProfileGroupProps) => {
 }
 
 export const ProductDetails = ({product}: ProductDetailsProps) => {
+  const lineage = product.lineage?.trim()
   const hasProfileDetails =
-    Boolean(product.lineage) ||
+    Boolean(lineage) ||
     product.noseRating != null ||
     product.terpenes.length > 0 ||
     product.flavorNotes.length > 0 ||
@@ -56,25 +57,30 @@ export const ProductDetails = ({product}: ProductDetailsProps) => {
   return (
     <>
       {hasProfileDetails ? (
-        <div className='p-2 md:p-6'>
+        <div className='p-2 md:p-5 h-20 w-full'>
           <div className='rounded-xs bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 p-4 space-y-3 dark:bg-background/30'>
-            {product.lineage ? (
+            {lineage ? (
               <>
-                <span className='mr-2 text-xs font-polysans font-normal uppercase opacity-80'>
-                  Lineage
-                </span>
+                <p className='mr-2 flex items-center space-x-1'>
+                  {/*<Icon name='lineage' className='size-4 rotate-45' />*/}
+                  <span className='font-polysans font-normal text-xs tracking-widest uppercase opacity-60'>
+                    Lineage
+                  </span>
+                </p>
                 <div className='flex flex-wrap items-center gap-2 border-b-[0.5px] border-dotted py-3 dark:border-light-gray/20'>
-                  {product.lineage}
+                  {lineage}
                 </div>
               </>
             ) : null}
 
-            {product.noseRating != null ? (
+            {product.noseRating != null && product.noseRating > 0 ? (
               <>
-                <span className='mr-2 text-xs font-polysans font-normal uppercase opacity-80'>
-                  Nose Rating
-                </span>
-                <div className='flex flex-wrap items-center gap-2 border-b-[0.5px] border-dotted py-3 dark:border-light-gray/20'>
+                <p className='mr-2 flex items-center space-x-1'>
+                  <span className='font-polysans font-normal text-xs tracking-widest uppercase opacity-60'>
+                    Nose Rating
+                  </span>
+                </p>
+                <div className='font-clash flex flex-wrap items-center gap-2 border-b-[0.5px] border-dotted py-3 dark:border-light-gray/20'>
                   {product.noseRating}
                 </div>
               </>

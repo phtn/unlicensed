@@ -17,6 +17,8 @@ import dynamic from 'next/dynamic'
 import {usePathname} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {Dock, DockIcon} from '../ui/dock'
+import {ChatComms} from './chat-comms'
+import {ChatSupportHours} from './chat-support-hours'
 
 const loadChatWindow = () =>
   import('./chat-window').then((module) => module.ChatWindow)
@@ -57,6 +59,7 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
   const guestChat = useGuestChatCtx()
   const isHidden = hidden || pathname.includes('/cashapp')
   const [isWindowOpen, setIsWindowOpen] = useState(false)
+  const [showChatComms, setShowChatComms] = useState(false)
   const [hasOpenedWindow, setHasOpenedWindow] = useState(false)
   const [conversationFid, setConversationFid] = useState<string | null>(null)
   const [conversationSelectionKey, setConversationSelectionKey] = useState(0)
@@ -73,10 +76,15 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
   const handleOpenChange = useCallback((open: boolean) => {
     if (open) {
       setHasOpenedWindow(true)
+      setShowChatComms(true)
     } else {
       setConversationFid(null)
     }
     setIsWindowOpen(open)
+  }, [])
+
+  const handleChatCommsCloseComplete = useCallback(() => {
+    setShowChatComms(false)
   }, [])
 
   const {open, toggle} = useWindow({
@@ -151,60 +159,71 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
       )}
 
       {!isHidden && (
-        <div className='pointer-events-none fixed bottom-4 right-4 z-9000 md:bottom-8 md:right-8'>
-          <Dock
-            direction='middle'
-            className='pointer-events-auto bg-sidebar/90 dark:bg-dark-table/20 backdrop-blur-2xl flex items-center'>
-            {navs.map((nav) => (
-              <Tooltip key={nav.id} delay={0}>
-                <Tooltip.Trigger>
-                  <DockIcon>
-                    <Badge.Anchor>
-                      <button
-                        id='chat-window-trigger'
-                        type='button'
-                        onClick={nav.onClick}
-                        onPointerEnter={() => {
-                          void preloadChatWindow()
-                        }}
-                        onFocus={() => {
-                          void preloadChatWindow()
-                        }}
-                        onTouchStart={() => {
-                          void preloadChatWindow()
-                        }}
-                        aria-label={nav.label}
-                        aria-haspopup='dialog'
-                        aria-expanded={isWindowOpen}
-                        className={cn(
-                          'flex size-full items-center justify-center text-foreground bg-transparent! mt-1.5',
-                          isWindowOpen && 'bg-dark-table/10',
-                        )}>
-                        <Icon name={nav.icon} className='size-7' />
-                      </button>
-                      {(unreadCount ?? 0) > 0 ? (
-                        <Badge
-                          size='sm'
-                          key={`chat-dock-badge-${unreadCount ?? 0}`}
+        <div className='flex items-center space-x-8 w-64'>
+          {showChatComms ? (
+            <ChatComms
+              isOpen={isWindowOpen}
+              onCloseComplete={handleChatCommsCloseComplete}
+            />
+          ) : (
+            <ChatSupportHours />
+          )}
+
+          <div className='flex items-center pointer-events-none fixed bottom-4 right-4 z-9000 md:bottom-8 md:right-8'>
+            <Dock
+              direction='middle'
+              className='pointer-events-auto bg-sidebar/90 dark:bg-dark-table/20 backdrop-blur-2xl flex items-center'>
+              {navs.map((nav) => (
+                <Tooltip key={nav.id} delay={0}>
+                  <Tooltip.Trigger>
+                    <DockIcon>
+                      <Badge.Anchor>
+                        <button
+                          id='chat-window-trigger'
+                          type='button'
+                          onClick={nav.onClick}
+                          onPointerEnter={() => {
+                            void preloadChatWindow()
+                          }}
+                          onFocus={() => {
+                            void preloadChatWindow()
+                          }}
+                          onTouchStart={() => {
+                            void preloadChatWindow()
+                          }}
+                          aria-label={nav.label}
+                          aria-haspopup='dialog'
+                          aria-expanded={isWindowOpen}
                           className={cn(
-                            'absolute top-1 right-1 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border border-foreground shadow-sm bg-brand font-clash font-medium text-white leading-none',
+                            'flex size-full items-center justify-center text-foreground bg-transparent! mt-1.5',
+                            isWindowOpen && 'bg-dark-table/10',
                           )}>
-                          {(unreadCount ?? 0) > 99
-                            ? '99+'
-                            : String(unreadCount ?? 0)}
-                        </Badge>
-                      ) : null}
-                    </Badge.Anchor>
-                  </DockIcon>
-                </Tooltip.Trigger>
-                <Tooltip.Content
-                  offset={14}
-                  className='pointer-events-none md:pointer-events-auto rounded-lg bg-dark-table text-white'>
-                  {isWindowOpen ? 'Minimize' : 'Open Chat'}
-                </Tooltip.Content>
-              </Tooltip>
-            ))}
-          </Dock>
+                          <Icon name={nav.icon} className='size-7' />
+                        </button>
+                        {(unreadCount ?? 0) > 0 ? (
+                          <Badge
+                            size='sm'
+                            key={`chat-dock-badge-${unreadCount ?? 0}`}
+                            className={cn(
+                              'absolute top-1 right-1 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border border-foreground shadow-sm bg-brand font-clash font-medium text-white leading-none',
+                            )}>
+                            {(unreadCount ?? 0) > 99
+                              ? '99+'
+                              : String(unreadCount ?? 0)}
+                          </Badge>
+                        ) : null}
+                      </Badge.Anchor>
+                    </DockIcon>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    offset={14}
+                    className='pointer-events-none md:pointer-events-auto rounded-lg bg-dark-table text-white'>
+                    {isWindowOpen ? 'Minimize' : 'Open Chat'}
+                  </Tooltip.Content>
+                </Tooltip>
+              ))}
+            </Dock>
+          </div>
         </div>
       )}
     </>
