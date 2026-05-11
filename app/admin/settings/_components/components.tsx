@@ -41,7 +41,7 @@ interface LoadingHeaderProps {
 
 export const LoadingHeader = ({title}: LoadingHeaderProps) => {
   return (
-    <div className='flex w-full'>
+    <div className='flex w-full md:px-1'>
       <SectionHeader
         title={
           <Typewrite
@@ -51,8 +51,13 @@ export const LoadingHeader = ({title}: LoadingHeaderProps) => {
           />
         }
         className='sm:ps-1'>
-        <Button size='md' isDisabled variant='tertiary' className='h-7'>
-          <Icon name='spinner-dots' className='mr-1 size-4 opacity-80' />
+        <Button
+          size='sm'
+          isDisabled
+          variant='ghost'
+          isIconOnly
+          className='size-5 aspect-square'>
+          <Icon name='spinners-ring' className='size-4 opacity-80' />
         </Button>
       </SectionHeader>
     </div>

@@ -17,18 +17,13 @@ export const SectionHeader = ({
 }: SectionHeaderProps) => {
   return (
     <div
-      className={cn('flex w-full min-w-0 flex-col justify-center', className)}
-    >
+      className={cn('flex w-full min-w-0 flex-col justify-center', className)}>
       {title && (
         <div
-          className={cn(
-            'flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between',
-            {
-              'md:space-x-4': children,
-            },
-          )}
-        >
-          <div className='w-full min-w-0 break-words text-lg font-clash md:text-xl md:font-medium'>
+          className={cn('flex flex-col gap-1 md:flex-row md:items-center', {
+            'md:space-x-2': children,
+          })}>
+          <div className='min-w-0 wrap-break-word text-lg font-clash md:text-xl md:font-medium'>
             {title}
           </div>
           <ViewTransition>
@@ -42,8 +37,7 @@ export const SectionHeader = ({
             text={description as string}
             speed={2}
             showCursor={false}
-            className='w-full max-w-full overflow-hidden whitespace-normal break-words text-left text-sm text-foreground/60 md:whitespace-nowrap'
-          ></Typewrite>
+            className='w-full max-w-full overflow-hidden whitespace-normal wrap-break-word text-left text-sm text-foreground/60 md:whitespace-nowrap'></Typewrite>
         )}
       </ViewTransition>
     </div>

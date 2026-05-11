@@ -104,15 +104,14 @@ export const RepContent = () => {
   const isLoading = reps === undefined || salesRepSetting === undefined
 
   if (isLoading) {
-    return <LoadingHeader title='Default Sales Rep' />
+    return <LoadingHeader title='Customer Sales Representatives (CSR)' />
   }
 
   return (
-    <div className='flex min-w-0 w-full max-w-full flex-col space-y-2'>
+    <div className='flex min-w-0 w-full max-w-full flex-col space-y-1'>
       <ContentHeader
         title='Customer Sales Representatives (CSR)'
-        description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'
-      >
+        description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
         <PrimaryButton
           onPress={handleSave}
           label='Save Changes'
@@ -121,7 +120,7 @@ export const RepContent = () => {
         />
       </ContentHeader>
 
-      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 md:px-2'>
         <section className='flex flex-col gap-4'>
           <h3 className='text-sm font-medium uppercase tracking-wider text-foreground/70'>
             Select A Rep
@@ -135,8 +134,7 @@ export const RepContent = () => {
             placeholder='Select a rep'
             value={displayValue || null}
             onChange={handleSelectionChange}
-            aria-label='Default Sales Rep'
-          ></Select>
+            aria-label='Default Sales Rep'></Select>
 
           <TextArea
             label='Initial message seed for Cash App payments'
@@ -195,7 +193,7 @@ function RepUserItem({member}: {member: Doc<'staff'>}) {
           <HeroAvatarImage alt={name} src={member.avatarUrl} />
           <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
         </Avatar>
-        <p className='min-w-0 break-words font-clash'>{name}</p>
+        <p className='min-w-0 wrap-break-word font-clash'>{name}</p>
       </div>
       <Link href={`/admin/ops/staff?tabId=edit&id=${member._id}`}>
         <Icon name='cf-pen-2' className='size-4' />

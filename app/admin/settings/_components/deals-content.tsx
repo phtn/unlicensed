@@ -812,11 +812,18 @@ export const DealsContent = () => {
               label='Seed Deals'
             />
           )}
-          <PrimaryButton onPress={openAdd} icon='plus' label='Add Deal' />
+          <Button
+            size='sm'
+            isIconOnly
+            variant='primary'
+            onPress={openAdd}
+            className='bg-foreground size-5.5'>
+            <Icon name='plus' className='size-4 m-auto dark:text-dark-table' />
+          </Button>
         </div>
       </ContentHeader>
 
-      <section className='flex flex-col gap-4'>
+      <section className='flex flex-col gap-4 md:px-2'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between'>
           <h3 className='text-sm font-polysans font-semibold uppercase tracking-widest px-2 text-terpenes'>
             Deals{' '}

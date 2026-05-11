@@ -4,6 +4,7 @@ import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
 import {
+  commsChannel,
   paygateSettingsSchema,
   paymentGatewayConfigsSchema,
   StatConfig,
@@ -718,6 +719,40 @@ export const deleteFireCollection = mutation({
       updatedAt: Date.now(),
       updatedBy: uid,
     })
+
+    return {success: true}
+  },
+})
+
+export const updateCommsChannels = mutation({
+  args: {
+    channels: v.array(commsChannel),
+    uid: v.optional(v.string()),
+  },
+  handler: async (ctx, {channels, uid}) => {
+    const setting = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'comms_channels'))
+      .unique()
+
+    const now = Date.now()
+    const value = {channels}
+
+    if (setting) {
+      await ctx.db.patch(setting._id, {
+        value,
+        updatedAt: now,
+        updatedBy: uid,
+      })
+    } else {
+      await ctx.db.insert('adminSettings', {
+        identifier: 'comms_channels',
+        value,
+        updatedAt: now,
+        createdAt: now,
+        createdBy: uid,
+      })
+    }
 
     return {success: true}
   },

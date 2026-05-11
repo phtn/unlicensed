@@ -1,8 +1,8 @@
-import {api} from '../_generated/api'
 import {v} from 'convex/values'
-import {query} from '../_generated/server'
+import {api} from '../_generated/api'
 import type {Doc} from '../_generated/dataModel'
-import type {AdminSettings} from './d'
+import {query} from '../_generated/server'
+import type {AdminSettings, CommsChannel} from './d'
 import {normalizeFireCollectionsValue} from './fireCollections'
 import {
   DEFAULT_PRODUCT_TIERS_AS_ARRAY,
@@ -12,6 +12,21 @@ import {
 
 type StorefrontFireCollectionProduct = Doc<'products'> & {
   tierLabel?: string
+}
+
+function isCommsChannel(value: unknown): value is CommsChannel {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.title === 'string' &&
+    typeof candidate.link === 'string' &&
+    typeof candidate.isActive === 'boolean'
+  )
 }
 
 /**
@@ -615,5 +630,30 @@ export const getRewardsConfig = query({
           ? v.topUpProximityThreshold
           : DEFAULT_TOP_UP_PROXIMITY,
     }
+  },
+})
+
+export const getCommsChannels = query({
+  args: {identifier: v.string()},
+  handler: async ({db}, {identifier}): Promise<CommsChannel[] | null> => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', identifier))
+      .unique()
+
+    if (!setting) {
+      return null
+    }
+
+    if (Array.isArray(setting.value)) {
+      return setting.value.filter(isCommsChannel)
+    }
+
+    const channels = setting.value?.channels
+    if (Array.isArray(channels)) {
+      return channels.filter(isCommsChannel)
+    }
+
+    return null
   },
 })

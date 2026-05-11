@@ -6,6 +6,7 @@ import {Tabs} from '@base-ui/react/tabs'
 import {AccessContent} from './_components/access-content'
 import {AlertsContent} from './_components/alerts-content'
 import {AssistantContent} from './_components/assistant-content'
+import {CommsChannelContent} from './_components/comms-content'
 import {CouponsContent} from './_components/coupons-content'
 import {CryptoContent} from './_components/crypto-content'
 import {DealsContent} from './_components/deals-content'
@@ -13,8 +14,6 @@ import {OverviewContent} from './_components/overview-content'
 import {PaymentsSettings} from './_components/payments-settings'
 import {RepContent} from './_components/rep-content'
 import {RewardsContent} from './_components/rewards-content'
-import {ShippingContent} from './_components/shipping-content'
-import {TaxContent} from './_components/tax-content'
 
 const DEFAULT_TAB = 'overview'
 
@@ -22,16 +21,15 @@ export const SettingsTabs = () => {
   const tabs = [
     {id: 'overview', label: 'Overview', panel: <OverviewContent />},
     {id: 'access', label: 'Access Code', panel: <AccessContent />},
-    {id: 'payments', label: 'Payment Methods', panel: <PaymentsSettings />},
+    {id: 'alerts', label: 'Alert Tones', panel: <AlertsContent />},
+    {id: 'assistant', label: 'AI Assistant', panel: <AssistantContent />},
+    {id: 'comms', label: 'Comms Channels', panel: <CommsChannelContent />},
     {id: 'coupons', label: 'Coupons', panel: <CouponsContent />},
     {id: 'crypto', label: 'Crypto Wallets', panel: <CryptoContent />},
-    {id: 'shipping', label: 'Shipping Fee', panel: <ShippingContent />},
-    {id: 'tax', label: 'Tax', panel: <TaxContent />},
-    {id: 'rewards', label: 'Rewards', panel: <RewardsContent />},
     {id: 'deals', label: 'Deals', panel: <DealsContent />},
+    {id: 'payments', label: 'Payment Methods', panel: <PaymentsSettings />},
     {id: 'rep', label: 'CS Rep', panel: <RepContent />},
-    {id: 'assistant', label: 'AI Assistant', panel: <AssistantContent />},
-    {id: 'alerts', label: 'Alert Tones', panel: <AlertsContent />},
+    {id: 'rewards', label: 'Rewards', panel: <RewardsContent />},
   ]
 
   const [tabParam, setTabParam] = useAdminTab(DEFAULT_TAB)
@@ -61,7 +59,7 @@ export const SettingsTabs = () => {
               {tab.label}
             </Tabs.Tab>
           ))}
-          <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-500/90 dark:to-slate-600 transition-all duration-300 ease-in-out' />
+          <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-600 dark:to-slate-700 transition-all duration-300 ease-in-out' />
         </Tabs.List>
       </div>
 

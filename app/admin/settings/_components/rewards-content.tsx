@@ -18,7 +18,7 @@ import {Button, Card, Checkbox, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState, ViewTransition} from 'react'
 import {Toggle} from '../../_components/ui/toggle'
-import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
+import {ContentHeader, LoadingHeader} from './components'
 
 type TierFormState = {
   minSubtotal: string
@@ -457,7 +457,14 @@ export const RewardsContent = () => {
       <ContentHeader
         title='Rewards Manager'
         description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
-        <PrimaryButton onPress={openAddTier} icon='plus' label='Add Tier' />
+        <Button
+          size='sm'
+          isIconOnly
+          variant='primary'
+          onPress={openAddTier}
+          className='bg-foreground size-5.5'>
+          <Icon name='plus' className='size-4 m-auto dark:text-dark-table' />
+        </Button>
       </ContentHeader>
 
       <section className='flex flex-col gap-4 mt-2 md:md:px-2'>

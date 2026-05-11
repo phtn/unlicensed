@@ -57,7 +57,15 @@ export const adminSettingsSchema = v.object({
   createdBy: v.optional(v.string()),
 })
 
+export const commsChannel = v.object({
+  id: v.string(),
+  title: v.string(),
+  link: v.string(),
+  isActive: v.boolean(),
+})
+
 export type StatConfig = Infer<typeof statConfigSchema>
 export type PaygateSettings = Infer<typeof paygateSettingsSchema>
 export type AdminSettings = Infer<typeof adminSettingsSchema>
 export type FireCollectionEntry = Infer<typeof fireCollectionEntrySchema>
+export type CommsChannel = Infer<typeof commsChannel>

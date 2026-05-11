@@ -6,6 +6,7 @@ import {api} from '@/convex/_generated/api'
 import type {Doc, Id} from '@/convex/_generated/dataModel'
 import type {Coupon, CouponDiscountType} from '@/convex/coupons/d'
 import {useAuthCtx} from '@/ctx/auth'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, Chip, Label, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
@@ -17,7 +18,7 @@ import {
   type ReactNode,
 } from 'react'
 import {Toggle} from '../../_components/ui/toggle'
-import {ContentHeader, PrimaryButton} from './components'
+import {ContentHeader} from './components'
 
 type CouponDoc = Doc<'coupons'>
 
@@ -255,8 +256,7 @@ function CouponTitleButton({
         isSelected
           ? 'border-foreground/40 bg-foreground text-background shadow-sm'
           : 'border-transparent bg-transparent hover:border-default-300 hover:bg-default-100/70',
-      )}
-    >
+      )}>
       <span className='flex min-w-0 items-start justify-between gap-3'>
         <span className='min-w-0'>
           <span className='block truncate text-sm font-semibold'>
@@ -266,8 +266,7 @@ function CouponTitleButton({
             className={cn(
               'mt-1 block truncate font-mono text-[11px] uppercase tracking-[0.14em]',
               isSelected ? 'text-background/70' : 'text-foreground/50',
-            )}
-          >
+            )}>
             {coupon.code}
           </span>
         </span>
@@ -275,8 +274,7 @@ function CouponTitleButton({
           size='sm'
           color={status.color}
           variant={isSelected ? 'secondary' : 'tertiary'}
-          className='shrink-0'
-        >
+          className='shrink-0'>
           {status.label}
         </Chip>
       </span>
@@ -284,8 +282,7 @@ function CouponTitleButton({
         className={cn(
           'text-xs',
           isSelected ? 'text-background/70' : 'text-foreground/55',
-        )}
-      >
+        )}>
         {getCouponDiscountLabel(coupon)}
       </span>
     </button>
@@ -323,7 +320,7 @@ function CouponDetailsPanel({
   const status = getCouponStatus(coupon, now)
 
   return (
-    <Card className='min-w-0 overflow-hidden rounded-sm border border-border/50 bg-default-100/40 shadow-none'>
+    <Card className='min-w-0 overflow-hidden rounded-sm border border-border shadow-none'>
       <Card.Content className='p-0'>
         <div className='flex flex-col gap-4 border-b border-default-200/70 p-5 lg:flex-row lg:items-start lg:justify-between'>
           <div className='min-w-0 space-y-2'>
@@ -349,8 +346,7 @@ function CouponDetailsPanel({
               variant='tertiary'
               className='rounded-sm'
               isDisabled={isBusy}
-              onPress={() => onEdit(coupon)}
-            >
+              onPress={() => onEdit(coupon)}>
               Edit
             </Button>
             <Button
@@ -358,8 +354,7 @@ function CouponDetailsPanel({
               variant={coupon.enabled ? 'tertiary' : 'ghost'}
               className='rounded-sm'
               isDisabled={isBusy}
-              onPress={() => onToggleEnabled(coupon)}
-            >
+              onPress={() => onToggleEnabled(coupon)}>
               {isBusy ? 'Working...' : coupon.enabled ? 'Disable' : 'Enable'}
             </Button>
             <Button
@@ -367,8 +362,7 @@ function CouponDetailsPanel({
               variant='danger'
               className='rounded-sm'
               isDisabled={isBusy}
-              onPress={() => onDelete(coupon)}
-            >
+              onPress={() => onDelete(coupon)}>
               {isBusy ? 'Working...' : 'Delete'}
             </Button>
           </div>
@@ -627,15 +621,15 @@ export const CouponsContent = () => {
     <div className='flex w-full flex-col gap-4'>
       <ContentHeader
         title='Coupon Code Manager'
-        description='Create and control promo codes, timing windows, and discount rules from one place.'
-      >
-        <div className='flex items-center justify-end gap-2'>
-          <PrimaryButton
-            onPress={openCreateModal}
-            label='Add coupon'
-            icon='plus'
-          />
-        </div>
+        description='Create and control promo codes, timing windows, and discount rules from one place.'>
+        <Button
+          size='sm'
+          isIconOnly
+          variant='primary'
+          onPress={openCreateModal}
+          className='bg-foreground size-5.5'>
+          <Icon name='plus' className='size-4 m-auto dark:text-dark-table' />
+        </Button>
       </ContentHeader>
 
       <div className='flex flex-wrap gap-2'>
@@ -665,8 +659,7 @@ export const CouponsContent = () => {
               <Button
                 variant='secondary'
                 onPress={openCreateModal}
-                className='rounded-sm bg-black text-white dark:bg-white dark:text-dark-table'
-              >
+                className='rounded-sm bg-black text-white dark:bg-white dark:text-dark-table'>
                 Create first coupon
               </Button>
             </div>
@@ -674,7 +667,7 @@ export const CouponsContent = () => {
         </Card>
       ) : (
         <div className='grid min-h-128 gap-4 lg:grid-cols-[minmax(14rem,19rem)_minmax(0,1fr)]'>
-          <Card className='min-w-0 overflow-hidden rounded-sm border border-border/50 bg-default-100/40 shadow-none'>
+          <Card className='min-w-0 overflow-hidden rounded-sm border border-border shadow-none'>
             <Card.Content className='p-0'>
               <div className='border-b border-default-200/70 px-4 py-3'>
                 <div className='text-sm font-semibold text-foreground'>
@@ -687,8 +680,7 @@ export const CouponsContent = () => {
               <div
                 role='listbox'
                 aria-label='Coupon titles'
-                className='flex max-h-[min(68vh,44rem)] flex-col gap-2 overflow-y-auto p-2'
-              >
+                className='flex max-h-[min(68vh,44rem)] flex-col gap-2 overflow-y-auto p-2'>
                 {coupons.map((coupon) => (
                   <CouponTitleButton
                     key={coupon._id}
@@ -724,13 +716,12 @@ export const CouponsContent = () => {
           }
 
           closeModal()
-        }}
-      >
+        }}>
         <Modal.Backdrop>
           <Modal.Container size='lg' scroll='inside'>
             <Modal.Dialog className='max-w-4xl overflow-hidden rounded-2xl'>
               <Modal.Header>
-                {editingCouponId ? 'Edit coupon' : 'Create coupon'}
+                {editingCouponId ? 'Edit Coupon' : 'Create New Coupon'}
               </Modal.Header>
               <Modal.Body className='gap-4 py-4'>
                 <div className='grid gap-4 md:grid-cols-2'>
@@ -925,8 +916,7 @@ export const CouponsContent = () => {
                   variant='primary'
                   onPress={handleSave}
                   isDisabled={isSaving}
-                  className='bg-dark-table dark:bg-white text-background rounded-md'
-                >
+                  className='bg-dark-table dark:bg-white text-background rounded-md'>
                   {isSaving
                     ? 'Saving...'
                     : editingCouponId
