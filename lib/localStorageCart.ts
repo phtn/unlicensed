@@ -1,5 +1,6 @@
 import {Id} from '@/convex/_generated/dataModel'
 import {type ProductCartItem, CartItemType} from '@/convex/cart/d'
+import {dispatchCartProductQuantitiesSnapshot} from './cart-product-quantities'
 
 const VERSION = 'v1'
 export const LOCAL_STORAGE_CART_KEY = `rapidfire_cart_items:${VERSION}`
@@ -44,6 +45,7 @@ export const setLocalStorageCartItems = (
         detail: items,
       }),
     )
+    dispatchCartProductQuantitiesSnapshot(items)
   } catch (error) {
     console.error('Failed to save cart to local storage:', error)
   }
@@ -150,6 +152,7 @@ export const clearLocalStorageCart = (): void => {
         detail: [],
       }),
     )
+    dispatchCartProductQuantitiesSnapshot([])
   } catch (error) {
     console.error('Failed to clear cart from local storage:', error)
   }

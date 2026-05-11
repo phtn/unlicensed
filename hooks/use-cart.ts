@@ -13,6 +13,12 @@ import {
   setLocalStorageCartItems,
   updateLocalStorageCartItem,
 } from '@/lib/localStorageCart'
+import {
+  buildCartProductQuantityUpdates,
+  dispatchCartProductQuantitiesUpdated,
+  getProductLineQuantityFromCartItems,
+  getProductQuantityFromCartItems,
+} from '@/lib/cart-product-quantities'
 import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
@@ -344,14 +350,31 @@ export const useCart = (): UseCartResult => {
       denomination?: number,
     ) => {
       if (isAuthenticated && userId) {
-        // Use Convex for authenticated users
-        const cartId = await addToCartMutation({
-          userId,
+        const currentQuantity = getProductQuantityFromCartItems(
+          serverCart?.items ?? [],
           productId,
-          quantity,
-          denomination,
+        )
+        const nextQuantity = currentQuantity + quantity
+
+        dispatchCartProductQuantitiesUpdated({
+          updates: [{productId, quantity: nextQuantity}],
         })
-        return cartId
+
+        // Use Convex for authenticated users
+        try {
+          const cartId = await addToCartMutation({
+            userId,
+            productId,
+            quantity,
+            denomination,
+          })
+          return cartId
+        } catch (error) {
+          dispatchCartProductQuantitiesUpdated({
+            updates: [{productId, quantity: currentQuantity}],
+          })
+          throw error
+        }
       } else {
         // Use localStorage for unauthenticated users
         const newItems = addToLocalStorageCart(
@@ -363,7 +386,7 @@ export const useCart = (): UseCartResult => {
         return 'guest-cart' as Id<'carts'>
       }
     },
-    [isAuthenticated, userId, addToCartMutation],
+    [isAuthenticated, userId, addToCartMutation, serverCart?.items],
   )
 
   // Add bundle to cart (authenticated users only; guests fall back to adding products individually)
@@ -398,13 +421,38 @@ export const useCart = (): UseCartResult => {
       denomination?: number,
     ) => {
       if (isAuthenticated && userId) {
-        // Use Convex for authenticated users
-        await updateCartItemMutation({
-          userId,
+        const currentQuantity = getProductQuantityFromCartItems(
+          serverCart?.items ?? [],
           productId,
-          quantity,
+        )
+        const currentLineQuantity = getProductLineQuantityFromCartItems(
+          serverCart?.items ?? [],
+          productId,
           denomination,
+        )
+        const nextQuantity = Math.max(
+          0,
+          currentQuantity - currentLineQuantity + quantity,
+        )
+
+        dispatchCartProductQuantitiesUpdated({
+          updates: [{productId, quantity: nextQuantity}],
         })
+
+        // Use Convex for authenticated users
+        try {
+          await updateCartItemMutation({
+            userId,
+            productId,
+            quantity,
+            denomination,
+          })
+        } catch (error) {
+          dispatchCartProductQuantitiesUpdated({
+            updates: [{productId, quantity: currentQuantity}],
+          })
+          throw error
+        }
       } else {
         // Use localStorage for unauthenticated users
         const newItems = updateLocalStorageCartItem(
@@ -415,7 +463,7 @@ export const useCart = (): UseCartResult => {
         setGuestCartItems(newItems)
       }
     },
-    [isAuthenticated, userId, updateCartItemMutation],
+    [isAuthenticated, userId, updateCartItemMutation, serverCart?.items],
   )
 
   // Remove bundle from cart (authenticated users only)
@@ -434,30 +482,73 @@ export const useCart = (): UseCartResult => {
       addToCartHistory(productId, denomination)
 
       if (isAuthenticated && userId) {
-        // Use Convex for authenticated users
-        await removeFromCartMutation({
-          userId,
+        const currentQuantity = getProductQuantityFromCartItems(
+          serverCart?.items ?? [],
+          productId,
+        )
+        const currentLineQuantity = getProductLineQuantityFromCartItems(
+          serverCart?.items ?? [],
           productId,
           denomination,
+        )
+        const nextQuantity = Math.max(0, currentQuantity - currentLineQuantity)
+
+        dispatchCartProductQuantitiesUpdated({
+          updates: [{productId, quantity: nextQuantity}],
         })
+
+        // Use Convex for authenticated users
+        try {
+          await removeFromCartMutation({
+            userId,
+            productId,
+            denomination,
+          })
+        } catch (error) {
+          dispatchCartProductQuantitiesUpdated({
+            updates: [{productId, quantity: currentQuantity}],
+          })
+          throw error
+        }
       } else {
         // Use localStorage for unauthenticated users
         const newItems = removeFromLocalStorageCart(productId, denomination)
         setGuestCartItems(newItems)
       }
     },
-    [isAuthenticated, userId, removeFromCartMutation],
+    [isAuthenticated, userId, removeFromCartMutation, serverCart?.items],
   )
 
   // Clear cart
   const clear = useCallback(async () => {
     if (isAuthenticated && userId) {
-      await clearCartMutation({userId})
+      const currentUpdates = buildCartProductQuantityUpdates(
+        (serverCart?.items ?? []).flatMap((item) =>
+          isProductCartItemWithProduct(item)
+            ? [{productId: item.productId, quantity: item.quantity}]
+            : [],
+        ),
+      )
+
+      dispatchCartProductQuantitiesUpdated({
+        replace: true,
+        updates: [],
+      })
+
+      try {
+        await clearCartMutation({userId})
+      } catch (error) {
+        dispatchCartProductQuantitiesUpdated({
+          replace: true,
+          updates: currentUpdates,
+        })
+        throw error
+      }
     } else {
       clearLocalStorageCart()
       setGuestCartItems([])
     }
-  }, [isAuthenticated, userId, clearCartMutation])
+  }, [isAuthenticated, userId, clearCartMutation, serverCart?.items])
 
   // Determine which cart to return
   const cart = useMemo(() => {
