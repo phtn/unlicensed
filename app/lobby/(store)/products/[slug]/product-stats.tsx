@@ -55,7 +55,7 @@ export const ProductDetailStats = ({
               variant='soft'
               className='flex items-center justify-center rounded-lg md:mx-0 h-3! aspect-square bg-brand dark:bg-light-brand font-clash font-medium border border-white text-white text-base'
               content={`$`}>
-              {/*{quantityInCart}*/} 3
+              {quantityInCart}
             </Badge>
           </Badge.Anchor>
         </div>
