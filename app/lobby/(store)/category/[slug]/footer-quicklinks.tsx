@@ -8,7 +8,7 @@ interface FooterQuickLinksProps {
 
 export const FooterQuickLinks = ({categories, slug}: FooterQuickLinksProps) => {
   return (
-    <section className='py-6 sm:py-10 lg:py-20 px-6 md:px-0 max-w-7xl mx-auto'>
+    <section className='py-6 sm:py-10 lg:py-20 px-6 xl:px-0 max-w-7xl mx-auto'>
       <div className='flex flex-col xl:gap-10'>
         <div className='space-y-2 xl:space-y-0 xl:flex items-center justify-between w-full'>
           <div className='w-fit'>

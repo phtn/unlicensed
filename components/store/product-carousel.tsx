@@ -163,7 +163,7 @@ export const ProductCarousel = ({
               </button>
             ))}
           </div>
-          <p className='hidden md:block text-xs uppercase tracking-[0.3em] text-foreground/50'>
+          <p className='hidden md:block text-xs uppercase tracking-[0.2em] text-foreground/50'>
             Swipe left or right
           </p>
         </div>

@@ -16,7 +16,9 @@ import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
 import {useCallback, useMemo, useTransition, ViewTransition} from 'react'
+import {ExtractsTierCarousels} from './extracts-tier-carousels'
 import {FooterQuickLinks} from './footer-quicklinks'
+import {VapesTierCarousels} from './vapes-tier-carousels'
 
 interface ContentProps {
   slug: string
@@ -24,6 +26,7 @@ interface ContentProps {
 }
 
 const COLLAPSED_BRAND_COUNT = 1
+const TIER_CAROUSEL_CATEGORY_SLUGS = new Set(['flower', 'extracts', 'vapes'])
 
 export const Content = ({initialProducts, slug}: ContentProps) => {
   const shouldReduceMotion = useReducedMotion()
@@ -150,6 +153,12 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   const productCountLabel = `${displayedProductCount} ${
     displayedProductCount === 1 ? 'item' : 'items'
   }`
+  const usesTierCarousels = TIER_CAROUSEL_CATEGORY_SLUGS.has(slug)
+  const showTierFilters = !usesTierCarousels && filterOptions.tiers.length > 0
+  const hasVisibleFilters =
+    filterOptions.brands.length > 0 ||
+    showTierFilters ||
+    filterOptions.subcategories.length > 0
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
@@ -205,15 +214,13 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         </div>
       </section>
 
-      {(filterOptions.brands.length > 0 ||
-        filterOptions.tiers.length > 0 ||
-        filterOptions.subcategories.length > 0) && (
+      {hasVisibleFilters && (
         <section className='px-4 sm:px-6 pb-4'>
           <div
             className={cn('max-w-7xl mx-auto flex flex-col gap-4 min-h-64', {
-              'min-h-24': slug === 'flower',
+              'min-h-24': usesTierCarousels,
             })}>
-            {slug !== 'flower' && filterOptions.tiers.length > 0 && (
+            {showTierFilters && (
               <div className='flex flex-wrap items-center gap-3'>
                 <span className='text-base font-clash font-semibold mr-2 uppercase'>
                   Tiers
@@ -437,26 +444,55 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           </div>
         </section>
       )}
-      {/**/}
-      {slug === 'flower' ? (
-        <FlowerTierCarousels
-          slug={slug}
-          category={category}
-          brand={brand}
-          initialProducts={initialProducts}
-        />
-      ) : (
-        <CategoryProductsSection
-          slug={slug}
-          category={category}
-          brand={brand}
-          productType={productType}
-          tier={tier}
-          subcategory={subcategory}
-          initialProducts={initialProducts}
-          isFilterPending={isFilterPending}
-        />
-      )}
+      {
+        /*SWITCH*/
+
+        (() => {
+          switch (slug) {
+            case 'flower':
+              return (
+                <FlowerTierCarousels
+                  slug={slug}
+                  category={category}
+                  brand={brand}
+                  initialProducts={initialProducts}
+                />
+              )
+            case 'extracts':
+              return (
+                <ExtractsTierCarousels
+                  slug={slug}
+                  category={category}
+                  brand={brand}
+                  initialProducts={initialProducts}
+                />
+              )
+            case 'vapes':
+              return (
+                <VapesTierCarousels
+                  slug={slug}
+                  category={category}
+                  brand={brand}
+                  initialProducts={initialProducts}
+                />
+              )
+            default:
+              return (
+                <CategoryProductsSection
+                  slug={slug}
+                  category={category}
+                  brand={brand}
+                  productType={productType}
+                  tier={tier}
+                  subcategory={subcategory}
+                  initialProducts={initialProducts}
+                  isFilterPending={isFilterPending}
+                />
+              )
+          }
+        })()
+      }
+
       <FooterQuickLinks categories={categories} slug={slug} />
     </div>
   )

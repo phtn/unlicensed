@@ -609,8 +609,19 @@ const ProductCardComponent = ({
               className='aspect-square! min-w-44 rounded-xs object-cover transition-transform duration-300 group-hover:scale-[1.03] xl:min-w-64'
             />
           ) : (
-            <div className='flex aspect-square h-44 min-h-48 w-auto items-center justify-center xl:min-w-64'>
-              <Icon name='spinners-ring' />
+            <div className='relative flex items-center justify-center'>
+              <NextImage
+                src={
+                  'https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881181/rf-logo-round-dark_gxg9er.png'
+                }
+                alt={'no-image'}
+                width={512}
+                height={512}
+                quality={70}
+                sizes={PRODUCT_CARD_IMAGE_SIZES}
+                className='aspect-square! min-w-44 rounded-xs object-cover transition-transform duration-300 scale-80 group-hover:scale-90 xl:min-w-64 grayscale opacity-20'
+              />
+              <Icon name='spinners-ring' className='absolute' />
             </div>
           )}
         </div>

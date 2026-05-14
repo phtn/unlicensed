@@ -77,18 +77,18 @@ const TierCarouselSection = ({
   )
 }
 
-interface FlowerTierCarouselsProps {
+interface ExtractsTierCarouselsProps {
   slug: string
   category?: RawCategory | null
   brand?: string
   initialProducts: StoreProduct[]
 }
 
-export const FlowerTierCarousels = ({
+export const ExtractsTierCarousels = ({
   slug,
   category,
   brand,
-}: FlowerTierCarouselsProps) => {
+}: ExtractsTierCarouselsProps) => {
   const tiers = useMemo(() => category?.tiers ?? [], [category])
 
   const tierSlugs = useMemo(

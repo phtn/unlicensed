@@ -3,7 +3,7 @@ import {Metadata} from 'next'
 import {Content} from './content'
 
 export const metadata: Metadata = {
-  title: 'Category',
+  title: 'Categories',
   description: 'Browse products by category.',
 }
 
