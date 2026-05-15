@@ -1,20 +1,14 @@
 'use client'
 
-import {
-  ContentHeader,
-  PrimaryButton,
-} from '@/app/admin/settings/_components/components'
+import {ContentHeader} from '@/app/admin/settings/_components/components'
 import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
+import {onSuccess} from '@/ctx/toast'
+import {Icon} from '@/lib/icons'
+import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {
-  startTransition,
-  useCallback,
-  useMemo,
-  useState,
-  ViewTransition,
-} from 'react'
+import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
 import {Toggle} from '../../_components/ui/toggle'
 
 const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_addresses'
@@ -158,6 +152,12 @@ function CryptoWalletFormInner({
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<null | 'saved' | 'error'>(null)
 
+  useEffect(() => {
+    if (saveMessage && saveMessage === 'saved') {
+      onSuccess('Wallet Addresses Saved')
+    }
+  }, [saveMessage])
+
   const handleAddressChange = useCallback(
     (key: NetworkKey, address: string) => {
       setWallets((current) => ({
@@ -214,31 +214,22 @@ function CryptoWalletFormInner({
   return (
     <section className='flex h-[90lvh] min-w-0 w-full max-w-full flex-col gap-4 overflow-y-auto pb-32'>
       <ContentHeader title={title}>
-        <div className='flex items-center justify-end gap-3'>
-          <ViewTransition>
-            {saveMessage === 'saved' ? (
-              <span className='text-sm text-emerald-600 dark:text-emerald-400'>
-                Saved
-              </span>
-            ) : saveMessage === 'error' ? (
-              <span className='text-sm text-destructive'>Save failed</span>
-            ) : null}
-          </ViewTransition>
-          <PrimaryButton
-            onPress={handleSave}
-            label={isSaving ? 'Saving…' : 'Save'}
-            disabled={isSaving || !configLoaded || !userUid}
-            icon={isSaving ? 'spinners-ring' : 'save'}
-          />
-        </div>
+        <Button
+          size='sm'
+          isIconOnly
+          variant='primary'
+          onPress={handleSave}
+          isDisabled={isSaving || !configLoaded || !userUid}
+          className='bg-foreground size-5.5'>
+          <Icon name='plus' className='size-4 m-auto dark:text-dark-table' />
+        </Button>
       </ContentHeader>
 
       <div className='grid md:grid-cols-3 gap-3 w-full'>
         {NETWORKS.map((network) => (
           <div
             key={network.key}
-            className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4 space-y-2'
-          >
+            className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4 space-y-2'>
             <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
               <div className='min-w-0 space-y-2 sm:w-fit'>
                 <div className='text-sm font-clash font-semibold tracking-wider text-foreground space-y-2'>

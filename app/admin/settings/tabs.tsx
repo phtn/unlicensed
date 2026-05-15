@@ -10,6 +10,7 @@ import {CommsChannelContent} from './_components/comms-content'
 import {CouponsContent} from './_components/coupons-content'
 import {CryptoContent} from './_components/crypto-content'
 import {DealsContent} from './_components/deals-content'
+import {MpxlContent} from './_components/metapixel-content'
 import {OverviewContent} from './_components/overview-content'
 import {PaymentsSettings} from './_components/payments-settings'
 import {RepContent} from './_components/rep-content'
@@ -27,6 +28,7 @@ export const SettingsTabs = () => {
     {id: 'coupons', label: 'Coupons', panel: <CouponsContent />},
     {id: 'crypto', label: 'Crypto Wallets', panel: <CryptoContent />},
     {id: 'deals', label: 'Deals', panel: <DealsContent />},
+    {id: 'metapixel', label: 'Metapixel', panel: <MpxlContent />},
     {id: 'payments', label: 'Payment Methods', panel: <PaymentsSettings />},
     {id: 'rep', label: 'CS Rep', panel: <RepContent />},
     {id: 'rewards', label: 'Rewards', panel: <RewardsContent />},

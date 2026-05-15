@@ -74,7 +74,7 @@ export const ChatComms = ({isOpen, onCloseComplete}: ChatCommsProps) => {
     <div
       ref={rootRef}
       className={cn(
-        'fixed right-0 bottom-7 flex h-15 w-110 items-center justify-start gap-16 overflow-visible rounded-s-full rounded-e-full bg-black/10 px-7 text-balance text-white shadow-lg backdrop-blur-sm',
+        'fixed right-0 bottom-0 md:bottom-7 flex h-15 w-110 items-center justify-start gap-16 overflow-visible rounded-s-full rounded-e-full bg-black/10 px-7 text-balance text-white shadow-lg backdrop-blur-sm',
       )}>
       <Button
         data-chat-comms-item

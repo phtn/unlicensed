@@ -59,6 +59,12 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
     icon: 'sale',
   },
   {
+    id: 'metapixel',
+    title: 'Metapixel',
+    description: 'Integration Still On-going',
+    icon: 'meta',
+  },
+  {
     id: 'rep',
     title: 'Customer Service Representative',
     description: 'Assign Default Rep account and seed message.',
