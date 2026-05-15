@@ -28,7 +28,7 @@ export const MpxlContent = () => {
   return (
     <div className='flex w-full flex-col gap-4'>
       <FormInner
-        title='Crypto Wallet Addresses'
+        title='Metapixel Configuration'
         metapixelId={metapixelId}
         configLoaded={setting !== undefined}
         updateAdmin={updateAdmin}
@@ -108,14 +108,15 @@ function FormInner({
             </div>
             <Toggle
               title='Enabled'
+              label='Metapixel'
               checked={true}
               onChange={undefined}
               disabled={!configLoaded}
             />
           </div>
           <Input
-            label='metapixelId'
-            placeholder={''}
+            label='Id'
+            placeholder={'1499203201936284'}
             value={metapixelId}
             onChange={handleChangeId}
             disabled={!configLoaded}
