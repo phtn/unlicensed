@@ -6,24 +6,20 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
+import {getMetaPixelId, META_PIXEL_IDENTIFIER} from '@/lib/meta-pixel'
 import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react'
 import {Toggle} from '../../_components/ui/toggle'
 
-const METAPIXEL_IDENTIFIER = 'metapixel_id'
-
 export const MpxlContent = () => {
   const {user} = useAuthCtx()
   const setting = useQuery(api.admin.q.getAdminByIdentStrict, {
-    identifier: METAPIXEL_IDENTIFIER,
+    identifier: META_PIXEL_IDENTIFIER,
   })
   const updateAdmin = useMutation(api.admin.m.updateAdminByIdentifier)
 
-  const metapixelId = useMemo(
-    () => setting?.value?.[METAPIXEL_IDENTIFIER],
-    [setting],
-  )
+  const metapixelId = useMemo(() => getMetaPixelId(setting) ?? '', [setting])
 
   return (
     <div className='flex w-full flex-col gap-4'>
@@ -61,9 +57,13 @@ function FormInner({
 
   useEffect(() => {
     if (saveMessage && saveMessage === 'saved') {
-      onSuccess('Wallet Addresses Saved')
+      onSuccess('Meta Pixel settings saved')
     }
   }, [saveMessage])
+
+  useEffect(() => {
+    setMetapixel(metapixelId)
+  }, [metapixelId])
 
   const handleChangeId = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -76,10 +76,11 @@ function FormInner({
   const handleSave = useCallback(() => {
     setIsSaving(true)
     setSaveMessage(null)
+
     updateAdmin({
-      identifier: METAPIXEL_IDENTIFIER,
-      value: {metapixel},
-      uid: userUid ?? '',
+      identifier: META_PIXEL_IDENTIFIER,
+      value: {pixelId: metapixel.trim()},
+      uid: userUid ?? 'anonymous',
     })
       .then(() => setSaveMessage('saved'))
       .catch(() => setSaveMessage('error'))
@@ -104,12 +105,14 @@ function FormInner({
         <div className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4 space-y-2'>
           <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
             <div className='min-w-0 space-y-2 sm:w-fit'>
-              <div className='text-xs opacity-50'>{metapixelId}</div>
+              <div className='text-xs opacity-50'>
+                {metapixelId || 'Not configured'}
+              </div>
             </div>
             <Toggle
               title='Enabled'
               label='Metapixel'
-              checked={true}
+              checked={Boolean(metapixel.trim())}
               onChange={undefined}
               disabled={!configLoaded}
             />
@@ -117,7 +120,7 @@ function FormInner({
           <Input
             label='Dataset Id'
             placeholder={'1499203201936284'}
-            value={metapixelId}
+            value={metapixel}
             onChange={handleChangeId}
             disabled={!configLoaded}
           />

@@ -17,6 +17,8 @@ export interface CheckoutProps {
   tax: number
   shipping: number
   total: number
+  numItems?: number
+  contentIds?: string[]
   showTaxRow?: boolean
   isAuthenticated: boolean
   onOpen: VoidFunction

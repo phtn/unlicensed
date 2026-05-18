@@ -1,10 +1,10 @@
 'use client'
 
+import {MetaPixelLink} from '@/components/analytics/meta-pixel-link'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {AnimatePresence, motion} from 'motion/react'
-import Link from 'next/link'
 import {
   createContext,
   useCallback,
@@ -26,6 +26,7 @@ export interface NavMenuSubItem {
   label: string
   href?: string
   description?: string
+  categorySlug?: string
 }
 
 const VIEWPORT_TRANSITION = {
@@ -97,7 +98,16 @@ export const InnerMenu = ({
             } as React.CSSProperties
           }>
           {items.map((item) => (
-            <Link href={`/lobby/category/${item.slug}`} key={item.slug}>
+            <MetaPixelLink
+              href={`/lobby/category/${item.slug}`}
+              key={item.slug}
+              trackingEventName='NavigationClick'
+              trackingParameters={{
+                category_slug: item.slug,
+                href: `/lobby/category/${item.slug}`,
+                label: item.name,
+                location: 'nav_menu_category',
+              }}>
               <li className='list-none md:shrink-0'>
                 <button
                   type='button'
@@ -133,7 +143,7 @@ export const InnerMenu = ({
                   />
                 </button>
               </li>
-            </Link>
+            </MetaPixelLink>
           ))}
 
           <div
@@ -183,11 +193,15 @@ function CategoryViewportContent({
         id: 'all',
         label: `All ${item.name}`,
         href: categoryHref,
+        categorySlug: item.slug,
         description: undefined,
       },
-      ...subItems,
+      ...subItems.map((subItem) => ({
+        ...subItem,
+        categorySlug: subItem.categorySlug ?? item.slug,
+      })),
     ],
-    [item.name, categoryHref, subItems],
+    [item.name, item.slug, categoryHref, subItems],
   )
 
   return (
@@ -206,9 +220,16 @@ function CategoryViewportContent({
 function SubItem(item: NavMenuSubItem) {
   const onClose = useContext(NavMenuCloseContext)
   return (
-    <Link
+    <MetaPixelLink
       href={item.href ?? '#'}
       onClick={() => onClose?.()}
+      trackingEventName='NavigationClick'
+      trackingParameters={{
+        category_slug: item.categorySlug,
+        href: item.href ?? '#',
+        label: item.label,
+        location: 'nav_menu_subitem',
+      }}
       className={cn(
         'flex shrink-0 items-center px-3 py-2 outline-none border-b-2 border-b-transparent',
         'dark:hover:bg-dark-table/50 hover:border-brand capitalize group',
@@ -225,6 +246,6 @@ function SubItem(item: NavMenuSubItem) {
         )}>
         {item.label}
       </span>
-    </Link>
+    </MetaPixelLink>
   )
 }

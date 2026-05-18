@@ -20,6 +20,7 @@ import {
   getProductQuantityFromCartItems,
 } from '@/lib/cart-product-quantities'
 import {addToCartHistory} from '@/lib/localStorageCartHistory'
+import {trackMetaPixelAddToCart} from '@/lib/meta-pixel'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -368,6 +369,10 @@ export const useCart = (): UseCartResult => {
             quantity,
             denomination,
           })
+          trackMetaPixelAddToCart({
+            contentIds: [productId],
+            quantity,
+          })
           return cartId
         } catch (error) {
           dispatchCartProductQuantitiesUpdated({
@@ -383,6 +388,10 @@ export const useCart = (): UseCartResult => {
           denomination,
         )
         setGuestCartItems(newItems)
+        trackMetaPixelAddToCart({
+          contentIds: [productId],
+          quantity,
+        })
         return 'guest-cart' as Id<'carts'>
       }
     },
@@ -403,12 +412,22 @@ export const useCart = (): UseCartResult => {
       if (!isAuthenticated || !userId) {
         throw new Error('Must be authenticated to add bundles')
       }
-      return addBundleToCartMutation({
+      const cartId = await addBundleToCartMutation({
         userId,
         bundleType: params.bundleType,
         variationIndex: params.variationIndex,
         bundleItems: params.bundleItems,
       })
+
+      trackMetaPixelAddToCart({
+        contentIds: params.bundleItems.map((item) => item.productId),
+        quantity: params.bundleItems.reduce(
+          (total, item) => total + item.quantity,
+          0,
+        ),
+      })
+
+      return cartId
     },
     [isAuthenticated, userId, addBundleToCartMutation],
   )

@@ -6,9 +6,11 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
+import {trackMetaPixelViewContent} from '@/lib/meta-pixel'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {useQuery} from 'convex/react'
-import {useMemo} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
+import {getUnitPriceCents} from '@/utils/cartPrice'
 import {Crumbs} from './crumbs'
 import {Gallery} from './gallery'
 import {ProductDetails} from './product-details'
@@ -78,6 +80,43 @@ export const ProductDetailContent = ({
       })),
     [resolveStorageUrl, resolvedRelated],
   )
+  const trackingDenomination = useMemo(
+    () =>
+      resolvedProduct.popularDenomination[0] ??
+      resolvedProduct.availableDenominations[0],
+    [resolvedProduct.availableDenominations, resolvedProduct.popularDenomination],
+  )
+  const trackingValue = useMemo(() => {
+    const unitCents = getUnitPriceCents(resolvedProduct, trackingDenomination)
+
+    return unitCents > 0 ? unitCents / 100 : undefined
+  }, [resolvedProduct, trackingDenomination])
+  const trackedProductKeyRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const contentId = String(resolvedProduct._id ?? slug)
+    const trackingKey = `${contentId}:${trackingDenomination ?? 'default'}`
+
+    if (trackedProductKeyRef.current === trackingKey) {
+      return
+    }
+
+    trackedProductKeyRef.current = trackingKey
+
+    trackMetaPixelViewContent({
+      contentId,
+      contentCategory: resolvedProduct.categorySlug,
+      contentName: resolvedProduct.name,
+      value: trackingValue,
+    })
+  }, [
+    resolvedProduct._id,
+    resolvedProduct.categorySlug,
+    resolvedProduct.name,
+    slug,
+    trackingDenomination,
+    trackingValue,
+  ])
 
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-12 sm:py-16 lg:py-20 overflow-x-hidden w-full'>

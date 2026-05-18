@@ -14,6 +14,7 @@ import {
 import {useDisclosure} from '@/hooks/use-disclosure'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
+import {trackMetaPixelCheckoutClick} from '@/lib/meta-pixel'
 import {
   getBundleTotalCents,
   getRegularBundleTotalCents,
@@ -203,6 +204,13 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     'User'
 
   const handleCartCheckout = useCallback(() => {
+    trackMetaPixelCheckoutClick({
+      location: 'cart_drawer',
+      authenticated: Boolean(user),
+      numItems: optimisticCartItemCount,
+      value: subtotal / 100,
+    })
+
     if (!user) {
       onOpenChange(false)
       window.setTimeout(() => {
@@ -212,7 +220,14 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     }
     onOpenChange(false)
     router.push('/lobby/cart')
-  }, [user, onOpenChange, onAuthOpen, router])
+  }, [
+    user,
+    optimisticCartItemCount,
+    subtotal,
+    onOpenChange,
+    onAuthOpen,
+    router,
+  ])
 
   const handleClose = useCallback(() => onOpenChange(false), [onOpenChange])
 

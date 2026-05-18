@@ -278,6 +278,18 @@ export default function CartPage() {
       ? Math.round(computedRewards.shippingCost * 100)
       : shipping
   const effectiveTotal = subtotal + tax + effectiveShipping
+  const checkoutNumItems = useMemo(
+    () =>
+      cartItems.reduce((totalQuantity, item) => totalQuantity + item.quantity, 0),
+    [cartItems],
+  )
+  const checkoutContentIds = useMemo(
+    () =>
+      [...new Set(cartItems.map((item) => item.product._id).filter(Boolean))].map(
+        (productId) => String(productId),
+      ),
+    [cartItems],
+  )
 
   if (!hasItems && isLoading) {
     return (
@@ -310,6 +322,8 @@ export default function CartPage() {
           <Checkout
             tax={tax}
             total={effectiveTotal}
+            numItems={checkoutNumItems}
+            contentIds={checkoutContentIds}
             showTaxRow={taxConfig?.active ?? true}
             onOpen={isAuthenticated ? onCheckoutOpen : onAuthOpen}
             subtotal={subtotal}

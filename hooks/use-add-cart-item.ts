@@ -6,6 +6,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {getConvexReactClient} from '@/lib/convexReactClient'
 import {getCurrentUser} from '@/lib/firebase/auth'
 import {addToLocalStorageCart} from '@/lib/localStorageCart'
+import {trackMetaPixelAddToCart} from '@/lib/meta-pixel'
 import {useCallback} from 'react'
 
 export const useAddCartItem = () => {
@@ -34,16 +35,27 @@ export const useAddCartItem = () => {
         }
 
         if (userId) {
-          return convexClient.mutation(api.cart.m.addToCart, {
+          const cartId = await convexClient.mutation(api.cart.m.addToCart, {
             userId,
             productId,
             quantity,
             denomination,
           })
+
+          trackMetaPixelAddToCart({
+            contentIds: [productId],
+            quantity,
+          })
+
+          return cartId
         }
       }
 
       addToLocalStorageCart(productId, quantity, denomination)
+      trackMetaPixelAddToCart({
+        contentIds: [productId],
+        quantity,
+      })
       return 'guest-cart' as Id<'carts'>
     },
     [convexUserId, user],

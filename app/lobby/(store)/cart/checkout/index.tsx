@@ -9,6 +9,10 @@ import {
   getCashAppProcessingFeePercent,
 } from '@/lib/checkout/processing-fee'
 import {getCouponErrorMessage} from '@/lib/coupon-errors'
+import {
+  trackMetaPixelCheckoutClick,
+  trackMetaPixelInitiateCheckout,
+} from '@/lib/meta-pixel'
 import {useConvex, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {
@@ -70,6 +74,8 @@ export function Checkout({
   tax,
   shipping,
   total,
+  numItems,
+  contentIds,
   showTaxRow = true,
   isAuthenticated,
   onOpen,
@@ -481,8 +487,23 @@ export function Checkout({
 
   // "Place Order" only opens the checkout modal; payment is triggered by "Proceed to Payment" inside the modal
   const handlePlaceOrderClick = useCallback(() => {
+    trackMetaPixelCheckoutClick({
+      location: 'cart_page_summary',
+      authenticated: isAuthenticated,
+      numItems,
+      value: totalWithProcessingFee / 100,
+    })
+
+    if (isAuthenticated) {
+      trackMetaPixelInitiateCheckout({
+        contentIds,
+        numItems,
+        value: totalWithProcessingFee / 100,
+      })
+    }
+
     onOpen()
-  }, [onOpen])
+  }, [contentIds, isAuthenticated, numItems, onOpen, totalWithProcessingFee])
 
   const handleCreateNewShippingAddress = useCallback(() => {
     handleInputChange('firstName', '')

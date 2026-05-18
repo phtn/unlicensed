@@ -18,10 +18,11 @@ import {
   Nunito_Sans as NunitoSans,
   Space_Grotesk,
 } from 'next/font/google'
+import {Suspense} from 'react'
 import {ConditionalNavbar} from './_components/conditional-navbar'
 import {DeferredRootClient} from './_components/deferred-root-client'
 import './globals.css'
-import { MetaPixel } from './mpxl'
+import {MetaPixel} from './mpxl'
 
 const figtree = Figtree({
   variable: '--font-sans',
@@ -196,12 +197,14 @@ export default function RootLayout({
           type='font/woff2'
           crossOrigin='anonymous'
         />
-        <MetaPixel />
       </head>
       <body
         className={`${GeistPixelSquare.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelGrid.variable} ${GeistPixelLine.variable} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-okxs font-normal selection:bg-brand selection:text-white`}>
         <WagmiContext>
           <ProvidersCtxProvider>
+            <Suspense fallback={null}>
+              <MetaPixel />
+            </Suspense>
             <DeferredRootClient />
             <ConditionalNavbar navbar={navbar} />
             {children}

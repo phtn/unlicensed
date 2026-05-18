@@ -1,10 +1,57 @@
+'use client'
+
+import {api} from '@/convex/_generated/api'
+import {
+  getMetaPixelId,
+  META_PIXEL_IDENTIFIER,
+  trackMetaPixelPageView,
+} from '@/lib/meta-pixel'
+import {useQuery} from 'convex/react'
+import {usePathname, useSearchParams} from 'next/navigation'
 import Script from 'next/script'
+import {useEffect, useMemo, useRef} from 'react'
 
 export function MetaPixel() {
-  const id = '1499203201936284'
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const setting = useQuery(api.admin.q.getAdminByIdentStrict, {
+    identifier: META_PIXEL_IDENTIFIER,
+  })
+  const lastTrackedPathRef = useRef<string | null>(null)
+
+  const pixelId = useMemo(() => getMetaPixelId(setting), [setting])
+  const queryString = searchParams.toString()
+  const fullPath = useMemo(
+    () => (queryString.length > 0 ? `${pathname}?${queryString}` : pathname),
+    [pathname, queryString],
+  )
+
+  useEffect(() => {
+    if (!pixelId) {
+      lastTrackedPathRef.current = null
+      return
+    }
+
+    if (lastTrackedPathRef.current === null) {
+      lastTrackedPathRef.current = fullPath
+      return
+    }
+
+    if (lastTrackedPathRef.current === fullPath) {
+      return
+    }
+
+    lastTrackedPathRef.current = fullPath
+    trackMetaPixelPageView()
+  }, [fullPath, pixelId])
+
+  if (!pixelId) {
+    return null
+  }
+
   return (
     <>
-      <Script id='facebook-pixel' strategy='afterInteractive'>
+      <Script id='facebook-pixel-base' strategy='afterInteractive'>
         {`
           !(function(f,b,e,v,n,t,s){
             if(f.fbq)return;
@@ -29,21 +76,17 @@ export function MetaPixel() {
             'script',
             'https://connect.facebook.net/en_US/fbevents.js'
           );
-
-          fbq('init', ${id});
-          fbq('track', 'PageView');
         `}
       </Script>
 
-      {/*<noscript>
-        <Image
-          height={1}
-          width={1}
-          style={{display: 'none'}}
-          src={`https://www.facebook.com/tr?id=${id}&ev=PageView&noscript=1`}
-          alt='metapixel'
-        />
-      </noscript>*/}
+      <Script
+        id={`facebook-pixel-init-${pixelId}`}
+        strategy='afterInteractive'>
+        {`
+          fbq('init', ${JSON.stringify(pixelId)});
+          fbq('track', 'PageView');
+        `}
+      </Script>
     </>
   )
 }
