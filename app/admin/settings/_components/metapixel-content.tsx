@@ -115,7 +115,7 @@ function FormInner({
             />
           </div>
           <Input
-            label='Id'
+            label='Dataset Id'
             placeholder={'1499203201936284'}
             value={metapixelId}
             onChange={handleChangeId}

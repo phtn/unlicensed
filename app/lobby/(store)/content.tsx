@@ -51,14 +51,12 @@ const FeaturedDealsSection = async ({
 const FireCollectionsFallback = () => (
   <section
     aria-hidden='true'
-    className='min-h-screen px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-28'
-  >
+    className='min-h-screen px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-28'>
     <div className='mx-auto flex max-w-7xl flex-col gap-6'>
       {Array.from({length: 2}).map((_, index) => (
         <div
           key={index}
-          className='overflow-hidden rounded-3xl border border-foreground/10 bg-background/60 p-6'
-        >
+          className='overflow-hidden rounded-3xl border border-foreground/10 bg-background/60 p-6'>
           <div className='h-10 w-52 animate-pulse rounded bg-foreground/10' />
           <div className='mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
             {Array.from({length: 4}).map((__, cardIndex) => (
@@ -77,8 +75,7 @@ const FireCollectionsFallback = () => (
 const FeaturedDealsFallback = () => (
   <section
     aria-hidden='true'
-    className='mx-auto w-full px-2 py-12 sm:px-4 md:max-w-7xl'
-  >
+    className='mx-auto w-full px-2 py-12 sm:px-4 md:max-w-7xl'>
     <div className='rounded-[36px] border border-foreground/10 bg-foreground/4 px-6 py-10 sm:px-12 sm:py-16'>
       <div className='h-8 w-40 animate-pulse rounded bg-foreground/10' />
       <div className='mt-6 h-24 max-w-2xl animate-pulse rounded bg-foreground/8' />
@@ -113,8 +110,7 @@ export const Content = () => {
       <MarkSection
         title='The New Standard in Cannabis Retail.'
         description='Mix and match your order, earn cash back on every purchase, and shop
-                  with guaranteed delivery and seamless card payments.'
-      >
+                  with guaranteed delivery and seamless card payments.'>
         <div className='portrait:px-4 max-w-xl md:max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8'>
           {ctas.map((feature, i) => (
             <MiniCardV2 key={feature.title} {...feature} dark={i === 0} />

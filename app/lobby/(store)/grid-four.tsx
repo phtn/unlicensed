@@ -7,24 +7,23 @@ import {motion, useReducedMotion, type HTMLMotionProps} from 'motion/react'
 const gridFourItems = [
   {
     eyebrow: 'Build',
-    title: 'Mix and match your way',
-    icon: 'grid-four',
+    title: 'Live Support from real budtenders',
+    icon: 'service',
     description:
-      'Build your own ounce with eight different eighths, stack larger flower deals, or combine extracts, vapes, and edibles for flexible bulk savings.',
+      'Chat with our team for personalized guidance, product recommendations, and help choosing what’s right for you.',
   },
   {
     eyebrow: 'Reward',
     title: 'Earn cash back every time you shop',
-    icon: 'coins',
+    icon: 'diamond-duotone',
     description:
       'Every order earns rewards, with higher cash back rates unlocked as your order value climbs.',
   },
   {
     eyebrow: 'Deliver',
     title: 'Guaranteed delivery',
-    icon: 'airplane-takeoff',
-    description:
-      'A more dependable ordering experience with free shipping on qualifying orders, so it is easier to stock up without second-guessing delivery.',
+    icon: 'box-checked',
+    description: 'Your order is protected from checkout to your doorstep.',
   },
   {
     eyebrow: 'Pay',
@@ -98,7 +97,7 @@ export function GridItem({
       )}
       {...props}>
       <div className='absolute -right-10 -top-10 h-28 w-28 rounded-full bg-brand/12 blur-3xl transition-transform duration-300 group-hover:scale-125' />
-      <div className='absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.55),transparent_42%)] opacity-70' />
+      <div className='absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.25),transparent_42%)] opacity-70' />
       <div className='rounded-xs dark:bg-background/80 bg-background px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 h-full'>
         <div className='hidden relative z-10 _flex items-start justify-between gap-4'>
           <span className='hidden _inline-flex rounded-full border border-foreground/10 bg-background/80 px-3 py-1 text-[0.65rem] font-ios font-medium uppercase tracking-[0.2em] text-foreground/55 backdrop-blur-sm'>
@@ -110,8 +109,12 @@ export function GridItem({
         </div>
 
         <div className='relative z-10 md:ml-4 md:mt-4 gap-4 md:gap-8 flex items-start'>
-          <div className='flex size-13 shrink-0 items-center justify-center rounded-none bg-brand text-background'>
-            <Icon name={item.icon} aria-hidden className='size-6 text-white' />
+          <div className='flex size-13 shrink-0 items-center justify-center rounded-none _bg-brand text-background'>
+            <Icon
+              name={item.icon}
+              aria-hidden
+              className='size-8 text-light-brand'
+            />
           </div>
           <div>
             <h3 className='font-clash text-lg leading-tight md:text-xl'>

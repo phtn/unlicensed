@@ -35,7 +35,7 @@ const preloadChatWindow = () => {
 const ChatWindow = dynamic(loadChatWindow, {
   ssr: false,
   loading: () => (
-    <div className='fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-9100 h-[min(700px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-5rem))] max-h-[700.01px] min-h-48 w-[min(calc(100vw-2.5rem),34rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)] md:h-[min(700px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-7rem))] md:w-[min(calc(100vw-4rem),34rem)] min-[384px]:min-w-[21.51rem] rounded-3xl border border-sidebar/50 bg-background/95 shadow-2xl backdrop-blur-xl'>
+    <div className='fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-9100 h-[min(700px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-5rem))] portrait:h-[min(700px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-8.75rem))] max-h-[700.01px] min-h-48 w-[min(calc(100vw-2.5rem),34rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)] md:h-[min(700px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-7rem))] md:portrait:h-[min(700px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-11.5rem))] md:w-[min(calc(100vw-4rem),34rem)] min-[384px]:min-w-[21.51rem] rounded-3xl border border-sidebar/50 bg-background/95 shadow-2xl backdrop-blur-xl'>
       <div className='flex h-full items-center justify-center text-sm text-muted-foreground'>
         Loading chat...
       </div>
@@ -205,11 +205,13 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
                             size='sm'
                             key={`chat-dock-badge-${unreadCount ?? 0}`}
                             className={cn(
-                              'absolute top-1 right-1 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border border-foreground shadow-sm bg-brand font-clash font-medium text-white leading-none',
+                              'absolute top-0 -right-1.25 h-6.5 w-6.5 flex items-center justify-center aspect-square rounded-full border-[1.5px] border-foreground bg-brand font-clash font-medium text-white tracking-tighter leading-none shadow-inner',
                             )}>
-                            {(unreadCount ?? 0) > 99
-                              ? '99+'
-                              : String(unreadCount ?? 0)}
+                            <span className='drop-shadow-2xs'>
+                              {(unreadCount ?? 0) > 99
+                                ? '99+'
+                                : String(unreadCount ?? 0)}
+                            </span>
                           </Badge>
                         ) : null}
                       </Badge.Anchor>

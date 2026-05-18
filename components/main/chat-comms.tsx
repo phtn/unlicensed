@@ -74,7 +74,7 @@ export const ChatComms = ({isOpen, onCloseComplete}: ChatCommsProps) => {
     <div
       ref={rootRef}
       className={cn(
-        'fixed right-0 bottom-0 md:bottom-7 flex h-15 w-110 items-center justify-start gap-16 overflow-visible rounded-s-full rounded-e-full bg-black/10 px-7 text-balance text-white shadow-lg backdrop-blur-sm',
+        'fixed right-0 bottom-3 md:bottom-7 flex h-15 w-96 md:w-110 gap-14 md:gap-16 items-center justify-start overflow-visible rounded-s-full rounded-e-full bg-black/10 px-7 text-balance text-white shadow-lg backdrop-blur-sm',
       )}>
       <Button
         data-chat-comms-item
@@ -83,7 +83,7 @@ export const ChatComms = ({isOpen, onCloseComplete}: ChatCommsProps) => {
         size='sm'
         className='relative group bg-white size-6 flex flex-col items-center justify-center overflow-visible text-messenger aspect-square'>
         <Icon name='messenger' className='size-8 drop-shadow-2xs' />
-        <span className='opacity-0 font-clash font-medium group-hover:opacity-100 absolute -top-8 text-[10px] tracking-tight text-white'>
+        <span className='opacity-0 font-clash font-medium md:group-hover:opacity-100 absolute -top-8 text-[10px] tracking-tight text-white'>
           Messenger
         </span>
       </Button>
@@ -94,7 +94,7 @@ export const ChatComms = ({isOpen, onCloseComplete}: ChatCommsProps) => {
         size='sm'
         className='relative group bg-white size-6 flex items-center justify-center overflow-visible text-telegram aspect-square'>
         <Icon name='telegram' className='size-8 drop-shadow-2xs' />
-        <p className='opacity-0 group-hover:opacity-100 absolute -top-8 text-[10px] tracking-tighter text-white hover:-translate-y-5 transition-all duration-300'>
+        <p className='opacity-0 font-clash md:group-hover:opacity-100 absolute -top-8 text-[10px] tracking-tighter text-white hover:-translate-y-5 transition-all duration-300'>
           Telegram
         </p>
       </Button>
@@ -105,7 +105,7 @@ export const ChatComms = ({isOpen, onCloseComplete}: ChatCommsProps) => {
         size='sm'
         className='relative group bg-white size-6 flex items-center justify-center overflow-visible text-whatsapp aspect-square shadow-inner'>
         <Icon name='whatsapp' className='size-10 drop-shadow-2xs' />
-        <p className='opacity-0 group-hover:opacity-100 absolute -top-8 text-[10px] tracking-tighter text-white hover:-translate-y-5 transition-all duration-300'>
+        <p className='opacity-0 font-clash md:group-hover:opacity-100 absolute -top-8 text-[10px] tracking-tighter text-white hover:-translate-y-5 transition-all duration-300'>
           WhatsApp
         </p>
       </Button>
@@ -116,6 +116,9 @@ export const ChatComms = ({isOpen, onCloseComplete}: ChatCommsProps) => {
         size='sm'
         className='bg-white text-dark-table aspect-square'>
         <Icon name='hot' />
+        <p className='opacity-0 font-clash md:group-hover:opacity-100 absolute -top-8 text-[10px] tracking-tighter text-white hover:-translate-y-5 transition-all duration-300'>
+          SMS
+        </p>
       </Button>
     </div>
   )
