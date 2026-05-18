@@ -12,11 +12,15 @@ import {api} from '@/convex/_generated/api'
 import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError} from '@/ctx/toast'
+import {useApi} from '@/hooks/use-api'
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatDate, formatTimestamp} from '@/utils/date'
 import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {useCallback, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useState} from 'react'
+import {decipherGuestVisitorIpNetworkHash} from './actions'
 
 type GuestVisitorRow = Doc<'guestVisitors'> & {
   chatParticipantId: Id<'users'> | Id<'guests'> | null
@@ -33,6 +37,7 @@ const COMPACT_MUTED_TEXT_CLASS =
 const COMPACT_MONO_CLASS =
   'block truncate font-mono text-[10px] leading-4 text-muted-foreground uppercase'
 const ACTIVITY_PREVIEW_LIMIT = 6
+const IP_LOOKUP_TIMEOUT_MS = 10_000
 
 const formatActivityType = (type: GuestVisitorEventRow['type']) =>
   type
@@ -330,6 +335,209 @@ function VisitorActivityHoverCard({visitor}: {visitor: GuestVisitorRow}) {
   )
 }
 
+interface IPHoverProps {
+  hash?: string | null
+}
+
+export interface IPInfoLiteData {
+  ip: string
+  asn: string
+  as_name: string
+  as_domain: string
+  country_code: string
+  country: string
+  continent_code: string
+  continent: string
+}
+
+const IPHover = ({hash}: IPHoverProps) => {
+  const {on: open, setOn: setOpen} = useToggle(false)
+  const [ipNetwork, setIpNetwork] = useState<string | null>(null)
+  const [ipInfo, setIpInfo] = useState<IPInfoLiteData | null>(null)
+  const [hasAttemptedLookup, setHasAttemptedLookup] = useState(false)
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'resolved' | 'not_found' | 'timeout' | 'error'
+  >('idle')
+  const [ipInfoStatus, setIpInfoStatus] = useState<
+    'idle' | 'loading' | 'resolved' | 'error'
+  >('idle')
+
+  useEffect(() => {
+    let cancelled = false
+    let settled = false
+    if (!open || hasAttemptedLookup || !hash?.trim()) {
+      return
+    }
+
+    setHasAttemptedLookup(true)
+    setStatus('loading')
+
+    const timeoutId = window.setTimeout(() => {
+      if (!cancelled && !settled) {
+        setStatus('timeout')
+      }
+    }, IP_LOOKUP_TIMEOUT_MS)
+
+    void (async () => {
+      try {
+        const resolved = await decipherGuestVisitorIpNetworkHash(hash)
+        settled = true
+
+        if (settled) {
+          setStatus('resolved')
+          setIpNetwork(resolved)
+        }
+
+        if (!cancelled) {
+          setIpNetwork(resolved)
+          setStatus(resolved ? 'resolved' : 'not_found')
+        }
+      } catch (error) {
+        settled = true
+        if (!cancelled) {
+          console.error(
+            'Failed to decipher guest visitor IP network hash:',
+            error,
+          )
+          setStatus('error')
+        }
+      } finally {
+        window.clearTimeout(timeoutId)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [hasAttemptedLookup, hash, open])
+
+  const label = ipNetwork ?? hash?.substring(0, 6) ?? EMPTY_VALUE
+  const isLoading = status === 'loading'
+  const iconName = isLoading
+    ? 'spinners-ring'
+    : ipNetwork
+      ? 'cloud-server'
+      : 'info'
+  const {handleApiCall: api, loading: apiLoading} = useApi()
+
+  const getIpInfo = useCallback(
+    async (ip: string) =>
+      await api(`/api/ip?ip=${encodeURIComponent(ip)}`, 'GET'),
+    [api],
+  )
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!open || !ipNetwork || ipInfo || ipInfoStatus === 'loading') {
+      return
+    }
+
+    setIpInfoStatus('loading')
+
+    void (async () => {
+      try {
+        const info = await getIpInfo(ipNetwork)
+        setIpInfo(info as IPInfoLiteData)
+        setIpInfoStatus('resolved')
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Failed to fetch IP info:', error)
+          setIpInfoStatus('error')
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [getIpInfo, ipInfo, ipInfoStatus, ipNetwork, open])
+
+  return (
+    <HoverCard open={open} onOpenChange={setOpen} openDelay={100}>
+      <HoverCardTrigger asChild>
+        <button
+          type='button'
+          className={cn(
+            'rounded px-1 py-0.5 text-center text-xs font-clash leading-4 transition-colors hover:bg-sidebar hover:text-mac-blue focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-mac-blue dark:hover:text-mac-blue',
+            {'text-mac-blue font-mono tracking-wider': ipNetwork},
+          )}
+          aria-label={ipNetwork ? `IP ${ipNetwork}` : 'IP'}>
+          {label}
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className='space-y-2 bg-sidebar dark:bg-dark-table border-foreground/30'>
+        <div className='max-w-xs flex-wrap text-balance'>
+          <div className='flex items-center space-x-1 w-full'>
+            <Icon
+              name={iconName}
+              className={cn('size-4', {'size-3': status === 'loading'})}
+            />
+            <p className='font-mono text-sm w-full'>
+              {status === 'loading' && <span>Resolving...</span>}
+              {status === 'timeout' && <span>Lookup still running...</span>}
+              {status !== 'loading' &&
+                status !== 'timeout' &&
+                (ipNetwork ?? EMPTY_VALUE)}
+            </p>
+          </div>
+          {ipInfo ? (
+            <div className='mt-3 space-y-1 text-[10px] text-muted-foreground'>
+              <p className='font-clash text-xs text-foreground'>
+                {ipInfo.asn} <span className='opacity-40 px-1'>&middot;</span>{' '}
+                {ipInfo.as_name}
+              </p>
+              <p className='font-okxs'>
+                {[ipInfo.country, ipInfo.continent]
+                  .filter(Boolean)
+                  .join(', ') || EMPTY_VALUE}
+              </p>
+              <p className='text-emerald-700 dark:text-emerald-400'>
+                {ipInfo.as_domain ?? EMPTY_VALUE}
+              </p>
+            </div>
+          ) : ipInfoStatus === 'loading' || (apiLoading && !ipInfo) ? (
+            <div className='mt-2 flex items-center space-x-1'>
+              <Icon name='spinners-ring' className='size-3' />
+              <p className='font-clash text-[10px] opacity-70'>
+                Fetching IP Info
+              </p>
+            </div>
+          ) : (
+            <p className='break-all font-mono text-[8px] text-muted-foreground mt-2'>
+              {hash}
+            </p>
+          )}
+
+          {ipInfoStatus === 'error' ? (
+            <p className='text-[10px] text-muted-foreground'>
+              IP details request failed.
+            </p>
+          ) : null}
+          {status === 'timeout' ? (
+            <p className='text-[10px] text-muted-foreground'>
+              IPv4 reverse lookup can take a while. IPv6 hashes will not
+              resolve.
+            </p>
+          ) : null}
+          {status === 'not_found' ? (
+            <p className='text-[10px] text-muted-foreground'>
+              No IPv4 network match found for this hash. IPv6 hashes are not
+              supported.
+            </p>
+          ) : null}
+          {status === 'error' ? (
+            <p className='text-[10px] text-muted-foreground'>
+              Lookup failed. Check admin auth and `GUEST_TRACKING_HASH_SALT`.
+            </p>
+          ) : null}
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  )
+}
+
 export const VisitorData = () => {
   const {user} = useAuthCtx()
   const connectCustomerForChat = useMutation(
@@ -338,7 +546,10 @@ export const VisitorData = () => {
   const visitorsQuery = useQuery(api.guestTracking.q.getRecentVisitors, {
     limit: 500,
   })
-  const data = (visitorsQuery ?? []) as GuestVisitorRow[]
+  const data = useMemo(
+    () => (visitorsQuery ?? []) as GuestVisitorRow[],
+    [visitorsQuery],
+  )
   const [isChatWindowOpen, setIsChatWindowOpen] = useState(false)
   const [chatConversationFid, setChatConversationFid] = useState<string | null>(
     null,
@@ -346,7 +557,6 @@ export const VisitorData = () => {
   const [chatConversationSelectionKey, setChatConversationSelectionKey] =
     useState(0)
   const [isOpeningChat, setIsOpeningChat] = useState(false)
-
   const handleOpenVisitorChat = useCallback(
     async (visitor: GuestVisitorRow) => {
       if (isOpeningChat) return
@@ -473,6 +683,21 @@ export const VisitorData = () => {
               {formatLocaleTimezone(row.original).replaceAll('en-US / ', '')}
             </span>
           ),
+        },
+        {
+          id: 'ipNetworkHash',
+          header: 'IP/HASH',
+          accessorKey: 'ipNetworkHash',
+          size: 100,
+          cell: ({row}) => {
+            const hash = row.original.ipNetworkHash
+
+            return (
+              <span className={COMPACT_MUTED_TEXT_CLASS} title={'ip'}>
+                <IPHover hash={hash} />
+              </span>
+            )
+          },
         },
         {
           id: 'lastSeenAt',

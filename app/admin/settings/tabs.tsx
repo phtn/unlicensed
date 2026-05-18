@@ -1,6 +1,7 @@
 'use client'
 
 import {useAdminTab} from '@/app/admin/_components/use-admin-tab'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
 import {AccessContent} from './_components/access-content'
@@ -10,6 +11,7 @@ import {CommsChannelContent} from './_components/comms-content'
 import {CouponsContent} from './_components/coupons-content'
 import {CryptoContent} from './_components/crypto-content'
 import {DealsContent} from './_components/deals-content'
+import {IpInfoContent} from './_components/ipinfo-content'
 import {MpxlContent} from './_components/metapixel-content'
 import {OverviewContent} from './_components/overview-content'
 import {PaymentsSettings} from './_components/payments-settings'
@@ -20,7 +22,11 @@ const DEFAULT_TAB = 'overview'
 
 export const SettingsTabs = () => {
   const tabs = [
-    {id: 'overview', label: 'Overview', panel: <OverviewContent />},
+    {
+      id: 'overview',
+      label: <Icon name='bullet-list-square' className='size-4' />,
+      panel: <OverviewContent />,
+    },
     {id: 'access', label: 'Access Code', panel: <AccessContent />},
     {id: 'alerts', label: 'Alert Tones', panel: <AlertsContent />},
     {id: 'assistant', label: 'AI Assistant', panel: <AssistantContent />},
@@ -28,6 +34,7 @@ export const SettingsTabs = () => {
     {id: 'coupons', label: 'Coupons', panel: <CouponsContent />},
     {id: 'crypto', label: 'Crypto Wallets', panel: <CryptoContent />},
     {id: 'deals', label: 'Deals', panel: <DealsContent />},
+    {id: 'ipinfo', label: 'IP Info', panel: <IpInfoContent />},
     {id: 'metapixel', label: 'Metapixel', panel: <MpxlContent />},
     {id: 'payments', label: 'Payment Methods', panel: <PaymentsSettings />},
     {id: 'rep', label: 'CS Rep', panel: <RepContent />},

@@ -7,6 +7,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {getMetaPixelId, META_PIXEL_IDENTIFIER} from '@/lib/meta-pixel'
+import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react'
@@ -101,17 +102,19 @@ function FormInner({
         </Button>
       </ContentHeader>
 
-      <div className='grid md:grid-cols-3 gap-3 w-full'>
-        <div className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4 space-y-2'>
+      <div className='grid md:grid-cols-3 gap-3 w-full px-2'>
+        <div
+          className={cn('rounded-md border border-default-200 p-4 space-y-2', {
+            ' dark:bg-dark-table': Boolean(metapixel.trim()),
+          })}>
           <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
-            <div className='min-w-0 space-y-2 sm:w-fit'>
-              <div className='text-xs opacity-50'>
-                {metapixelId || 'Not configured'}
-              </div>
+            <div className='flex items-center space-x-2 in-w-0 sm:w-fit'>
+              <Icon name='meta' />
+              <div className='font-clash text-base opacity-70'>Metapixel</div>
             </div>
             <Toggle
               title='Enabled'
-              label='Metapixel'
+              label={Boolean(metapixel.trim()) ? 'Enabled' : 'Disabled'}
               checked={Boolean(metapixel.trim())}
               onChange={undefined}
               disabled={!configLoaded}

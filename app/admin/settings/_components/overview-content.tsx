@@ -59,6 +59,12 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
     icon: 'sale',
   },
   {
+    id: 'ipinfo',
+    title: 'IPInfo',
+    description: 'Configure IP Info API keys & Tokens.',
+    icon: 'ipinfo',
+  },
+  {
     id: 'metapixel',
     title: 'Metapixel',
     description: 'Integration Still On-going',
@@ -74,7 +80,7 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
     id: 'rewards',
     title: 'Rewards',
     description: 'Manage Reward Tiers.',
-    icon: 'coins',
+    icon: 'diamond-duotone',
   },
   {
     id: 'payments',
@@ -89,7 +95,7 @@ export const OverviewContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-2 p-0 md:px-2'>
-      <ContentHeader title={'Settings Overview'} />
+      <ContentHeader title={'Settings Directory'} />
       {/*<section className='space-y-0 h-[90lvh] overflow-y-scroll'>*/}
       <Card className='grid h-[calc(100svh-12rem)] w-full overflow-y-scroll rounded-md bg-linear-to-br from-slate-600/10 to-slate-800/5 p-1 dark:from-slate-400/10 dark:to-slate-600/5 md:h-full md:w-fit md:grid-cols-2 md:rounded-lg md:gap-12 md:p-4'>
         {SETTINGS_FEATURES.map((feature, index) => (
