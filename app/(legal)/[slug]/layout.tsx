@@ -34,7 +34,7 @@ export default function LegalDocumentLayout({
   return (
     <div className='h-screen bg-background'>
       {/* Header */}
-      <header className='absolute w-full top-0 z-40 border-b border-border backdrop-blur-2xl supports-backdrop-filter:bg-origin/40'>
+      <header className='absolute w-full top-0 z-40 shadow-sm backdrop-blur-3xl supports-backdrop-filter:bg-foreground/25'>
         <div className='flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8'>
           <div className='flex items-center gap-2 md:gap-4'>
             <Link
@@ -88,7 +88,7 @@ export default function LegalDocumentLayout({
           {children}
         </main>
 
-        <aside className='absolute left-0 hidden w-96 md:h-screen overflow-y-scroll border-r border-light-gray dark:border-light-gray/40 border-dotted bg-white/60 dark:bg-background/60 p-6 lg:block print:hidden'>
+        <aside className='absolute left-0 hidden w-96 md:h-screen overflow-y-scroll border-r border-light-gray/60 dark:border-light-gray/20 border-dotted bg-white/60 dark:bg-background/60 p-6 lg:block print:hidden'>
           <SpaceX />
           <div className='sticky top-8 font-figtree'>
             <div className='mb-8 text-xs uppercase tracking-widest opacity-70 px-2'>
@@ -111,7 +111,7 @@ export default function LegalDocumentLayout({
         </aside>
 
         {/* Desktop TOC Sidebar */}
-        <aside className='absolute right-0 hidden w-96 md:h-screen overflow-y-scroll border-l border-light-gray dark:border-light-gray/40 border-dotted bg-white/60 dark:bg-background/60 lg:block print:hidden p-6'>
+        <aside className='absolute right-0 hidden w-96 md:h-screen overflow-y-scroll border-l border-light-gray/60 dark:border-light-gray/20 border-dotted bg-white/60 dark:bg-background/60 lg:block print:hidden p-6'>
           <SpaceX />
           <div className='sticky top-8 font-figtree'>
             <div className='mb-8 text-xs uppercase tracking-widest opacity-70 px-2'>
